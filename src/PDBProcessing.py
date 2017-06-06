@@ -14,7 +14,8 @@ from mpl_toolkits.mplot3d import Axes3D
 import numpy as np
 confProDy(verbosity='none')
 
-from SpaceFillingCurves import display_3d_array
+from SpaceFillingCurves import *
+from HilbertCurves import gen_hilbert_2D, gen_hilbert_3D
 
 debug = True
 residuals = [   'ALA', 'ARG', 'ASN', 'ASP', 'ASX', 'CYS', 'GLN', 'GLU', 'GLX',
@@ -47,11 +48,11 @@ def process_pdb_data(pdb_data):
 
     '''
     # Bin x, y, z Coordinates
-    res = 5
+    res = 4.375
     max_ = 35
     min_ = -35
     range_ = max_ - min_
-    bins = [(i*res) + min_ for i in range((range_//res)+1)]
+    bins = [(i*res) + min_ for i in range(int(range_/res)+1)]
     x_binned = np.digitize(pdb_data[:, 0], bins) - 1
     y_binned = np.digitize(pdb_data[:, 1], bins) - 1
     z_binned = np.digitize(pdb_data[:, 2], bins) - 1
@@ -65,13 +66,19 @@ def process_pdb_data(pdb_data):
         if ind_ in u_indices: u_indices[ind_] += 1
         else: u_indices[ind_] = 0
 
-    # Generate 3D Array With
-    structure = np.zeros([(range_//res)+1 for i in range(3)])
-    for ind in u_indices.keys(): structure[ind[0], ind[1], ind[2]] = u_indices[ind]
+    # Generate 3D Array
+    pdb_3d = np.zeros([int(range_/res)+1 for i in range(3)])
+    for ind in u_indices.keys(): pdb_3d[ind[0], ind[1], ind[2]] = u_indices[ind]
+    pdb_3d = (pdb_3d / np.max(pdb_3d))
+
+    # Transpose To 2D
+    pdb_1d = spacefilling_3d_to_1d(pdb_3d, hilbert_3d)
+    pdb_2d = spacefilling_1d_to_2d(pdb_1d, hilbert_2d)
+
     if debug:
-        structure = (structure / np.max(structure))
-        display_3d_array(structure)
-        display_3d_array(structure, mask=(0,2))
+        display_2d_array(pdb_2d)
+        display_3d_array(pdb_3d)
+        display_3d_array(pdb_3d, mask=(0,2))
 
 def vis_processed_pdb_data(processed_pdb_data):
     '''
@@ -89,6 +96,7 @@ if __name__ == '__main__':
         i += 1
     if debug: print("Total PDB Entries:", len(pdb_ids))
 
+    pdb_ids = pdb_ids[5:10]
     # Process PDB Entries
     for pdb_id in pdb_ids:
         pdb_data = get_pdb_data(pdb_id)
