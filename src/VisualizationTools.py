@@ -12,38 +12,12 @@ def display_3d_array(array_3d, mask=None, curve=None):
     Method displays 3d array.
 
     '''
-    # Generate Coordinates
-    shape = array_3d.shape
-    coords = []
-    for i in range(shape[0]):
-        for j in range(shape[1]):
-            for k in range(shape[2]):
-                coords.append([i,j,k])
-    coords = np.array(coords)
 
-    # Flatten Array
-    flat_array = array_3d.flatten()
+    xx, yy, zz = np.where(array_3d > 1)
 
-    # Apply Mask
-    if mask:
-        temp_flat = []
-        temp_coords = []
-        for i in range(len(flat_array)):
-            if flat_array[i] > mask[0] and flat_array[i] < mask[1]:
-                temp_flat.append(flat_array[i])
-                temp_coords.append(coords[i])
-        coords = np.array(temp_coords)
-        flat_array = np.array(temp_flat)
+    mayavi.mlab.points3d(xx, yy, zz, mode="cube", color=(0, 1, 0), scale_factor=1)
 
-    # Display 3D Plot
-    colmap = cm.ScalarMappable(cmap='inferno')
-    colmap.set_array(flat_array)
-    fig = plt.figure()
-    ax = fig.add_subplot(111, projection='3d')
-    if curve is not None: ax.plot(curve[:,0], curve[:,1], curve[:,2])
-    ax.scatter(coords[:,0], coords[:,1], coords[:,2], c=cm.inferno(flat_array), marker='o')
-    fig.colorbar(colmap)
-    plt.show()
+    mayavi.mlab.show()
 
 def display_2d_array(array_2d):
     '''
@@ -54,3 +28,14 @@ def display_2d_array(array_2d):
     plt.figure()
     plt.imshow(array_2d, interpolation="nearest", cmap='inferno')
     plt.show()
+
+if __name__ == '__main__':
+    for i in range(64):
+        x = pow(2,i)
+        sq = np.sqrt(x)
+        cb = np.cbrt(x)
+        if sq %1.0 == 0.0 and cb %1.0 == 0.0:
+            print("\nHilbert 2D Curve:", int(sq), 'x', int(sq), ', order-', np.log2(sq))
+            print("Hilbert 3D Curve:", int(cb), 'x', int(cb), 'x', int(cb), ', order-', np.log2(cb))
+            print("Total Number of Pixels:", x)
+            print("Estimated File Size for 1 bit Depth:", x/float(pow(2,30)))

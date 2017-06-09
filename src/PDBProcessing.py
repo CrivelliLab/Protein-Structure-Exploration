@@ -11,6 +11,12 @@ from prody import *
 confProDy(verbosity='none')
 from HilbertCurves import *
 from VisualizationTools import *
+from tqdm import tqdm
+import mayavi.mlab as mlab
+import vtk
+from tvtk.api import tvtk
+from mayavi.sources.vtk_data_source import VTKDataSource
+from mayavi.modules.surface import Surface
 
 debug = True
 visualize = True
@@ -18,7 +24,7 @@ residuals = [   'ALA', 'ARG', 'ASN', 'ASP', 'ASX', 'CYS', 'GLN', 'GLU', 'GLX',
                 'GLY', 'HIS', 'ILE', 'LEU', 'LYS', 'MET', 'PHE', 'PRO', 'SER',
                 'THR', 'TRP', 'TYR', 'UNK', 'VAL']
 
-elem_radii = {  'H' : 0.53, 'C' : 0.67, 'N' : 0.56, 'O' : 0.48, 'S' : 0.88, 'D' : 0.53}
+elem_radii = {  'H' : 1.2, 'C' : 1.7, 'N' : 1.55, 'O' : 1.52, 'S' : 1.8, 'D' : 1.2}
 
 def get_pdb_data(pdb_file):
     '''
@@ -28,7 +34,7 @@ def get_pdb_data(pdb_file):
     '''
     # Parse PDB File
     if debug: print("Parsing:", pdb_file)
-    protein = parsePDB(pdb_file).select('protein')
+    protein = parsePDB(pdb_file).select('protein').chain_A
 
     # Set Protein's Center Of Mass At Origin
     moveAtoms(protein, to=np.zeros(3))
@@ -45,14 +51,97 @@ def get_pdb_data(pdb_file):
 
     return pdb_data
 
+def sphere_mesh_template():
+    '''
+    Method creates sphere mesh template.
+    '''
+    phi, theta = np.mgrid[0:np.pi:11j, 0:2*np.pi:11j]
+    x = np.sin(phi) * np.cos(theta)
+    y = np.sin(phi) * np.sin(theta)
+    z = np.cos(phi)
+    return x, y, z
+
 def gen_3d_model(pdb_data, max_, min_, res_):
     '''
     Method processes PDB's atom data to create a matrix based 3d model.
 
     '''
-    pdb_data = pdb_data[:,3:].astype('float')
-    print(pdb_data)
+    x, y, z = sphere_mesh_template()
+
+    # Coordinate, Radius and Coloring Information
+    xx = pdb_data[:,3].astype('float')
+    yy = pdb_data[:,4].astype('float')
+    zz = pdb_data[:,5].astype('float')
+    ss = pdb_data[:,2].astype('float')
+    cc = []
+    for i in range(len(pdb_data)):
+        if pdb_data[i][0] == 'C': cc.append((1,0,0))
+        elif pdb_data[i][0] == 'H': cc.append((1,1,0))
+        elif pdb_data[i][0] == 'O': cc.append((0,1,0))
+        elif pdb_data[i][0] == 'S': cc.append((0,0,1))
+        else: cc.append((1,1,1))
+    cc = np.array(cc)
+
+    # Generate Mesh for Protein
+    if debug: print("Creating Mesh...")
+    pbar = tqdm(total=len(pdb_data))
+    poly_data = []
+    for i in range(len(pdb_data)):
+        x_ = (x * ss[i]) + xx[i]
+        y_ = (y * ss[i]) + yy[i]
+        z_ = (z * ss[i]) + zz[i]
+        atom = mlab.mesh(x_, y_, z_, color=(cc[i][0], cc[i][1], cc[i][2]))
+        pbar.update(1)
+        polydata = tvtk.to_vtk(atom.actor.actors[0].mapper.input)
+        poly_data.append(polydata)
+        break
+    mesh_appender = vtk.vtkAppendPolyData()
+    for polydata in poly_data:
+        if vtk.VTK_MAJOR_VERSION <= 5:
+            mesh_appender.AddInputConnection(polydata.GetProducerPort())
+        else: mesh_appender.AddInputData(polydata)
+
+    # Create and visualize the mesh
+    mesh_appender.Update()
+
+    #  Remove any duplicate points.
+    cleanFilter = vtk.vtkCleanPolyData()
+    cleanFilter.SetInputConnection(mesh_appender.GetOutputPort())
+    cleanFilter.Update()
+
+
+    src = VTKDataSource(data = cleanFilter.GetOutputPort())
+    mayavi.add_source(src)
+    s = Surface()
+    mayavi.add_module(s)
+
+    mlab.show()
+
+    '''
+    # Create a mapper and actor
+    mapper = vtk.vtkPolyDataMapper()
+    mapper.SetInputConnection(cleanFilter.GetOutputPort())
+
+    actor = vtk.vtkActor()
+    actor.SetMapper(mapper)
+
+    # Create a renderer, render window, and interactor
+    renderer = vtk.vtkRenderer()
+    renderWindow = vtk.vtkRenderWindow()
+    renderWindow.AddRenderer(renderer)
+    renderWindowInteractor = vtk.vtkRenderWindowInteractor()
+    renderWindowInteractor.SetRenderWindow(renderWindow)
+
+    # Add the actors to the scene
+    renderer.AddActor(actor)
+    renderer.SetBackground(.3, .2, .1) #  Background color dark red
+
+    # Render and interact
+    renderWindow.Render()
+    renderWindowInteractor.Start()
+    '''
     # Bin x, y, z Coordinates
+    pdb_data = pdb_data[:,3:].astype('float')
     range_ = max_ - min_
     bins = [(i*res_) + min_ for i in range(int(range_/res_)+1)]
     x_binned = np.digitize(pdb_data[:, 0], bins) - 1
@@ -74,7 +163,6 @@ def gen_3d_model(pdb_data, max_, min_, res_):
 
     return pdb_3d
 
-
 def encode_3d_pdb(pdb_3d, curve_3d, curve_2d):
     '''
     Method processes 3D PDB model and encodes into 2D image.
@@ -85,7 +173,7 @@ def encode_3d_pdb(pdb_3d, curve_3d, curve_2d):
     for i in range(len(curve_3d)):
         array_1d[i] = pdb_3d[curve_3d[i][0], curve_3d[i][1], curve_3d[i][2]]
 
-    # Dimension Reconstruction USing Space Filling Curve to 2D
+    # Dimension Reconstruction Using Space Filling Curve to 2D
     s = int(np.sqrt(len(curve_2d)))
     array_2d = np.zeros([s,s])
     for i in range(len(array_1d)):
@@ -96,18 +184,17 @@ def encode_3d_pdb(pdb_3d, curve_3d, curve_2d):
         #display_3d_array(pdb_3d)
         #display_3d_array(pdb_3d, mask=(0,2))
 
-
 if __name__ == '__main__':
     # Generate Hilbert Curves
-    print("Generating Curves...")
+    print "Generating Curves..."
     hilbert_3d = gen_hilbert_3D(6)
     hilbert_2d = gen_hilbert_2D(9)
-    print("Generating Curves Done.")
+    print "Generating Curves Done."
 
     # Read Ras PDBs
     pdb_files = []
     for line in sorted(os.listdir('Ras-Gene-PDB-Files')): pdb_files.append(line)
-    if debug: print("Total PDB Entries:", len(pdb_files))
+    if debug: print "Total PDB Entries:", len(pdb_files)
 
     # Process PDB Entries
     for pdb_file in pdb_files:
