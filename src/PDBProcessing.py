@@ -1,23 +1,28 @@
 '''
 PDBProcessing.py
-Last Updated: 5/6/2017
+Last Updated: 5/9/2017
 
 This script is used to parse and process Protein Data Base entries.
 
 '''
 import os
 import numpy as np
+from tqdm import tqdm
+
+# PDB File Parsing
 from prody import *
 confProDy(verbosity='none')
+
+# Space Filling Curves and Visualization Tools
 from HilbertCurves import *
 from VisualizationTools import *
-from tqdm import tqdm
-import mayavi.mlab as mlab
-import vtk
-from tvtk.api import tvtk
-from mayavi.sources.vtk_data_source import VTKDataSource
-from mayavi.modules.surface import Surface
 
+# 3D Modeling and Rendering
+import vtk
+import mayavi.mlab as mlab
+from tvtk.api import tvtk
+
+# Global Variables
 debug = True
 visualize = True
 residuals = [   'ALA', 'ARG', 'ASN', 'ASP', 'ASX', 'CYS', 'GLN', 'GLU', 'GLX',
@@ -33,7 +38,7 @@ def get_pdb_data(pdb_file):
 
     '''
     # Parse PDB File
-    if debug: print("Parsing:", pdb_file)
+    if debug: print "Parsing:", pdb_file
     protein = parsePDB(pdb_file).select('protein').chain_A
 
     # Set Protein's Center Of Mass At Origin
@@ -45,9 +50,6 @@ def get_pdb_data(pdb_file):
     atoms_radii = np.expand_dims([elem_radii[k] for k in protein.getElements()], 1)
     atoms_coords = protein.getCoords()
     pdb_data = np.concatenate([atoms_element, atoms_residual, atoms_radii, atoms_coords], 1)
-
-    # Visualize Protein
-    #if visualize: showProtein(protein)
 
     return pdb_data
 
@@ -94,13 +96,13 @@ def gen_3d_model(pdb_data, max_, min_, res_):
         pbar.update(1)
         polydata = tvtk.to_vtk(atom.actor.actors[0].mapper.input)
         poly_data.append(polydata)
-        break
     mesh_appender = vtk.vtkAppendPolyData()
     for polydata in poly_data:
         if vtk.VTK_MAJOR_VERSION <= 5:
             mesh_appender.AddInputConnection(polydata.GetProducerPort())
         else: mesh_appender.AddInputData(polydata)
 
+    mlab.clf()
     # Create and visualize the mesh
     mesh_appender.Update()
 
@@ -109,19 +111,9 @@ def gen_3d_model(pdb_data, max_, min_, res_):
     cleanFilter.SetInputConnection(mesh_appender.GetOutputPort())
     cleanFilter.Update()
 
-
-    src = VTKDataSource(data = cleanFilter.GetOutputPort())
-    mayavi.add_source(src)
-    s = Surface()
-    mayavi.add_module(s)
-
-    mlab.show()
-
-    '''
     # Create a mapper and actor
     mapper = vtk.vtkPolyDataMapper()
     mapper.SetInputConnection(cleanFilter.GetOutputPort())
-
     actor = vtk.vtkActor()
     actor.SetMapper(mapper)
 
@@ -139,7 +131,7 @@ def gen_3d_model(pdb_data, max_, min_, res_):
     # Render and interact
     renderWindow.Render()
     renderWindowInteractor.Start()
-    '''
+
     # Bin x, y, z Coordinates
     pdb_data = pdb_data[:,3:].astype('float')
     range_ = max_ - min_
@@ -181,8 +173,7 @@ def encode_3d_pdb(pdb_3d, curve_3d, curve_2d):
 
     if visualize:
         display_2d_array(array_2d)
-        #display_3d_array(pdb_3d)
-        #display_3d_array(pdb_3d, mask=(0,2))
+        display_3d_array(pdb_3d)
 
 if __name__ == '__main__':
     # Generate Hilbert Curves

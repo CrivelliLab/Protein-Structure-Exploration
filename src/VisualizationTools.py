@@ -1,23 +1,21 @@
 '''
 VisualizationTools.py
-Last Updated: 5/5/2017
+Last Updated: 5/9/2017
 
 '''
 import numpy as np
 import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
+from mayavi import mlab
 
 def display_3d_array(array_3d, mask=None, curve=None):
     '''
     Method displays 3d array.
 
     '''
-
+    # Dislay 3D Rendering
     xx, yy, zz = np.where(array_3d > 1)
-
-    mayavi.mlab.points3d(xx, yy, zz, mode="cube", color=(0, 1, 0), scale_factor=1)
-
-    mayavi.mlab.show()
+    mlab.points3d(xx, yy, zz, mode="cube", color=(0, 1, 0), scale_factor=1)
+    mlab.show()
 
 def display_2d_array(array_2d):
     '''
@@ -30,6 +28,7 @@ def display_2d_array(array_2d):
     plt.show()
 
 if __name__ == '__main__':
+    # Calculating Hilbert 3D to 2D Conversion Dimensions
     for i in range(64):
         x = pow(2,i)
         sq = np.sqrt(x)
@@ -38,4 +37,3 @@ if __name__ == '__main__':
             print("\nHilbert 2D Curve:", int(sq), 'x', int(sq), ', order-', np.log2(sq))
             print("Hilbert 3D Curve:", int(cb), 'x', int(cb), 'x', int(cb), ', order-', np.log2(cb))
             print("Total Number of Pixels:", x)
-            print("Estimated File Size for 1 bit Depth:", x/float(pow(2,30)))
