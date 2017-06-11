@@ -1,6 +1,6 @@
 '''
 VisualizationTools.py
-Last Updated: 5/9/2017
+Last Updated: 5/11/2017
 
 '''
 import numpy as np
@@ -34,6 +34,6 @@ if __name__ == '__main__':
         sq = np.sqrt(x)
         cb = np.cbrt(x)
         if sq %1.0 == 0.0 and cb %1.0 == 0.0:
-            print("\nHilbert 2D Curve:", int(sq), 'x', int(sq), ', order-', np.log2(sq))
-            print("Hilbert 3D Curve:", int(cb), 'x', int(cb), 'x', int(cb), ', order-', np.log2(cb))
-            print("Total Number of Pixels:", x)
+            print "\nHilbert 2D Curve:", int(sq), 'x', int(sq), ', order-', np.log2(sq)
+            print "Hilbert 3D Curve:", int(cb), 'x', int(cb), 'x', int(cb), ', order-', np.log2(cb)
+            print "Total Number of Pixels:", x
