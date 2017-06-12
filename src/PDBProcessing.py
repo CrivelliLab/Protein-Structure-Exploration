@@ -21,14 +21,37 @@ from VisualizationTools import *
 
 # 3D Modeling and Rendering
 import vtk
+from scipy import ndimage
 
 # Global Variables
+div = 256
+min_ = -15
+max_ = 15
 debug = True
 visualize = True
+stats = True
 residuals = [   'ALA', 'ARG', 'ASN', 'ASP', 'ASX', 'CYS', 'GLN', 'GLU', 'GLX',
                 'GLY', 'HIS', 'ILE', 'LEU', 'LYS', 'MET', 'PHE', 'PRO', 'SER',
                 'THR', 'TRP', 'TYR', 'UNK', 'VAL']
 elem_radii = {  'H' : 1.2, 'C' : 1.7, 'N' : 1.55, 'O' : 1.52, 'S' : 1.8, 'D' : 1.2}
+
+def run_stats(pdb_files):
+    '''
+    '''
+    if debug: print("Running Stats...")
+    min_diameters = []
+    for pdb_file in pdb_files:
+        # Parse PDB File
+        protein = parsePDB('../data/Ras-Gene-PDB-Files/'+ pdb_file).select('protein')
+
+        # Set Protein's Center Of Mas At Origin
+        moveAtoms(protein, to=np.zeros(3))
+
+        # Gather Atom Information
+        atoms_coords = protein.getCoords()
+        min_diameters.append(np.max(np.absolute(atoms_coords))*2)
+
+    display_min_diameter_dist(min_diameters)
 
 def get_pdb_data(pdb_file):
     '''
@@ -98,9 +121,19 @@ def gen_3d_pdb(pdb_data, bounds, sample_dim):
     voxel_array = vtk.util.numpy_support.vtk_to_numpy(voxel_modeller.GetOutput().GetPointData().GetScalars())
     voxel_array = voxel_array.reshape((sample_dim, sample_dim, sample_dim))
 
-    if visualize: display_3d_array(voxel_array)
+    # Fill Interiors
+    if debug: print("Filling Interiors...")
+    filled_voxel_array = []
+    for sect in voxel_array:
+        filled_sect = ndimage.morphology.binary_fill_holes(sect).astype('int')
+        filled_voxel_array.append(filled_sect)
+    filled_voxel_array = np.array(filled_voxel_array)
 
-    return voxel_array
+    if visualize:
+        print("Visualizing Model...")
+        display_3d_array(voxel_array)
+
+    return filled_voxel_array
 
 def encode_3d_pdb(pdb_3d, curve_3d, curve_2d):
     '''
@@ -122,22 +155,30 @@ def encode_3d_pdb(pdb_3d, curve_3d, curve_2d):
     for i in range(len(pdb_1d)):
         pdb_2d[curve_2d[i][0], curve_2d[i][1]] = pdb_1d[i]
 
-    if visualize: display_2d_array(pdb_2d)
+    if visualize:
+        print("Visualizing Encoding...")
+        display_2d_array(pdb_2d)
 
 if __name__ == '__main__':
-    # Generate Hilbert Curves
-    print "Generating Curves..."
-    zcurve_3d = gen_zcurve_3D(pow(256, 3))
-    zcurve_2d = gen_zcurve_2D(pow(256, 3))
-    print "Generating Curves Done."
 
     # Read Ras PDBs
     pdb_files = []
     for line in sorted(os.listdir('../data/Ras-Gene-PDB-Files')): pdb_files.append(line)
     if debug: print "Total PDB Entries:", len(pdb_files)
 
+    if stats: run_stats(pdb_files)
+
+    # Generate Hilbert Curves
+    print "Generating 3D Curve..."
+    zcurve_3d = gen_zcurve_3D(pow(div, 3))
+    print "Generating 2D Curve..."
+    zcurve_2d = gen_zcurve_2D(pow(div, 3))
+
     # Proces PDB Entries
+    #pdb_data = get_pdb_data('../data/Ras-Gene-PDB-Files/1n4p.pdb.gz')
+    #pdb_3d_model = gen_3d_pdb(pdb_data, (min_, max_, min_, max_, min_, max_), div)
+    #encoded_pdb_2d = encode_3d_pdb(pdb_3d_model, zcurve_3d, zcurve_2d)
     for pdb_file in pdb_files:
         pdb_data = get_pdb_data('../data/Ras-Gene-PDB-Files/'+ pdb_file)
-        pdb_3d_model = gen_3d_pdb(pdb_data, (-25, 25, -25, 25, -25, 25), 256)
+        pdb_3d_model = gen_3d_pdb(pdb_data, (min_, max_, min_, max_, min_, max_), div)
         encoded_pdb_2d = encode_3d_pdb(pdb_3d_model, zcurve_3d, zcurve_2d)
