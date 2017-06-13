@@ -13,8 +13,12 @@ def display_3d_array(array_3d, mask=None, curve=None):
 
     '''
     # Dislay 3D Rendering
-    xx, yy, zz = np.where(array_3d >= 1)
-    mlab.points3d(xx, yy, zz, mode="cube", color=(0, 1, 0), scale_factor=1)
+    for i in range(len(array_3d)):
+        if i == 1: c = (1, 0, 0)
+        elif i == 2: c = (0, 1, 0)
+        else: c = (0, 0, 1)
+        xx, yy, zz = np.where(array_3d[i] >= 1)
+        mlab.points3d(xx, yy, zz, mode="cube", color=c, scale_factor=1)
     mlab.show()
 
 def display_2d_array(array_2d):
