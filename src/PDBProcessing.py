@@ -2,11 +2,13 @@
 PDBProcesing.py
 Last Updated: 5/11/2017
 
-This script is used to parse and proces Protein Data Base entries.
+This script is used to parse and process Protein Data Base entries.
 
 '''
 import os
 import numpy as np
+import itertools as it
+import time
 
 # PDB File Parsing
 from prody import *
@@ -14,7 +16,7 @@ confProDy(verbosity='none')
 
 # Space Filling Curves
 from HilbertCurves import *
-from ZCurve import *
+from ZCurves import *
 
 # Visualization Tools
 from VisualizationTools import *
@@ -24,25 +26,39 @@ import vtk
 from scipy import ndimage, misc
 
 # Global Variables
-div = 64
-min_ = -70
-max_ = 70
-debug = True
+folder = '../data/Ras-Gene-PDB-Files/'
+dynamic_bounding = True
+sample_dim = 256
+range_ = [-50, 50]
+sel_channels = ['hydrophobic', 'polar', 'charged']
+
+# Verbose Settings
+debug = False
 visualize = False
 stats = False
+
+# Defined Rotations
+axis_list = [list(a) for a in it.product([0, 1], repeat=3)][1:]
+theta_list = [(np.pi*i)/4  for i in range(1,8)]
+
+# Hard Coded Knowledge
 residuals = [   'ALA', 'ARG', 'ASN', 'ASP', 'ASX', 'CYS', 'GLN', 'GLU', 'GLX',
                 'GLY', 'HIS', 'ILE', 'LEU', 'LYS', 'MET', 'PHE', 'PRO', 'SER',
                 'THR', 'TRP', 'TYR', 'UNK', 'VAL']
-elem_radii = {  'H' : 1.2, 'C' : 1.7, 'N' : 1.55, 'O' : 1.52, 'S' : 1.8, 'D' : 1.2}
+elem_radii = {  'H' : 1.2, 'C' : 1.7, 'N' : 1.55, 'O' : 1.52, 'S' : 1.8,
+                'D' : 1.2, 'F' : 1.47, 'CL' : 1.75, 'BR' : 1.85, 'P' : 1.8,
+                'I' : 1.98, '' : 0}
 
 def run_stats(pdb_files):
     '''
+    Method runs statistics on PDBs.
+
     '''
     if debug: print("Running Stats...")
     min_diameters = []
     for pdb_file in pdb_files:
         # Parse PDB File
-        protein = parsePDB('../data/Ras-Gene-PDB-Files/'+ pdb_file).select('protein')
+        protein = parsePDB(folder + pdb_file).select('protein')
 
         # Set Protein's Center Of Mas At Origin
         moveAtoms(protein, to=np.zeros(3))
@@ -51,49 +67,43 @@ def run_stats(pdb_files):
         atoms_coords = protein.getCoords()
         min_diameters.append(np.max(np.absolute(atoms_coords))*2)
 
-    display_min_diameter_dist(min_diameters)
+    display_hist(min_diameters)
 
-def get_pdb_data(pdb_file):
+def get_pdb_data(pdb_file, channels=[], rot=None):
     '''
-    Method parses residual, element, radii and coordinate information for each atom
-    present in the PDB file, and returns as numpy array.
+    Method parses residual, element, radii and coordinate information for each
+    atom present in the PDB file, and returns as numpy array.
 
     '''
     # Parse PDB File
     if debug: print "Parsing:", pdb_file
-    protein = parsePDB(pdb_file).select('protein')
+    molecule = parsePDB(pdb_file)
+    molecule = molecule.select('protein')
 
     # Set Protein's Center Of Mas At Origin
-    moveAtoms(protein, to=np.zeros(3))
+    moveAtoms(molecule, to=np.zeros(3))
 
     # Gather Atom Information
-    #atoms_residual = np.expand_dims(protein.getResnames(), 1)
-    #atoms_element = np.expand_dims(protein.getElements(), 1)
-    #atoms_radii = np.expand_dims([elem_radii[k] for k in protein.getElements()], 1)
-    atoms_coords = protein.getCoords()
-    #pdb_data = np.concatenate([atoms_element, atoms_residual, atoms_radii, atoms_coords], 1)
-
-    # Gather Hydrophobic Atom Information
-    hydrophobic = protein.select('hydrophobic')
-    hp_radii = np.expand_dims([elem_radii[k] for k in hydrophobic.getElements()], 1)
-    hp_coords = hydrophobic.getCoords()
-    hp_data = np.concatenate([hp_radii, hp_coords], 1)
-
-    # Gather Polar Atom Information
-    polar = protein.select('polar')
-    p_radii = np.expand_dims([elem_radii[k] for k in polar.getElements()], 1)
-    p_coords = polar.getCoords()
-    p_data = np.concatenate([p_radii, p_coords], 1)
-
-    # Gather Hydrophobic Atom Information
-    charged = protein.select('charged')
-    c_radii = np.expand_dims([elem_radii[k] for k in charged.getElements()], 1)
-    c_coords = charged.getCoords()
-    c_data = np.concatenate([c_radii, c_coords], 1)
-
-    pdb_data = [hp_data, p_data, c_data]
-
+    atoms_coords = molecule.getCoords()
     dia = np.max(np.absolute(atoms_coords))
+    pdb_data = []
+    for channel in channels:
+        channel_ = molecule.select(channel)
+        if channel_ is not None:
+            channel_radii = [elem_radii[k] for k in channel_.getElements()]
+            channel_radii = np.expand_dims(channel_radii, 1)
+            channel_coords = channel_.getCoords()
+
+            # Apply Rotation
+            if rot is not None:
+                temp_coords = []
+                for coord in channel_coords:
+                    temp_coords.append(np.dot(rot, coord))
+                channel_coords = np.array(temp_coords)
+
+            channel_data = np.concatenate([channel_radii, channel_coords], 1)
+        else: channel_data = None
+        pdb_data.append(channel_data)
 
     if debug: print "Minimum Diameter:", dia
 
@@ -104,7 +114,6 @@ def gen_3d_pdb(pdb_data, bounds, sample_dim):
     Method proceses PDB's atom data to create a matrix based 3d model.
 
     '''
-
     # Coordinate, Radius Information
     x = pdb_data[:,3].astype('float')
     y = pdb_data[:,2].astype('float')
@@ -138,10 +147,11 @@ def gen_3d_pdb(pdb_data, bounds, sample_dim):
     voxel_modeller.SetSampleDimensions(sample_dim, sample_dim, sample_dim)
     x0, x1, y0, y1, z0, z1 = bounds
     voxel_modeller.SetModelBounds(x0, x1, y0, y1, z0, z1)
-    voxel_modeller.SetMaximumDistance(0.1)
+    voxel_modeller.SetMaximumDistance(0.01)
     voxel_modeller.SetScalarTypeToInt()
     voxel_modeller.Update()
-    voxel_array = vtk.util.numpy_support.vtk_to_numpy(voxel_modeller.GetOutput().GetPointData().GetScalars())
+    voxel_output = voxel_modeller.GetOutput().GetPointData().GetScalars()
+    voxel_array = vtk.util.numpy_support.vtk_to_numpy(voxel_output)
     voxel_array = voxel_array.reshape((sample_dim, sample_dim, sample_dim))
 
     # Fill Interiors
@@ -168,7 +178,7 @@ def encode_3d_pdb(pdb_3d, curve_3d, curve_2d):
 
     if debug: print('Applying 1D to 2D Space Filling Curve...')
 
-    # Dimension Reconstruction Using Space Filling Curve to 2D
+    # Dimension Recasting Using Space Filling Curve to 2D
     s = int(np.sqrt(len(curve_2d)))
     pdb_2d = np.zeros([s,s])
     for i in range(len(pdb_1d)):
@@ -176,40 +186,91 @@ def encode_3d_pdb(pdb_3d, curve_3d, curve_2d):
 
     return pdb_2d
 
-if __name__ == '__main__':
+def rotation_matrix(axis, theta):
+    '''
+    Return the rotation matrix associated with counterclockwise rotation about
+    the given axis by theta radians.
+    '''
+    axis = np.asarray(axis)
+    axis = axis/np.sqrt(np.dot(axis, axis))
+    a = np.cos(theta/2.0)
+    b, c, d = -axis*np.sin(theta/2.0)
+    aa, bb, cc, dd = a*a, b*b, c*c, d*d
+    bc, ad, ac, ab, bd, cd = b*c, a*d, a*c, a*b, b*d, c*d
+    return np.array([[aa+bb-cc-dd, 2*(bc+ad), 2*(bd-ac)],
+                     [2*(bc-ad), aa+cc-bb-dd, 2*(cd+ab)],
+                     [2*(bd+ac), 2*(cd-ab), aa+dd-bb-cc]])
 
-    # Read Ras PDBs
+if __name__ == '__main__':
+    # Read PDBs
     pdb_files = []
-    for line in sorted(os.listdir('../data/Ras-Gene-PDB-Files')): pdb_files.append(line)
+    for line in sorted(os.listdir(folder)): pdb_files.append(line)
     if debug: print "Total PDB Entries:", len(pdb_files)
 
+    # Run Statistics on PDBs
     if stats: run_stats(pdb_files)
 
-    # Generate Hilbert Curves
+    # Generate Space Filling Curves
     if debug: print("Generating 3D Curve...")
-    zcurve_3d = gen_zcurve_3D(pow(div, 3))
+    zcurve_3d = gen_zcurve_3D(pow(sample_dim, 3))
     if debug: print("Generating 2D Curve...")
-    zcurve_2d = gen_zcurve_2D(pow(div, 3))
+    zcurve_2d = gen_zcurve_2D(pow(sample_dim, 3))
 
-    # Proces PDB Entries
+    # Generate Rotations
+    if debug: print("Generating Rotations...")
+    rotations = [None,]
+    for axis in axis_list:
+        for theta in theta_list:
+            rotation = rotation_matrix(axis, theta)
+            rotations.append(rotation)
+
+    # Process PDB Entries
     for pdb_file in pdb_files:
-        pdb_data, dia = get_pdb_data('../data/Ras-Gene-PDB-Files/'+ pdb_file)
-        encoded_pdb_2d = []
-        pdb_3d_model = []
-        for i in range(3):
-            if debug: print('Processing Channel ' + str(i) + '...')
-            pdb_data_res = pdb_data[i]
-            pdb_3d_res = gen_3d_pdb(pdb_data_res, (-dia, dia, -dia, dia, -dia, dia), div)
-            pdb_3d_model.append(pdb_3d_res)
-            encoded_res_2d = encode_3d_pdb(pdb_3d_res, zcurve_3d, zcurve_2d)
-            encoded_pdb_2d.append(encoded_res_2d)
-        encoded_pdb_2d =  np.transpose(np.array(encoded_pdb_2d), (2,1,0))
+        if debug: print('Processing ' + pdb_file + '...')
 
-        if debug: print("Saving Encoded PDB...")
-        #encoded_pdb_2d = ndimage.interpolation.zoom(encododed_pdb_2d, 0.125)
-        misc.imsave('../data/Processed-Ras-Gene-PDB-Files/'+pdb_file[:-7]+'.png', encoded_pdb_2d)
+        # Process Rotations
+        for j in range(len(rotations)):
+            if debug: start = time.time()
+            if debug: print('Processing Rotation ' + str(j) + '...')
+            rot = rotations[j]
+            pdb_data, dia = get_pdb_data(folder + pdb_file, channels=sel_channels, rot=rot)
+            dia += 2
 
-        if visualize:
-            print('Visualizing All Channels...')
-            display_3d_array(pdb_3d_model)
-            display_2d_array(encoded_pdb_2d)
+            # Process Channels
+            encoded_pdb_2d = []
+            pdb_3d_model = []
+            for i in range(len(pdb_data)):
+                if debug: print('Processing Channel ' + str(i) + '...')
+                pdb_data_res = pdb_data[i]
+                if pdb_data_res is None: continue
+
+                # Generate PDB Channel 3D Voxel Model
+                if dynamic_bounding:
+                    bounds = [pow(-1,i+1)*dia for i in range(6)]
+                    pdb_3d_res = gen_3d_pdb(pdb_data_res, bounds, sample_dim)
+                else:
+                    bounds = range_ + range_ + range_
+                    pdb_3d_res = gen_3d_pdb(pdb_data_res, bounds, sample_dim)
+                pdb_3d_model.append(pdb_3d_res)
+
+                # Encode 3D Model with Space Filling Curve
+                encoded_res_2d = encode_3d_pdb(pdb_3d_res, zcurve_3d, zcurve_2d)
+                encoded_pdb_2d.append(encoded_res_2d)
+
+            # Transpose Array
+            encoded_pdb_2d = np.array(encoded_pdb_2d)
+            encoded_pdb_2d = np.transpose(encoded_pdb_2d, (2,1,0))
+
+            # Save Encoded PDB to Numpy Array File.
+            if debug: print("Saving Encoded PDB...")
+            file_path = '../data/Processed-'+ folder[8:] + pdb_file.split('.')[0] + '_r'+ str(j) +'.png'
+            #np.savez_compressed(file_path, a=encoded_pdb_2d, b=rot)
+            misc.imsave(file_path, encoded_pdb_2d)
+
+            if debug: print "Processed in: ", time.time() - start, ' sec'
+
+            # Visualize PDB Data
+            if visualize:
+                print('Visualizing All Channels...')
+                display_3d_array(pdb_3d_model)
+                display_2d_array(encoded_pdb_2d)

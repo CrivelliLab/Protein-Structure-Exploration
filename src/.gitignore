@@ -1,4 +1,3 @@
 # Ignore PyCache Files
-*.txt
 __pycache__
 *.pyc

@@ -46,11 +46,13 @@ def display_spacefilling_dim():
             print "Space Filling 3D Curve:", int(cb), 'x', int(cb), 'x', int(cb), ', order-', np.log2(cb)
             print "Total Number of Pixels:", x
 
-def display_min_diameter_dist(min_diameters):
+def display_hist(data, title=""):
     '''
+    Method displays histogram of inputed data.
+
     '''
-    plt.hist(min_diameters)
-    plt.title("Minimum Diameters")
+    plt.hist(data)
+    plt.title(title)
     plt.show()
 
 if __name__ == '__main__':
