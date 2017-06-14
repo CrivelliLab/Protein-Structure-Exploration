@@ -6,8 +6,10 @@ Last Updated: 5/11/2017
 import numpy as np
 import matplotlib.pyplot as plt
 from mayavi import mlab
+from skimage.measure import compare_ssim
+from scipy import ndimage
 
-def display_3d_array(array_3d, mask=None, curve=None):
+def display_3d_array(array_3d):
     '''
     Method displays 3d array.
 
@@ -55,5 +57,19 @@ def display_hist(data, title=""):
     plt.title(title)
     plt.show()
 
+def display_image_similarty(image_1, image_2):
+    '''
+    '''
+    err = np.sum((image_1.astype("float") - image_2.astype("float")) ** 2)
+    err /= float(image_1.shape[0] * image_2.shape[1])
+    print "MSE:", err
+
+    sim = compare_ssim(image_1, image_2, multichannel=True)
+    print "Structural Simularity:", sim
+
 if __name__ == '__main__':
+    #image_1 = ndimage.imread('../data/Processed-Ras-Gene-PDB-Files/1aa9_r0.png')
+    #image_2 = ndimage.imread('../data/Processed-Ras-Gene-PDB-Files/1crr_r0.png')
+
+    #display_image_similarty(image_1, image_2)
     display_spacefilling_dim()
