@@ -17,9 +17,6 @@ import vtk
 import vtk.util.numpy_support as vtk_np
 from scipy import ndimage
 
-# Visualization Tools
-#from VisualizationTools import *
-
 # Hard Coded Knowledge
 residuals = [   'ALA', 'ARG', 'ASN', 'ASP', 'ASX', 'CYS', 'GLN', 'GLU', 'GLX',
                 'GLY', 'HIS', 'ILE', 'LEU', 'LYS', 'MET', 'PHE', 'PRO', 'SER',
@@ -28,25 +25,6 @@ elem_radii = {  'H' : 1.2, 'C' : 1.7, 'N' : 1.55, 'O' : 1.52, 'S' : 1.8,
                 'D' : 1.2, 'F' : 1.47, 'CL' : 1.75, 'BR' : 1.85, 'P' : 1.8,
                 'I' : 1.98, '' : 0}
 
-def pdb_stats(pdb_folder, debug=False):
-    '''
-    Method runs statistics on PDBs.
-
-    '''
-    if debug: print("Running Stats...")
-    min_diameters = []
-    for pdb_file in sorted(os.listdir(folder)):
-        # Parse PDB File
-        protein = parsePDB(pdb_folder + pdb_file).select('protein')
-
-        # Set Protein's Center Of Mas At Origin
-        moveAtoms(protein, to=np.zeros(3))
-
-        # Gather Atom Information
-        atoms_coords = protein.getCoords()
-        min_diameters.append(np.max(np.absolute(atoms_coords))*2)
-
-    #display_hist(min_diameters)
 
 def get_pdb_data(pdb_file, channels=[], rot=None, debug=False):
     '''
@@ -104,7 +82,19 @@ def gen_3d_stl(stl_file, rot, bounds, sample_dim, debug=False):
     voxel_modeller.SetInputConnection(reader.GetOutputPort())
     voxel_modeller.SetSampleDimensions(sample_dim, sample_dim, sample_dim)
     if bounds is None:
-        bounds = reader.GetOutput().getBounds()
+        bounds = reader.GetOutput().GetBounds()
+        x_range = bounds[1] - bounds[0]
+        y_range = bounds[3] - bounds[2]
+        z_range = bounds[5] - bounds[4]
+        max_rad = max([x_range, y_range, z_range])/2
+        temp = []
+        temp.append(bounds[0]+(x_range/2)-max_rad)
+        temp.append(bounds[1]-(x_range/2)+max_rad)
+        temp.append(bounds[2]+(y_range/2)-max_rad)
+        temp.append(bounds[3]-(y_range/2)+max_rad)
+        temp.append(bounds[4]+(z_range/2)-max_rad)
+        temp.append(bounds[5]-(z_range/2)+max_rad)
+        bounds = temp
     x0, x1, y0, y1, z0, z1 = bounds
     voxel_modeller.SetModelBounds(x0, x1, y0, y1, z0, z1)
     voxel_modeller.SetMaximumDistance(0.01)
@@ -123,7 +113,7 @@ def gen_3d_stl(stl_file, rot, bounds, sample_dim, debug=False):
     filled_voxel_array = np.array(filled_voxel_array)
 
     return filled_voxel_array
-    
+
 def gen_3d_pdb(pdb_data, bounds, sample_dim, debug=False):
     '''
     Method proceses PDB's atom data to create a matrix based 3d model.

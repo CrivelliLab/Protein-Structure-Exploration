@@ -4,10 +4,9 @@ Author: Rafael Zamora
 Updated: 6/14/17
 
 '''
-import os
+import os, sys, time
 import numpy as np
 import itertools as it
-import time
 
 # MPI
 from mpi4py import MPI
@@ -21,11 +20,9 @@ from ProcessingTools import *
 # Image Saving
 from scipy import misc
 
-# Visualization Tools
-#from VisualizationTools import *
-
 # Global Variables
-folder = '/home/rzamora/LBNL/Project/Protein-Structure-Prediction/data/Ras-Gene-PDB-Files/'
+folder = None
+dest_folder = None
 dynamic_bounding = True
 sample_dim = 64
 range_ = [-50, 50]
@@ -36,11 +33,26 @@ debug = True
 visualize = False
 stats = False
 
+# Visualization Tools
+if visualize: from VisualizationTools import *
+
 # Defined Rotations
 axis_list = [[0, 0, 1], [0, 1, 0], [1, 0, 0]]
 theta_list = [(np.pi*i)/4  for i in range(8)]
 
 if __name__ == '__main__':
+
+    # Directory Args
+    args = sys.argv[1:]
+    if len(args) >= 2:
+        folder = args[0]
+        dest_folder = args[1]
+        if folder[-1] != '/': folder += '/'
+        if dest_folder[-1] != '/': dest_folder += '/'
+    else:
+        print("Argument Error...")
+        exit()
+
     # MPI Init
     comm = MPI.COMM_WORLD
     rank = comm.Get_rank()
@@ -147,8 +159,11 @@ if __name__ == '__main__':
 
         # Save Encoded PDB to Numpy Array File.
         if debug: print("Saving Encoded PDB...")
-        foldername = folder.split('/')[-2]
-        file_path = folder[:-len(foldername)-1]+'Processed-'+ foldername +'/'+ pdb_file.split('.')[0] + '_'+ str(rot_id) +'.png'
+        if dest_folder:
+            file_path = dest_folder + pdb_file.split('.')[0] + '_'+ str(rot_id) +'.png'
+        else:
+            foldername = folder.split('/')[-2]
+            file_path = folder[:-len(foldername)-1]+'Processed-'+ foldername +'/'+ pdb_file.split('.')[0] + '_'+ str(rot_id) +'.png'
         #np.savez_compressed(file_path, a=encoded_pdb_2d, b=rot)
         misc.imsave(file_path, encoded_pdb_2d)
 
@@ -157,7 +172,7 @@ if __name__ == '__main__':
         # Visualize PDB Data
         if visualize:
             print('Visualizing All Channels...')
-            #display_3d_array(pdb_3d_model)
-            #display_2d_array(encoded_pdb_2d)
+            display_3d_array(pdb_3d_model)
+            display_2d_array(encoded_pdb_2d)
 
         if debug: exit()

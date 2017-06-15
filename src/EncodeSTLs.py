@@ -4,10 +4,9 @@ Author: Rafael Zamora
 Updated: 6/14/17
 
 '''
-import os
+import os, sys, time
 import numpy as np
 import itertools as it
-import time
 
 # MPI
 from mpi4py import MPI
@@ -21,24 +20,36 @@ from ProcessingTools import *
 # Image Saving
 from scipy import misc
 
-# Visualization Tools
-#from VisualizationTools import *
-
 # Global Variables
-folder = '/home/rzamora/LBNL/Project/Protein-Structure-Prediction/data/Decoy-STL-Files/'
+folder = None
+dest_folder = None
 dynamic_bounding = True
-sample_dim = 64
+sample_dim = 16
 range_ = [-50, 50]
 
 # Verbose Settings
 debug = True
-visualize = False
+visualize = True
+
+# Visualization Tools
+if visualize: from VisualizationTools import *
 
 # Defined Rotations
 axis_list = [[0, 0, 1], [0, 1, 0], [1, 0, 0]]
 theta_list = [(np.pi*i)/4  for i in range(8)]
 
 if __name__ == '__main__':
+    # Directory Args
+    args = sys.argv[1:]
+    if len(args) >= 2:
+        folder = args[0]
+        dest_folder = args[1]
+        if folder[-1] != '/': folder += '/'
+        if dest_folder[-1] != '/': dest_folder += '/'
+    else:
+        print("Argument Error...")
+        exit()
+
     # MPI Init
     comm = MPI.COMM_WORLD
     rank = comm.Get_rank()
@@ -83,9 +94,9 @@ if __name__ == '__main__':
 
         # Generate Entries
         entries = []
-        for i in range(len(curve_files)):
+        for i in range(len(stl_files)):
             for j in range(len(rotations)):
-                entries.append([curve_files[i], rotations[j], j])
+                entries.append([stl_files[i], rotations[j], j])
         entries = np.array(entries, dtype=object)
 
     else:
@@ -118,7 +129,7 @@ if __name__ == '__main__':
         stl_3d_model = []
         if debug: print('Processing STL...')
         if dynamic_bounding:
-            stl_3d_res = gen_3d_stl(stl_file, rot, None, sample_dim, debug=debug)
+            stl_3d_res = gen_3d_stl(folder+stl_file, rot, None, sample_dim, debug=debug)
         else:
             bounds = range_ + range_ + range_
             stl_3d_res = gen_3d_stl(stl_data_res, rot, bounds, sample_dim, debug=debug)
@@ -127,7 +138,7 @@ if __name__ == '__main__':
         stl_3d_model.append(stl_3d_res)
 
         # Encode 3D Model with Space Filling Curve
-        encoded_res_2d = encode_3d_stl(stl_3d_res, curve_3d, curve_2d, debug=debug)
+        encoded_res_2d = encode_3d_pdb(stl_3d_res, curve_3d, curve_2d, debug=debug)
         encoded_stl_2d.append(encoded_res_2d)
         encoded_stl_2d.append(encoded_res_2d)
         encoded_stl_2d.append(encoded_res_2d)
@@ -136,10 +147,13 @@ if __name__ == '__main__':
         encoded_stl_2d = np.array(encoded_stl_2d)
         encoded_stl_2d = np.transpose(encoded_stl_2d, (2,1,0))
 
-        # Save Encoded PDB to Numpy Array File.
+        # Save Encoded STL to Numpy Array File.
         if debug: print("Saving Encoded STL...")
-        foldername = folder.split('/')[-2]
-        file_path = folder[:-len(foldername)-1]+'Processed-'+ foldername +'/'+ stl_file.split('.')[0] + '_'+ str(rot_id) +'.png'
+        if dest_folder:
+            file_path = dest_folder + stl_file.split('.')[0] + '_'+ str(rot_id) +'.png'
+        else:
+            foldername = folder.split('/')[-2]
+            file_path = folder[:-len(foldername)-1]+'Processed-'+ foldername +'/'+ stl_file.split('.')[0] + '_'+ str(rot_id) +'.png'
         #np.savez_compressed(file_path, a=encoded_stl_2d, b=rot)
         misc.imsave(file_path, encoded_stl_2d)
 
@@ -148,7 +162,7 @@ if __name__ == '__main__':
         # Visualize PDB Data
         if visualize:
             print('Visualizing All Channels...')
-            #display_3d_array(stl_3d_model)
-            #display_2d_array(encoded_stl_2d)
+            display_3d_array(stl_3d_model)
+            display_2d_array(encoded_stl_2d)
 
         if debug: exit()
