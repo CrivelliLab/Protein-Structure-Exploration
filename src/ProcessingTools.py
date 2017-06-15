@@ -14,6 +14,7 @@ confProDy(verbosity='none')
 
 # 3D Modeling and Rendering
 import vtk
+import vtk.util.numpy_support as vtk_np
 from scipy import ndimage
 
 # Visualization Tools
@@ -88,6 +89,41 @@ def get_pdb_data(pdb_file, channels=[], rot=None, debug=False):
 
     return pdb_data, dia
 
+def gen_3d_stl(stl_file, rot, bounds, sample_dim, debug=False):
+    '''
+    '''
+    # Generate Mesh For Protein
+    if debug: print("Generating Mesh...")
+    reader = vtk.vtkSTLReader()
+    reader.SetFileName(stl_file)
+    reader.Update()
+
+    # Voxelize Mesh
+    if debug: print("Voxelizing Mesh...")
+    voxel_modeller = vtk.vtkVoxelModeller()
+    voxel_modeller.SetInputConnection(reader.GetOutputPort())
+    voxel_modeller.SetSampleDimensions(sample_dim, sample_dim, sample_dim)
+    if bounds is None:
+        bounds = reader.GetOutput().getBounds()
+    x0, x1, y0, y1, z0, z1 = bounds
+    voxel_modeller.SetModelBounds(x0, x1, y0, y1, z0, z1)
+    voxel_modeller.SetMaximumDistance(0.01)
+    voxel_modeller.SetScalarTypeToInt()
+    voxel_modeller.Update()
+    voxel_output = voxel_modeller.GetOutput().GetPointData().GetScalars()
+    voxel_array = vtk_np.vtk_to_numpy(voxel_output)
+    voxel_array = voxel_array.reshape((sample_dim, sample_dim, sample_dim))
+
+    # Fill Interiors
+    if debug: print("Filling Interiors...")
+    filled_voxel_array = []
+    for sect in voxel_array:
+        filled_sect = ndimage.morphology.binary_fill_holes(sect).astype('int')
+        filled_voxel_array.append(filled_sect)
+    filled_voxel_array = np.array(filled_voxel_array)
+
+    return filled_voxel_array
+    
 def gen_3d_pdb(pdb_data, bounds, sample_dim, debug=False):
     '''
     Method proceses PDB's atom data to create a matrix based 3d model.
@@ -130,7 +166,7 @@ def gen_3d_pdb(pdb_data, bounds, sample_dim, debug=False):
     voxel_modeller.SetScalarTypeToInt()
     voxel_modeller.Update()
     voxel_output = voxel_modeller.GetOutput().GetPointData().GetScalars()
-    voxel_array = vtk.util.numpy_support.vtk_to_numpy(voxel_output)
+    voxel_array = vtk_np.vtk_to_numpy(voxel_output)
     voxel_array = voxel_array.reshape((sample_dim, sample_dim, sample_dim))
 
     # Fill Interiors
