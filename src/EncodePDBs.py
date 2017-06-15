@@ -22,7 +22,7 @@ from ProcessingTools import *
 from scipy import misc
 
 # Visualization Tools
-from VisualizationTools import *
+#from VisualizationTools import *
 
 # Global Variables
 folder = '/home/rzamora/LBNL/Project/Protein-Structure-Prediction/data/Ras-Gene-PDB-Files/'
@@ -157,7 +157,7 @@ if __name__ == '__main__':
         # Visualize PDB Data
         if visualize:
             print('Visualizing All Channels...')
-            display_3d_array(pdb_3d_model)
-            display_2d_array(encoded_pdb_2d)
+            #display_3d_array(pdb_3d_model)
+            #display_2d_array(encoded_pdb_2d)
 
         if debug: exit()

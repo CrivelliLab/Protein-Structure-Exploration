@@ -17,7 +17,7 @@ import vtk
 from scipy import ndimage
 
 # Visualization Tools
-from VisualizationTools import *
+#from VisualizationTools import *
 
 # Hard Coded Knowledge
 residuals = [   'ALA', 'ARG', 'ASN', 'ASP', 'ASX', 'CYS', 'GLN', 'GLU', 'GLX',
@@ -45,7 +45,7 @@ def pdb_stats(pdb_folder, debug=False):
         atoms_coords = protein.getCoords()
         min_diameters.append(np.max(np.absolute(atoms_coords))*2)
 
-    display_hist(min_diameters)
+    #display_hist(min_diameters)
 
 def get_pdb_data(pdb_file, channels=[], rot=None, debug=False):
     '''
