@@ -1,6 +1,6 @@
 '''
 VisualizationTools.py
-Last Updated: 5/11/2017
+Last Updated: 6/16/2017
 
 '''
 import numpy as np
@@ -14,13 +14,52 @@ def display_3d_array(array_3d):
     Method displays 3d array.
 
     '''
-    # Dislay 3D Rendering
+    # Dislay 3D Voxel Rendering
     for i in range(len(array_3d)):
         if i == 1: c = (1, 0, 0)
         elif i == 2: c = (0, 1, 0)
         else: c = (0, 0, 1)
         xx, yy, zz = np.where(array_3d[i] >= 1)
-        mlab.points3d(xx, yy, zz, mode="cube", color=c, scale_factor=1)
+        mlab.points3d(xx, yy, zz, mode="cube", color=c)
+    mlab.show()
+
+def display_3d_mesh(coords_3d):
+    '''
+    '''
+    # Display 3D Mesh Rendering
+    for i in range(len(coords_3d)):
+        print(i)
+        if i == 1: c = (1, 0, 0)
+        elif i == 2: c = (0, 1, 0)
+        else: c = (0, 0, 1)
+        # Coordinate, Radius Information
+        xx = coords_3d[i][:,3].astype('float')
+        yy = coords_3d[i][:,2].astype('float')
+        zz = coords_3d[i][:,1].astype('float')
+        ss = coords_3d[i][:,0].astype('float')
+
+        phi, theta = np.mgrid[0:np.pi:11j, 0:2*np.pi:11j]
+        for j in range(len(xx)):
+            x = (np.sin(phi) * np.cos(theta)) * ss[j] + xx[j]
+            y = (np.sin(phi) * np.sin(theta)) * ss[j] + yy[j]
+            z = (np.cos(phi)) * ss[j] + zz[j]
+            mlab.mesh(x, y, z)
+    mlab.show()
+
+def display_3d_points(coords_3d):
+    '''
+    '''
+    # Display 3D Mesh Rendering
+    for i in range(len(coords_3d)):
+        if i == 1: c = (1, 0, 0)
+        elif i == 2: c = (0, 1, 0)
+        else: c = (0, 0, 1)
+        # Coordinate, Radius Information
+        x = coords_3d[i][:,3].astype('float')
+        y = coords_3d[i][:,2].astype('float')
+        z = coords_3d[i][:,1].astype('float')
+
+        mlab.points3d(x, y, z, mode="sphere", color=c, scale_factor=0.1)
     mlab.show()
 
 def display_2d_array(array_2d):

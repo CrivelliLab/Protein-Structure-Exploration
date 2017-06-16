@@ -1,8 +1,6 @@
 '''
 ProcessingTools.py
-Last Updated: 5/11/2017
-
-This script is used to parse and process Protein Data Base entries.
+Last Updated: 6/16/2017
 
 '''
 import os
@@ -63,7 +61,7 @@ def get_pdb_data(pdb_file, channels=[], rot=None, debug=False):
         else: channel_data = None
         pdb_data.append(channel_data)
 
-    if debug: print "Minimum Diameter:", dia
+    if debug: print "Minimum Diameter:", dia*2
 
     return pdb_data, dia
 

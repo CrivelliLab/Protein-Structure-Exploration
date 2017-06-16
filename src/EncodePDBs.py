@@ -1,7 +1,7 @@
 '''
 EncodePDB.py
 Author: Rafael Zamora
-Updated: 6/14/17
+Updated: 6/16/17
 
 '''
 import os, sys, time
@@ -31,7 +31,7 @@ sel_channels = ['hydrophobic', 'polar', 'charged']
 # Verbose Settings
 debug = True
 visualize = False
-stats = False
+debug_pdb = '1n4p.pdb.gz'
 
 # Visualization Tools
 if visualize: from VisualizationTools import *
@@ -49,6 +49,9 @@ if __name__ == '__main__':
         dest_folder = args[1]
         if folder[-1] != '/': folder += '/'
         if dest_folder[-1] != '/': dest_folder += '/'
+    elif len(args) == 1:
+        folder = args[0]
+        if folder[-1] != '/': folder += '/'
     else:
         print("Argument Error...")
         exit()
@@ -70,9 +73,6 @@ if __name__ == '__main__':
         if debug:
             print "Encoding PDBs in:", folder
             print "Total PDB Entries:", len(pdb_files)
-
-        # Run Statistics on PDBs
-        if stats: pdb_stats(pdb_folder)
 
         # Generate Space Filling Curves
         if debug: print("Generating 3D Curve...")
@@ -124,9 +124,11 @@ if __name__ == '__main__':
 
     # Process Rotations
     for i in range(len(entries)):
-        if debug: start = time.time()
-        if debug: print('Processing Entry ' + str(i) + '...')
         pdb_file = entries[i][0]
+        if debug:
+            start = time.time()
+            print('Processing Entry ' + str(i) + '...')
+            if debug_pdb: pdb_file = debug_pdb
         rot = entries[i][1]
         rot_id = entries[i][2]
         pdb_data, dia = get_pdb_data(folder + pdb_file, channels=sel_channels, rot=rot, debug=debug)
@@ -172,6 +174,8 @@ if __name__ == '__main__':
         # Visualize PDB Data
         if visualize:
             print('Visualizing All Channels...')
+            display_3d_points(pdb_data)
+            #display_3d_mesh(pdb_data)
             display_3d_array(pdb_3d_model)
             display_2d_array(encoded_pdb_2d)
 
