@@ -62,49 +62,52 @@ if __name__ == '__main__':
         print "Rank:", rank
         print "Number of Cores:", cores
 
+    '''
     # Root Node Data Init
     if rank == 0:
-        # Read PDBs
-        pdb_files = []
-        for line in sorted(os.listdir(folder)): pdb_files.append(line)
-        if debug:
-            print "Encoding PDBs in:", folder
-            print "Total PDB Entries:", len(pdb_files)
+    '''
+    # Read PDBs
+    pdb_files = []
+    for line in sorted(os.listdir(folder)): pdb_files.append(line)
+    if debug:
+        print "Encoding PDBs in:", folder
+        print "Total PDB Entries:", len(pdb_files)
 
-        # Run Statistics on PDBs
-        if stats: pdb_stats(pdb_folder)
+    # Run Statistics on PDBs
+    if stats: pdb_stats(pdb_folder)
 
-        # Generate Space Filling Curves
-        if debug: print("Generating 3D Curve...")
-        curve_3d = gen_zcurve_3D(pow(sample_dim, 3))
-        if debug: print("Generating 2D Curve...")
-        curve_2d = gen_zcurve_2D(pow(sample_dim, 3))
+    # Generate Space Filling Curves
+    if debug: print("Generating 3D Curve...")
+    curve_3d = gen_zcurve_3D(pow(sample_dim, 3))
+    if debug: print("Generating 2D Curve...")
+    curve_2d = gen_zcurve_2D(pow(sample_dim, 3))
 
-        # Generate Rotations
-        if debug: print("Generating Rotations...")
-        base_rotations = []
-        for axis in axis_list:
-            base_rotations.append([])
-            for theta in theta_list:
-                rotation = rotation_matrix(axis, theta)
-                base_rotations[-1].append(rotation)
-        base_indices = [[i for i in range(len(base_rotations[j]))] for j in range(len(base_rotations))]
-        indices = list(it.product(*base_indices))
-        rotations = []
-        for index in indices:
-            comb_rotation = []
-            for i in range(len(base_rotations)):
-                comb_rotation.append(base_rotations[i][index[i]])
-            rotations.append(comb_rotation)
-        rotations = np.array(rotations)
+    # Generate Rotations
+    if debug: print("Generating Rotations...")
+    base_rotations = []
+    for axis in axis_list:
+        base_rotations.append([])
+        for theta in theta_list:
+            rotation = rotation_matrix(axis, theta)
+            base_rotations[-1].append(rotation)
+    base_indices = [[i for i in range(len(base_rotations[j]))] for j in range(len(base_rotations))]
+    indices = list(it.product(*base_indices))
+    rotations = []
+    for index in indices:
+        comb_rotation = []
+        for i in range(len(base_rotations)):
+            comb_rotation.append(base_rotations[i][index[i]])
+        rotations.append(comb_rotation)
+    rotations = np.array(rotations)
 
-        # Generate Entries
-        entries = []
-        for i in range(len(pdb_files)):
-            for j in range(len(rotations)):
-                entries.append([pdb_files[i], rotations[j], j])
-        entries = np.array(entries, dtype=object)
+    # Generate Entries
+    entries = []
+    for i in range(len(pdb_files)):
+        for j in range(len(rotations)):
+            entries.append([pdb_files[i], rotations[j], j])
+    entries = np.array(entries, dtype=object)
 
+    '''
     else:
         curve_3d = None
         curve_2d = None
@@ -115,7 +118,7 @@ if __name__ == '__main__':
     curve_3d = comm.bcast(curve_3d, root=0)
     curve_2d = comm.bcast(curve_2d, root=0)
     entries = comm.bcast(entries, root=0)
-
+    '''
     # MPI Cut Entries Per Node
     entries = np.array_split(entries, cores)[rank]
     if debug:
