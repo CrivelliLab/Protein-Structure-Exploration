@@ -25,13 +25,13 @@ folder = None
 dest_folder = None
 dynamic_bounding = True
 sample_dim = 64
-range_ = [-50, 50]
+range_ = [-100, 100]
 sel_channels = ['hydrophobic', 'polar', 'charged']
 
 # Verbose Settings
 debug = True
-visualize = False
-debug_pdb = '1n4p.pdb.gz'
+visualize = True
+debug_pdb = '1aa9.pdb.gz'
 
 # Visualization Tools
 if visualize: from VisualizationTools import *
@@ -145,6 +145,7 @@ if __name__ == '__main__':
             # Generate PDB Channel 3D Voxel Model
             if dynamic_bounding:
                 bounds = [pow(-1,i+1)*dia for i in range(6)]
+                #pdb_3d_res = dep_gen_3d_model(pdb_data_res, dia, -dia, sample_dim)
                 pdb_3d_res = gen_3d_pdb(pdb_data_res, bounds, sample_dim, debug=debug)
             else:
                 bounds = range_ + range_ + range_
@@ -174,7 +175,7 @@ if __name__ == '__main__':
         # Visualize PDB Data
         if visualize:
             print('Visualizing All Channels...')
-            display_3d_points(pdb_data)
+            #display_3d_points(pdb_data)
             #display_3d_mesh(pdb_data)
             display_3d_array(pdb_3d_model)
             display_2d_array(encoded_pdb_2d)

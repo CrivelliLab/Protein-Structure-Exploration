@@ -95,7 +95,7 @@ def gen_3d_stl(stl_file, rot, bounds, sample_dim, debug=False):
         bounds = temp
     x0, x1, y0, y1, z0, z1 = bounds
     voxel_modeller.SetModelBounds(x0, x1, y0, y1, z0, z1)
-    voxel_modeller.SetMaximumDistance(0.01)
+    voxel_modeller.SetMaximumDistance((x1- x0)/sample_dim)
     voxel_modeller.SetScalarTypeToInt()
     voxel_modeller.Update()
     voxel_output = voxel_modeller.GetOutput().GetPointData().GetScalars()
@@ -165,7 +165,36 @@ def gen_3d_pdb(pdb_data, bounds, sample_dim, debug=False):
         filled_voxel_array.append(filled_sect)
     filled_voxel_array = np.array(filled_voxel_array)
 
-    return filled_voxel_array
+    return voxel_array
+
+def dep_gen_3d_model(pdb_data, max_, min_, res_):
+    '''
+    Method processes PDB's atom data to create a matrix based 3d model.
+    '''
+    pdb_data = pdb_data[:,1:].astype('float')
+
+    # Bin x, y, z Coordinates
+    range_ = max_ - min_
+    res_ = range_ / res_
+    bins = [(i*res_) + min_ for i in range(int(range_/res_)+1)]
+    x_binned = np.digitize(pdb_data[:, 0], bins) - 1
+    y_binned = np.digitize(pdb_data[:, 1], bins) - 1
+    z_binned = np.digitize(pdb_data[:, 2], bins) - 1
+    indices = np.array([x_binned, y_binned, z_binned])
+    indices = np.transpose(indices, (1, 0))
+
+    # Get Unique Indices And Counts
+    u_indices = {}
+    for ind in indices:
+        ind_ = tuple(ind.tolist())
+        if ind_ in u_indices: u_indices[ind_] += 1
+        else: u_indices[ind_] = 1
+
+    # Generate 3D Array
+    pdb_3d = np.zeros([int(range_/res_)+1 for i in range(3)])
+    for ind in u_indices.keys(): pdb_3d[ind[0], ind[1], ind[2]] = u_indices[ind]
+
+    return pdb_3d
 
 def encode_3d_pdb(pdb_3d, curve_3d, curve_2d, debug=False):
     '''
