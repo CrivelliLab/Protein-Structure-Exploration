@@ -1,0 +1,33 @@
+Protein Structure PDB To Encoded 2D Image Work Flow:
+
+1. GenerateCurves.py
+      -> Generate 2D and 3D curves
+  Output:
+      - *_3d.npz
+      - *_2d.npz
+
+2. ProcessPDBs.py
+      -> Parse PDB coordinate data
+      -> Calculate rotation matricies
+      -> Generate rotation permutations
+      -> Calculate applied rotations
+      -> Save processed data file
+  Output:
+      - processed_pbs.npz
+      - curve_3d.npz
+      - curve_2d.npz
+
+3. EncodePDBs.py
+      -> Read processed data file
+      -> For each entry:
+        -> For each channel:
+          -> Generate mesh from coordinate data
+          -> Voxelize mesh
+          -> 3D to 1D dimension reduction using space filling curve
+          -> 1D to 2D dimension recasting using space filling curve
+        -> Append channels
+        -> Save encoded 2D image
+  Output:
+      - images_folder/*.png
+
+Network Training Work Flow:

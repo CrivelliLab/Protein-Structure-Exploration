@@ -38,6 +38,62 @@ if visualize: from VisualizationTools import *
 axis_list = [[0, 0, 1], [0, 1, 0], [1, 0, 0]]
 theta_list = [(np.pi*i)/4  for i in range(8)]
 
+import os
+import numpy as np
+
+# 3D Modeling and Rendering
+import vtk
+import vtk.util.numpy_support as vtk_np
+from scipy import ndimage
+
+def gen_3d_stl(stl_file, rot, bounds, sample_dim, debug=False):
+    '''
+    '''
+    # Generate Mesh For Protein
+    if debug: print("Generating Mesh...")
+    reader = vtk.vtkSTLReader()
+    reader.SetFileName(stl_file)
+    reader.Update()
+
+    # Voxelize Mesh
+    if debug: print("Voxelizing Mesh...")
+    voxel_modeller = vtk.vtkVoxelModeller()
+    voxel_modeller.SetInputConnection(reader.GetOutputPort())
+    voxel_modeller.SetSampleDimensions(sample_dim, sample_dim, sample_dim)
+    if bounds is None:
+        bounds = reader.GetOutput().GetBounds()
+        x_range = bounds[1] - bounds[0]
+        y_range = bounds[3] - bounds[2]
+        z_range = bounds[5] - bounds[4]
+        max_rad = max([x_range, y_range, z_range])/2
+        temp = []
+        temp.append(bounds[0]+(x_range/2)-max_rad)
+        temp.append(bounds[1]-(x_range/2)+max_rad)
+        temp.append(bounds[2]+(y_range/2)-max_rad)
+        temp.append(bounds[3]-(y_range/2)+max_rad)
+        temp.append(bounds[4]+(z_range/2)-max_rad)
+        temp.append(bounds[5]-(z_range/2)+max_rad)
+        bounds = temp
+    x0, x1, y0, y1, z0, z1 = bounds
+    voxel_modeller.SetModelBounds(x0, x1, y0, y1, z0, z1)
+    voxel_modeller.SetMaximumDistance((x1- x0)/sample_dim)
+    voxel_modeller.SetScalarTypeToInt()
+    voxel_modeller.Update()
+    voxel_output = voxel_modeller.GetOutput().GetPointData().GetScalars()
+    voxel_array = vtk_np.vtk_to_numpy(voxel_output)
+    voxel_array = voxel_array.reshape((sample_dim, sample_dim, sample_dim))
+
+    # Fill Interiors
+    if debug: print("Filling Interiors...")
+    filled_voxel_array = []
+    for sect in voxel_array:
+        filled_sect = ndimage.morphology.binary_fill_holes(sect).astype('int')
+        filled_voxel_array.append(filled_sect)
+    filled_voxel_array = np.array(filled_voxel_array)
+
+    return filled_voxel_array
+
+
 if __name__ == '__main__':
     # Directory Args
     args = sys.argv[1:]
