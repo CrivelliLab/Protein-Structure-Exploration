@@ -232,7 +232,6 @@ if __name__ == '__main__':
     if profiling: start = time.time()
     # Process Rotations
     for i in range(5):
-
         if debug: print "Processing", entries[i][0], "Rotation", entries[i][1]
         pdb_data = entries[i][2]
         if dynamic_bounding:
@@ -244,14 +243,14 @@ if __name__ == '__main__':
         # Process Channels
         encoded_pdb_2d = []
         pdb_3d_model = []
-        for i in range(len(pdb_data)):
-            if debug: print('Processing Channel ' + str(i) + '...')
-            pdb_data_res = pdb_data[i]
+        for j in range(len(pdb_data)):
+            if debug: print('Processing Channel ' + str(j) + '...')
+            pdb_data_res = pdb_data[j]
             if pdb_data_res is None: continue
 
             # Generate PDB Channel 3D Voxel Model
             if dynamic_bounding:
-                bounds = [pow(-1,i+1)*dia for i in range(6)]
+                bounds = [pow(-1,l+1)*dia for l in range(6)]
                 #pdb_3d_res = gen_skeleton_voxels(pdb_data_res, dia, -dia, sample_dim)
                 pdb_3d_res = gen_mesh_voxels(pdb_data_res, bounds, sample_dim, debug=debug)
             else:
