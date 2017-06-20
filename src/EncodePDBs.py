@@ -15,7 +15,7 @@ from mpi4py import MPI
 # 3D Modeling and Rendering
 import vtk
 import vtk.util.numpy_support as vtk_np
-from tvtk.api import tvtk
+#from tvtk.api import tvtk
 
 # Global Variables
 processed_file = '../data/Processed-Ras-Gene-PDB-Files.npy'
@@ -28,7 +28,7 @@ range_ = [-100, 100]
 # Verbose Settings
 debug = True
 visualize = False
-profiling = True
+profiling = False
 
 def gen_mesh_voxels(pdb_data, bounds, sample_dim, debug=False):
     '''
@@ -217,7 +217,6 @@ if __name__ == '__main__':
     # MPI Cut Entries Per Node
     if debug: print "Loading Processed Entries..."
     entries = np.load(processed_file)
-    np.random.shuffle(entries)
     entries = np.array_split(entries, cores)[rank]
     if debug:print "MPI Core", rank, ", Processing", len(entries), "Entries"
 
@@ -225,13 +224,13 @@ if __name__ == '__main__':
     if debug: print("Loading Curves...")
     curve_3d = np.load(curve_3d)['a']
     curve_2d = np.load(curve_2d)['a']
-    sample_dim = int(np.cbrt(len(curve_2d)))
+    sample_dim = 64
 
     if profiling: print time.time() - start, "secs..."
 
     if profiling: start = time.time()
     # Process Rotations
-    for i in range(5):
+    for i in range(len(entries)):
         if debug: print "Processing", entries[i][0], "Rotation", entries[i][1]
         pdb_data = entries[i][2]
         if dynamic_bounding:
@@ -276,6 +275,6 @@ if __name__ == '__main__':
             print('Visualizing All Channels...')
             display_2d_array(encoded_pdb_2d)
 
-        #if debug: exit()
+        if debug: exit()
 
     if profiling: print time.time() - start, "secs..."
