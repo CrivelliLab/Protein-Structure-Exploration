@@ -4,11 +4,15 @@ Updated: 6/19/17
 
 '''
 import numpy as np
+from scipy import reshape, sqrt, identity
+from numpy.matlib import repmat, repeat
+import matplotlib.pyplot as plt
+from skimage.measure import structural_similarity as ssim
 
 # Global Variables
 curves_folder = '../data/Curves/'
-gen_3d = 'zcurve_3D'
-gen_2d = 'zcurve_2D'
+gen_3d = 'hilbert_3D'
+gen_2d = 'hilbert_2D'
 order_3d = 6
 order_2d = 9
 
@@ -169,6 +173,23 @@ def display_spacefilling_dim():
             print "Space Filling 3D Curve:", int(cb), 'x', int(cb), 'x', int(cb), ', order-', np.log2(cb)
             print "Total Number of Pixels:", x, '\n'
 
+
+def calc_dist_matrix(points):
+    numPoints = len(points)
+    distMat = sqrt(np.sum((repmat(points, numPoints, 1) - repeat(points, numPoints, axis=0))**2, axis=1))
+    return distMat.reshape((numPoints,numPoints))
+
+def mse(imageA, imageB):
+	# the 'Mean Squared Error' between the two images is the
+	# sum of the squared difference between the two images;
+	# NOTE: the two images must have the same dimension
+	err = np.sum((imageA.astype("float") - imageB.astype("float")) ** 2)
+	err /= float(imageA.shape[0] * imageA.shape[1])
+
+	# return the MSE, the lower the error, the more "similar"
+	# the two images are
+	return err
+
 if __name__ == '__main__':
 
     # Display Possible Order Pairings
@@ -177,8 +198,23 @@ if __name__ == '__main__':
     # Generate Space Filling Curves
     if debug: print("Generating 3D Curve...")
     curve_3d = globals()[gen_3d](order_3d)
-    np.savez_compressed(curves_folder+gen_3d+str(order_3d), a=curve_3d)
+    np.save(curves_folder+gen_3d+str(order_3d), curve_3d)
 
     if debug: print("Generating 2D Curve...")
     curve_2d = globals()[gen_2d](order_2d)
-    np.savez_compressed(curves_folder+gen_2d+str(order_2d), a=curve_2d)
+    np.save(curves_folder+gen_2d+str(order_2d), curve_2d)
+
+    # Distance Comparison
+    c3d_dist_matrix = calc_dist_matrix(curve_3d)
+    c3d_dist_matrix = c3d_dist_matrix / np.amax(c3d_dist_matrix)
+    plt.imshow(c3d_dist_matrix, clim=(0.0, 1.0))
+    plt.colorbar()
+    plt.show()
+
+    c2d_dist_matrix = calc_dist_matrix(curve_2d)
+    c2d_dist_matrix = c2d_dist_matrix / np.amax(c2d_dist_matrix)
+    plt.imshow(c2d_dist_matrix, clim=(0.0, 1.0))
+    plt.colorbar()
+    plt.show()
+
+    print 'MSE Between Curves:', mse(c3d_dist_matrix, c2d_dist_matrix)

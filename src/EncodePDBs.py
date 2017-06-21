@@ -18,15 +18,16 @@ import vtk.util.numpy_support as vtk_np
 #from tvtk.api import tvtk
 
 # Global Variables
-processed_file = '../data/Processed-Ras-Gene-PDB-Files.npy'
-encoded_folder = '../data/Encoded-Ras-Gene-PDB-Files/'
+processed_file = '../data/Processed-WD40-Gene-PDB-Files.npy'
+encoded_folder = '../data/EWS64/'
 dynamic_bounding = True
-curve_3d = '../data/Curves/zcurve_3D6.npz'
-curve_2d = '../data/Curves/zcurve_2D9.npz'
+skeleton = True
+curve_3d = '../data/Curves/zcurve_3D4.npy'
+curve_2d = '../data/Curves/zcurve_2D6.npy'
 range_ = [-100, 100]
 
 # Verbose Settings
-debug = True
+debug = False
 visualize = False
 profiling = False
 
@@ -222,16 +223,16 @@ if __name__ == '__main__':
 
     # Load Curves
     if debug: print("Loading Curves...")
-    curve_3d = np.load(curve_3d)['a']
-    curve_2d = np.load(curve_2d)['a']
-    sample_dim = 64
+    curve_3d = np.load(curve_3d)
+    curve_2d = np.load(curve_2d)
+    sample_dim = int(np.cbrt(len(curve_2d)))
 
     if profiling: print time.time() - start, "secs..."
 
-    if profiling: start = time.time()
     # Process Rotations
     for i in range(len(entries)):
-        if debug: print "Processing", entries[i][0], "Rotation", entries[i][1]
+        if profiling: start = time.time()
+        print "Processing", entries[i][0], "Rotation", entries[i][1]
         pdb_data = entries[i][2]
         if dynamic_bounding:
             dia = 0
@@ -250,11 +251,12 @@ if __name__ == '__main__':
             # Generate PDB Channel 3D Voxel Model
             if dynamic_bounding:
                 bounds = [pow(-1,l+1)*dia for l in range(6)]
-                #pdb_3d_res = gen_skeleton_voxels(pdb_data_res, dia, -dia, sample_dim)
-                pdb_3d_res = gen_mesh_voxels(pdb_data_res, bounds, sample_dim, debug=debug)
+                if skeleton: pdb_3d_res = gen_skeleton_voxels(pdb_data_res, dia, -dia, sample_dim)
+                else: pdb_3d_res = gen_mesh_voxels(pdb_data_res, bounds, sample_dim, debug=debug)
             else:
                 bounds = range_ + range_ + range_
-                pdb_3d_res = gen_mesh_voxels(pdb_data_res, bounds, sample_dim, debug=debug)
+                if skeleton: pdb_3d_res = gen_skeleton_voxels(pdb_data_res, range_[0], range_[1], sample_dim)
+                else: pdb_3d_res = gen_mesh_voxels(pdb_data_res, bounds, sample_dim, debug=debug)
             pdb_3d_model.append(pdb_3d_res)
 
             # Encode 3D Model with Space Filling Curve
@@ -269,6 +271,7 @@ if __name__ == '__main__':
         #np.savez_compressed(file_path, a=encoded_pdb_2d, b=rot)
         misc.imsave(file_path, encoded_pdb_2d)
 
+        if profiling: print time.time() - start, "secs..."
 
         # Visualize PDB Data
         if visualize:
@@ -276,5 +279,3 @@ if __name__ == '__main__':
             display_2d_array(encoded_pdb_2d)
 
         if debug: exit()
-
-    if profiling: print time.time() - start, "secs..."

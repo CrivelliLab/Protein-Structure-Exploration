@@ -12,10 +12,9 @@ from prody import *
 confProDy(verbosity='none')
 
 # Global Variables
-pdb_folder = '../data/Ras-Gene-PDB-Files/'
+pdb_folder = '../data/WD40-Gene-PDB-Files/'
 processed_file = '../data/Processed-' + pdb_folder.split('/')[-2]
 sel_channels = ['hydrophobic', 'polar', 'charged']
-nb_sects = 1000
 
 # Verbose Settings
 debug = True

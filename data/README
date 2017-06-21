@@ -1,0 +1,25 @@
+Folder Contents and Descriptions:
+
+-> data
+
+  -> Curves
+      - zcurve_2D9.npz : 2D Z-order curve of order 9 array file.
+      - zcurve_3D6.npz : 3D Z-order curve of order 6 array file.
+
+  -> Decoy-STL-Files
+      - *.stl : STL files of 3D objects created in CAD software.
+
+  -> Ras-Gene-PDB-Files
+      - *.pdb.gz : PDB files of real proteins belonging to the Ras family.
+
+  -> WD40-Gene-PDB-Files
+      - *.pdb.gz : PDB files of real proteins belonging to the WD40 family.
+
+  -> Encoded-WD40-Gene-PDB-Files
+      - *.png : 2D encoded images of WD40 proteins.
+
+  - Processed-Ras-Gene-PDB-Files.npy : Processed PDB data of Ras protein family
+  with all rotation permutations.
+
+  - pdb-ids-subsets.tar.gz : Zip file of different pdb id sets including those
+  for the Ras and WD40 protein families.
