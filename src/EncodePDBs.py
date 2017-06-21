@@ -22,8 +22,8 @@ processed_file = '../data/Processed-WD40-Gene-PDB-Files.npy'
 encoded_folder = '../data/EWS64/'
 dynamic_bounding = True
 skeleton = True
-curve_3d = '../data/Curves/zcurve_3D4.npy'
-curve_2d = '../data/Curves/zcurve_2D6.npy'
+curve_3d = '../data/SFC/zcurve_3D4.npy'
+curve_2d = '../data/SFC/zcurve_2D6.npy'
 range_ = [-100, 100]
 
 # Verbose Settings

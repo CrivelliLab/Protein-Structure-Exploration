@@ -1,6 +1,9 @@
 '''
 ProcessPDBs.py
-Updated: 06/19/17
+Updated: 06/21/17
+
+Log:
+- Bug in apply_rotation(): deep copy fixed issue
 
 '''
 import os, sys
@@ -12,8 +15,8 @@ from prody import *
 confProDy(verbosity='none')
 
 # Global Variables
-pdb_folder = '../data/WD40-Gene-PDB-Files/'
-processed_file = '../data/Processed-' + pdb_folder.split('/')[-2]
+pdb_folder = '../data/PDB/WD40/'
+processed_file = '../data/Processed/' + pdb_folder.split('/')[-2]
 sel_channels = ['hydrophobic', 'polar', 'charged']
 
 # Verbose Settings
@@ -64,14 +67,17 @@ def apply_rotation(pdb_data, rot_combo):
     Method applies rotation to pdb_data defined as list of rotation matricies.
 
     '''
-    rotated_pdb_data = np.copy(pdb_data)
+    rotated_pdb_data = []
     for i in range(len(pdb_data)):
-        for rotation in rot_combo:
-            for coord in pdb_data[i]:
-                temp = np.dot(rotation, coord[1:])
-                coord[1] = temp[0]
-                coord[2] = temp[1]
-                coord[3] = temp[2]
+        channel = []
+        for coord in pdb_data[i]:
+            temp = coord[1:]
+            for rotation in rot_combo:
+                temp = np.dot(rotation, temp)
+            temp = [coord[0], temp[0], temp[1], temp[2]]
+            channel.append(np.array(temp))
+        rotated_pdb_data.append(np.array(channel))
+    rotated_pdb_data = np.array(rotated_pdb_data)
 
     return rotated_pdb_data
 

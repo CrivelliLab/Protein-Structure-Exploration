@@ -11,13 +11,21 @@ from skimage.measure import structural_similarity as ssim
 
 # Global Variables
 curves_folder = '../data/Curves/'
+<<<<<<< HEAD
+gen_3d = 'zcurve_3D'
+gen_2d = 'zcurve_2D'
+order_3d = 8
+order_2d = 12
+=======
 gen_3d = 'hilbert_3D'
 gen_2d = 'hilbert_2D'
 order_3d = 6
 order_2d = 9
+>>>>>>> f2e52a9b9835aaa1086c8309ae5c100f63ddf5f6
 
 # Verbose Settings
 debug = True
+compare = False
 
 ### Z-Curves ###################################################################
 
@@ -205,6 +213,22 @@ if __name__ == '__main__':
     np.save(curves_folder+gen_2d+str(order_2d), curve_2d)
 
     # Distance Comparison
+<<<<<<< HEAD
+    if compare:
+        c3d_dist_matrix = calc_dist_matrix(curve_3d)
+        c3d_dist_matrix = c3d_dist_matrix / np.amax(c3d_dist_matrix)
+        plt.imshow(c3d_dist_matrix, clim=(0.0, 1.0))
+        plt.colorbar()
+        plt.show()
+
+        c2d_dist_matrix = calc_dist_matrix(curve_2d)
+        c2d_dist_matrix = c2d_dist_matrix / np.amax(c2d_dist_matrix)
+        plt.imshow(c2d_dist_matrix, clim=(0.0, 1.0))
+        plt.colorbar()
+        plt.show()
+
+        print 'MSE Between Curves:', mse(c3d_dist_matrix, c2d_dist_matrix)
+=======
     c3d_dist_matrix = calc_dist_matrix(curve_3d)
     c3d_dist_matrix = c3d_dist_matrix / np.amax(c3d_dist_matrix)
     plt.imshow(c3d_dist_matrix, clim=(0.0, 1.0))
@@ -218,3 +242,4 @@ if __name__ == '__main__':
     plt.show()
 
     print 'MSE Between Curves:', mse(c3d_dist_matrix, c2d_dist_matrix)
+>>>>>>> f2e52a9b9835aaa1086c8309ae5c100f63ddf5f6
