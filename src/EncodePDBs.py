@@ -18,8 +18,8 @@ import vtk.util.numpy_support as vtk_np
 #from tvtk.api import tvtk
 
 # Global Variables
-processed_file = '../data/Processed-WD40-Gene-PDB-Files.npy'
-encoded_folder = '../data/EWS64/'
+processed_file = '../data/Processed/WD40-20-21062017.npy'
+encoded_folder = '../data/Encoded/WD40-SD64/'
 dynamic_bounding = True
 skeleton = True
 curve_3d = '../data/SFC/zcurve_3D4.npy'
@@ -111,7 +111,7 @@ def gen_skeleton_voxels(pdb_data, max_, min_, res_):
 
     # Generate 3D Array
     pdb_3d = np.zeros([int(range_/res_)+1 for i in range(3)])
-    for ind in u_indices.keys(): pdb_3d[ind[0], ind[1], ind[2]] = u_indices[ind]
+    for ind in u_indices.keys(): pdb_3d[ind[0], ind[1], ind[2]] = 1
 
     return pdb_3d
 
@@ -136,6 +136,22 @@ def encode_3d_to_2d(array_3d, curve_3d, curve_2d, debug=False):
         array_2d[curve_2d[i][0], curve_2d[i][1]] = array_1d[i]
 
     return array_2d
+
+def apply_rotation(pdb_data, rotation):
+    '''
+    Method applies rotation to pdb_data defined as list of rotation matricies.
+    '''
+    rotated_pdb_data = []
+    for i in range(len(pdb_data)):
+        channel = []
+        for coord in pdb_data[i]:
+            temp = np.dot(rotation, coord[1:])
+            temp = [coord[0], temp[0], temp[1], temp[2]]
+            channel.append(np.array(temp))
+        rotated_pdb_data.append(np.array(channel))
+    rotated_pdb_data = np.array(rotated_pdb_data)
+
+    return rotated_pdb_data
 
 def display_3d_array(array_3d):
     '''
@@ -233,7 +249,7 @@ if __name__ == '__main__':
     for i in range(len(entries)):
         if profiling: start = time.time()
         print "Processing", entries[i][0], "Rotation", entries[i][1]
-        pdb_data = entries[i][2]
+        pdb_data = apply_rotation(entries[i][2], entries[i][3])
         if dynamic_bounding:
             dia = 0
             for channel in pdb_data:
@@ -264,6 +280,7 @@ if __name__ == '__main__':
             encoded_pdb_2d.append(encoded_res_2d)
         encoded_pdb_2d = np.array(encoded_pdb_2d)
         encoded_pdb_2d = np.transpose(encoded_pdb_2d, (2,1,0))
+        encoded_pdb_2d = misc.imresize(encoded_pdb_2d, (64,64,3))
 
         # Save Encoded PDB to Numpy Array File.
         if debug: print("Saving Encoded PDB...")

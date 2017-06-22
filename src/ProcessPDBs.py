@@ -1,10 +1,8 @@
 '''
 ProcessPDBs.py
 Updated: 06/21/17
-
 Log:
 - Bug in apply_rotation(): deep copy fixed issue
-
 '''
 import os, sys
 import numpy as np
@@ -15,8 +13,10 @@ from prody import *
 confProDy(verbosity='none')
 
 # Global Variables
+seed = 21062017
+sample = 20
 pdb_folder = '../data/PDB/WD40/'
-processed_file = '../data/Processed/' + pdb_folder.split('/')[-2]
+processed_file = '../data/Processed/' + pdb_folder.split('/')[-2] +'-'+str(sample)+'-'+str(seed)
 sel_channels = ['hydrophobic', 'polar', 'charged']
 
 # Verbose Settings
@@ -38,7 +38,6 @@ def get_pdb_data(pdb_file, channels=[], debug=False):
     '''
     Method parses radii and coordinate information for each atom of different
     channel present in the PDB file, and returns as numpy array.
-
     '''
     # Parse PDB File
     if debug: print "Parsing:", pdb_file
@@ -62,30 +61,10 @@ def get_pdb_data(pdb_file, channels=[], debug=False):
 
     return pdb_data
 
-def apply_rotation(pdb_data, rot_combo):
-    '''
-    Method applies rotation to pdb_data defined as list of rotation matricies.
-
-    '''
-    rotated_pdb_data = []
-    for i in range(len(pdb_data)):
-        channel = []
-        for coord in pdb_data[i]:
-            temp = coord[1:]
-            for rotation in rot_combo:
-                temp = np.dot(rotation, temp)
-            temp = [coord[0], temp[0], temp[1], temp[2]]
-            channel.append(np.array(temp))
-        rotated_pdb_data.append(np.array(channel))
-    rotated_pdb_data = np.array(rotated_pdb_data)
-
-    return rotated_pdb_data
-
 def get_rotation_matrix(axis, theta):
     '''
     Return the rotation matrix associated with counterclockwise rotation about
     the given axis by theta radians.
-
     '''
     axis = np.asarray(axis)
     axis = axis/np.sqrt(np.dot(axis, axis))
@@ -102,10 +81,16 @@ def get_rotation_matrix(axis, theta):
 
 if __name__ == '__main__':
 
+    np.random.seed(seed)
+
     # Read PDB File Names
     pdb_files = []
     for line in sorted(os.listdir(pdb_folder)): pdb_files.append(line)
     if debug: print "Processing PDBs in:", pdb_folder
+
+    pdb_files = np.array(pdb_files)
+    np.random.shuffle(pdb_files)
+    pdb_files = pdb_files[:sample]
 
     # Generate Rotations
     if debug: print("Generating Rotations...")
@@ -115,6 +100,7 @@ if __name__ == '__main__':
         for theta in theta_list:
             rotation = get_rotation_matrix(axis, theta)
             base_rotations[-1].append(rotation)
+
     base_indices = [[i for i in range(len(base_rotations[j]))] for j in range(len(base_rotations))]
     indices = list(it.product(*base_indices))
     rotations = []
@@ -125,6 +111,11 @@ if __name__ == '__main__':
         rotations.append(comb_rotation)
     rotations = np.array(rotations)
 
+    temp = []
+    for rot in rotations:
+        temp.append(rot[2].dot(rot[1].dot(rot[0])))
+    rotations = np.array(temp)
+
     # Generate Processed Data
     if debug: print("Processing PDBs...")
     processed_data = []
@@ -132,7 +123,7 @@ if __name__ == '__main__':
         pdb_data = get_pdb_data(pdb_folder + pdb_file, channels=sel_channels, debug=debug)
         if debug: print("Applying Rotations...")
         for i in range(len(rotations)):
-            processed_data.append([pdb_file.split('.')[0], i, apply_rotation(pdb_data, rotations[i])])
+            processed_data.append([pdb_file.split('.')[0], i, pdb_data, rotations[i]])
     processed_data = np.array(processed_data)
 
     # Shuffle Data And Save

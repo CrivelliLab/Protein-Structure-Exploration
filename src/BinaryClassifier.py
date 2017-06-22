@@ -63,48 +63,53 @@ if __name__ == '__main__':
 
     # Read Ras PDB IMG File Names
     pdb_imgs = []
-    for line in sorted(os.listdir('../data/ERS64/')):
+    for line in sorted(os.listdir('../data/Encoded/RAS-SD64/')):
         if line != '.gitignore': pdb_imgs.append(line)
 
     if debug: print "Loading RAS Encoded Images..."
 
     # Load Ras PDB Images
     for i in tqdm(range(len(pdb_imgs))):
-        if pdb_imgs[i][5:7] == '0.':
-            img = misc.imread('../data/ERS64/' + pdb_imgs[i])
-            img = img.astype('float')
-            img[:,:,0] = img[:,:,0]/255.0
-            img[:,:,1] = img[:,:,1]/255.0
-            img[:,:,2] = img[:,:,2]/255.0
-            x_train.append(img)
-            y_train.append([0, 1])
+        img = misc.imread('../data/Encoded/RAS-SD64/' + pdb_imgs[i])
+        img = img.astype('float')
+        img[:,:,0] = img[:,:,0]/255.0
+        img[:,:,1] = img[:,:,1]/255.0
+        img[:,:,2] = img[:,:,2]/255.0
+        x_train.append(img)
+        y_train.append([0, 1])
 
     '''
-    for i in range(len(pdb_imgs)):
-        for j in range(len(pdb_imgs)):
-            print pdb_imgs[i], pdb_imgs[j], ssim(x_train[i], x_train[j], multichannel=True)
+    x = []
+    for i in range(1):
+        y = []
+        for j in range(512):
+            s = ssim(x_train[0], x_train[j+512], multichannel=True)
+            print i, j, s
+    exit()
     '''
 
     # Read Ras PDB IMG File Names
     pdb_imgs = []
-    for line in sorted(os.listdir('../data/EWS64/')):
+    for line in sorted(os.listdir('../data/Encoded/WD40-SD64/')):
         if line != '.gitignore': pdb_imgs.append(line)
 
     if debug: print "Loading WD40 Encoded Images..."
 
     # Load Ras PDB Images
     for i in tqdm(range(len(pdb_imgs))):
-        if pdb_imgs[i][5:7] == '0.':
-            img = misc.imread('../data/EWS64/' + pdb_imgs[i])
-            img = img.astype('float')
-            img[:,:,0] = img[:,:,0]/255.0
-            img[:,:,1] = img[:,:,1]/255.0
-            img[:,:,2] = img[:,:,2]/255.0
-            x_train.append(img)
-            y_train.append([1, 0])
+        img = misc.imread('../data/Encoded/WD40-SD64/' + pdb_imgs[i])
+        img = img.astype('float')
+        img[:,:,0] = img[:,:,0]/255.0
+        img[:,:,1] = img[:,:,1]/255.0
+        img[:,:,2] = img[:,:,2]/255.0
+        x_train.append(img)
+        y_train.append([1, 0])
 
-    x_train = np.array(x_train)
-    y_train = np.array(y_train)
+    x_val = np.array(x_train[:512])
+    y_val = np.array(y_train[:512])
+
+    x_train = np.array(x_train[512:])
+    y_train = np.array(y_train[512:])
 
     x_data, x_test, y_data, y_test = train_test_split(x_train, y_train, test_size=0.3, random_state=45)
 
@@ -113,7 +118,6 @@ if __name__ == '__main__':
     # Fit Training Data to Model with 0.7/0.3 split between data set
     net = ProteinNet(shape=x_train.shape[1:])
     for i in range(100):
-        net.model.fit(x_data[:1000], y_data[:1000], epochs=1, batch_size=25)
-        print(net.model.evaluate(x_test[:1000], y_test[:1000], batch_size=25))
-        print(net.model.predict(x_test[:25], batch_size=25))
-        print(y_test[:25])
+        net.model.fit(x_data, y_data, epochs=1, batch_size=25)
+        print(net.model.evaluate(x_test, y_test, batch_size=25))
+        print(net.model.evaluate(x_val, y_val, batch_size=25))
