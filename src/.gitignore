@@ -1,3 +1,7 @@
 # Ignore PyCache Files
 __pycache__
 *.pyc
+process/__pycache__
+process/*.pyc
+networks/__pycache__
+networks/*.pyc
