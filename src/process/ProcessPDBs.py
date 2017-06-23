@@ -1,8 +1,7 @@
 '''
 ProcessPDBs.py
 Updated: 06/21/17
-Log:
-- Bug in apply_rotation(): deep copy fixed issue
+
 '''
 import os, sys
 import numpy as np
@@ -15,8 +14,7 @@ confProDy(verbosity='none')
 # Global Variables
 seed = 21062017
 sample = 20
-pdb_folder = '../data/PDB/WD40/'
-processed_file = '../data/Processed/' + pdb_folder.split('/')[-2] +'-'+str(sample)+'-'+str(seed)
+pdb_folder = 'WD40'
 sel_channels = ['hydrophobic', 'polar', 'charged']
 
 # Verbose Settings
@@ -34,10 +32,13 @@ elem_radii = {  'H' : 1.2, 'C' : 1.7, 'N' : 1.55, 'O' : 1.52, 'S' : 1.8,
                 'D' : 1.2, 'F' : 1.47, 'CL' : 1.75, 'BR' : 1.85, 'P' : 1.8,
                 'I' : 1.98, '' : 0}
 
+################################################################################
+
 def get_pdb_data(pdb_file, channels=[], debug=False):
     '''
     Method parses radii and coordinate information for each atom of different
     channel present in the PDB file, and returns as numpy array.
+
     '''
     # Parse PDB File
     if debug: print "Parsing:", pdb_file
@@ -83,14 +84,21 @@ if __name__ == '__main__':
 
     np.random.seed(seed)
 
+    # File Paths
+    path_to_project = '../../'
+    processed_file = path_to_project + 'data/inter/' + pdb_folder
+    pdb_folder = path_to_project + 'start/PDB/' + pdb_folder
+
     # Read PDB File Names
     pdb_files = []
     for line in sorted(os.listdir(pdb_folder)): pdb_files.append(line)
     if debug: print "Processing PDBs in:", pdb_folder
 
     pdb_files = np.array(pdb_files)
-    np.random.shuffle(pdb_files)
-    pdb_files = pdb_files[:sample]
+    if sampele:
+        np.random.shuffle(pdb_files)
+        pdb_files = pdb_files[:sample]
+        processed_file = path_to_project + 'data/inter/' + pdb_folder +'-'+str(sample)+'-'+str(seed)
 
     # Generate Rotations
     if debug: print("Generating Rotations...")

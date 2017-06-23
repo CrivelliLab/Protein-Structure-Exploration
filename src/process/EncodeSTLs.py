@@ -1,50 +1,37 @@
 '''
 EncodeSTLs.py
-Author: Rafael Zamora
 Updated: 6/14/17
 
 '''
 import os, sys, time
 import numpy as np
-import itertools as it
+import matplotlib.pyplot as plt
+from scipy import misc, ndimage
 
 # MPI
 from mpi4py import MPI
 
-# Space Filling Curves
-from ZCurves import *
-
-# PDB Proccessing
-from ProcessingTools import *
-
-# Image Saving
-from scipy import misc
+# 3D Modeling and Rendering
+import vtk
+import vtk.util.numpy_support as vtk_np
 
 # Global Variables
-folder = None
-dest_folder = None
+processed_file = 'WD40-20-21062017.npy'
+encoded_folder = 'WD40-MD512'
 dynamic_bounding = True
-sample_dim = 16
-range_ = [-50, 50]
+skeleton = False
+curve_3d = 'zcurve_3D6.npy'
+curve_2d = 'zcurve_2D9.npy'
+range_ = [-100, 100]
 
 # Verbose Settings
 debug = True
-visualize = True
-
-# Visualization Tools
-if visualize: from VisualizationTools import *
+visualize = False
+profiling = True
 
 # Defined Rotations
 axis_list = [[0, 0, 1], [0, 1, 0], [1, 0, 0]]
 theta_list = [(np.pi*i)/4  for i in range(8)]
-
-import os
-import numpy as np
-
-# 3D Modeling and Rendering
-import vtk
-import vtk.util.numpy_support as vtk_np
-from scipy import ndimage
 
 def gen_3d_stl(stl_file, rot, bounds, sample_dim, debug=False):
     '''
@@ -205,20 +192,10 @@ if __name__ == '__main__':
 
         # Save Encoded STL to Numpy Array File.
         if debug: print("Saving Encoded STL...")
-        if dest_folder:
-            file_path = dest_folder + stl_file.split('.')[0] + '_'+ str(rot_id) +'.png'
-        else:
-            foldername = folder.split('/')[-2]
-            file_path = folder[:-len(foldername)-1]+'Processed-'+ foldername +'/'+ stl_file.split('.')[0] + '_'+ str(rot_id) +'.png'
-        #np.savez_compressed(file_path, a=encoded_stl_2d, b=rot)
-        misc.imsave(file_path, encoded_stl_2d)
+        file_path = encoded_folder + entries[i][0] + '-'+ str(entries[i][1]) +'.png'
+        if not os.path.exists(encoded_folder): os.makedirs(encoded_folder)
+        misc.imsave(file_path, encoded_pdb_2d)
 
         if debug: print "Processed in: ", time.time() - start, ' sec'
-
-        # Visualize PDB Data
-        if visualize:
-            print('Visualizing All Channels...')
-            display_3d_array(stl_3d_model)
-            display_2d_array(encoded_stl_2d)
 
         if debug: exit()

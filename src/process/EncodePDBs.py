@@ -1,6 +1,5 @@
 '''
 EncodePDB.py
-Author: Rafael Zamora
 Updated: 6/16/17
 
 '''
@@ -15,21 +14,22 @@ from mpi4py import MPI
 # 3D Modeling and Rendering
 import vtk
 import vtk.util.numpy_support as vtk_np
-#from tvtk.api import tvtk
 
 # Global Variables
-processed_file = '../data/Processed/WD40-20-21062017.npy'
-encoded_folder = '../data/Encoded/WD40-SD64/'
+processed_file = 'WD40-20-21062017.npy'
+encoded_folder = 'WD40-MD512'
 dynamic_bounding = True
-skeleton = True
-curve_3d = '../data/SFC/zcurve_3D4.npy'
-curve_2d = '../data/SFC/zcurve_2D6.npy'
+skeleton = False
+curve_3d = 'zcurve_3D6.npy'
+curve_2d = 'zcurve_2D9.npy'
 range_ = [-100, 100]
 
 # Verbose Settings
-debug = False
+debug = True
 visualize = False
-profiling = False
+profiling = True
+
+################################################################################
 
 def gen_mesh_voxels(pdb_data, bounds, sample_dim, debug=False):
     '''
@@ -62,6 +62,7 @@ def gen_mesh_voxels(pdb_data, bounds, sample_dim, debug=False):
     clean_filter.SetInputConnection(append_filter.GetOutputPort())
     clean_filter.Update()
 
+    start = time.time()
     # Voxelize Mesh
     if debug: print("Voxelizing Mesh...")
     voxel_modeller = vtk.vtkVoxelModeller()
@@ -76,6 +77,9 @@ def gen_mesh_voxels(pdb_data, bounds, sample_dim, debug=False):
     voxel_array = vtk_np.vtk_to_numpy(voxel_output)
     voxel_array = voxel_array.reshape((sample_dim, sample_dim, sample_dim))
 
+    print time.time() - start
+
+    start = time.time()
     # Fill Interiors
     if debug: print("Filling Interiors...")
     filled_voxel_array = []
@@ -84,11 +88,14 @@ def gen_mesh_voxels(pdb_data, bounds, sample_dim, debug=False):
         filled_voxel_array.append(filled_sect)
     filled_voxel_array = np.array(filled_voxel_array)
 
-    return voxel_array
+    print time.time() - start
+
+    return filled_voxel_array
 
 def gen_skeleton_voxels(pdb_data, max_, min_, res_):
     '''
     Method processes PDB's atom data to create a matrix based 3d model.
+
     '''
     pdb_data = pdb_data[:,1:].astype('float')
 
@@ -120,26 +127,23 @@ def encode_3d_to_2d(array_3d, curve_3d, curve_2d, debug=False):
     Method proceses 3D PDB model and encodes into 2D image.
 
     '''
-    if debug: print('Applying 3D to 1D Space Filling Curve...')
+    if debug: print('Applying Space Filling Curves...')
+    start = time.time()
 
-    # Dimension Reduction Using Space Filling Curve to 1D
-    array_1d = np.zeros([len(curve_3d),])
-    for i in range(len(curve_3d)):
-        array_1d[i] = array_3d[curve_3d[i][0], curve_3d[i][1], curve_3d[i][2]]
-
-    if debug: print('Applying 1D to 2D Space Filling Curve...')
-
-    # Dimension Recasting Using Space Filling Curve to 2D
+    # Dimension Reduction Using Space Filling Curves to 2D
     s = int(np.sqrt(len(curve_2d)))
     array_2d = np.zeros([s,s])
-    for i in range(len(array_1d)):
-        array_2d[curve_2d[i][0], curve_2d[i][1]] = array_1d[i]
+    for i in range(len(curve_3d)):
+        array_2d[curve_2d[i][0], curve_2d[i][1]] = array_3d[curve_3d[i][0], curve_3d[i][1], curve_3d[i][2]]
+
+    print time.time() - start
 
     return array_2d
 
 def apply_rotation(pdb_data, rotation):
     '''
     Method applies rotation to pdb_data defined as list of rotation matricies.
+
     '''
     rotated_pdb_data = []
     for i in range(len(pdb_data)):
@@ -153,75 +157,14 @@ def apply_rotation(pdb_data, rotation):
 
     return rotated_pdb_data
 
-def display_3d_array(array_3d):
-    '''
-    Method displays 3d array.
-
-    '''
-    # Dislay 3D Voxel Rendering
-    for i in range(len(array_3d)):
-        if i == 1: c = (1, 0, 0)
-        elif i == 2: c = (0, 1, 0)
-        else: c = (0, 0, 1)
-        xx, yy, zz = np.where(array_3d[i] >= 1)
-        mlab.points3d(xx, yy, zz, mode="cube", color=c)
-    mlab.show()
-
-def display_3d_mesh(pdb_data):
-    '''
-    '''
-    # Dislay 3D Mesh Rendering
-    v = mlab.figure()
-    for j in range(len(pdb_data)):
-        if j == 1: c = (1, 0, 0)
-        elif j == 2: c = (0, 1, 0)
-        else: c = (0, 0, 1)
-
-        # Coordinate, Radius Information
-        x = pdb_data[j][:,3].astype('float')
-        y = pdb_data[j][:,2].astype('float')
-        z = pdb_data[j][:,1].astype('float')
-        s = pdb_data[j][:,0].astype('float')
-
-        # Generate Mesh For Protein
-        for i in range(len(pdb_data[j])):
-            sphere = tvtk.SphereSource(center=(x[i],y[i],z[i]), radius=s[i])
-            sphere_mapper = tvtk.PolyDataMapper()
-            configure_input_data(sphere_mapper, sphere.output)
-            sphere.update()
-            p = tvtk.Property(opacity=1.0, color=c)
-            sphere_actor = tvtk.Actor(mapper=sphere_mapper, property=p)
-            v.scene.add_actor(sphere_actor)
-
-    mlab.show()
-
-def display_3d_points(coords_3d):
-    '''
-    '''
-    # Display 3D Mesh Rendering
-    for i in range(len(coords_3d)):
-        if i == 1: c = (1, 0, 0)
-        elif i == 2: c = (0, 1, 0)
-        else: c = (0, 0, 1)
-        # Coordinate, Radius Information
-        x = coords_3d[i][:,3].astype('float')
-        y = coords_3d[i][:,2].astype('float')
-        z = coords_3d[i][:,1].astype('float')
-
-        mlab.points3d(x, y, z, mode="sphere", color=c, scale_factor=0.5)
-    mlab.show()
-
-def display_2d_array(array_2d):
-    '''
-    Method displays 2-d array.
-
-    '''
-    # Display 2D Plot
-    plt.figure()
-    plt.imshow(array_2d, interpolation="nearest")
-    plt.show()
-
 if __name__ == '__main__':
+
+    # File Paths
+    path_to_project = '../../'
+    processed_file = path_to_project + 'data/inter/' + processed_file
+    encoded_folder = path_to_project + 'data/final/' + encoded_folder + '/'
+    curve_2d = path_to_project + 'data/start/SFC/'+ curve_2d
+    curve_3d = path_to_project + 'data/start/SFC/'+ curve_3d
 
     # MPI Init
     comm = MPI.COMM_WORLD
@@ -280,19 +223,13 @@ if __name__ == '__main__':
             encoded_pdb_2d.append(encoded_res_2d)
         encoded_pdb_2d = np.array(encoded_pdb_2d)
         encoded_pdb_2d = np.transpose(encoded_pdb_2d, (2,1,0))
-        encoded_pdb_2d = misc.imresize(encoded_pdb_2d, (64,64,3))
 
         # Save Encoded PDB to Numpy Array File.
         if debug: print("Saving Encoded PDB...")
         file_path = encoded_folder + entries[i][0] + '-'+ str(entries[i][1]) +'.png'
-        #np.savez_compressed(file_path, a=encoded_pdb_2d, b=rot)
+        if not os.path.exists(encoded_folder): os.makedirs(encoded_folder)
         misc.imsave(file_path, encoded_pdb_2d)
 
         if profiling: print time.time() - start, "secs..."
-
-        # Visualize PDB Data
-        if visualize:
-            print('Visualizing All Channels...')
-            display_2d_array(encoded_pdb_2d)
 
         if debug: exit()
