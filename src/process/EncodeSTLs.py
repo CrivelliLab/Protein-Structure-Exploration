@@ -1,11 +1,10 @@
 '''
-EncodeSTLs.py
-Updated: 6/14/17
+Encodeobjs.py
+Updated: 6/23/17
 
 '''
 import os, sys, time
 import numpy as np
-import matplotlib.pyplot as plt
 from scipy import misc, ndimage
 
 # MPI
@@ -16,30 +15,32 @@ import vtk
 import vtk.util.numpy_support as vtk_np
 
 # Global Variables
-processed_file = 'WD40-20-21062017.npy'
-encoded_folder = 'WD40-MD512'
+obj_folder = 'ShapeNetCore'
+encoded_folder = 'ShapeNetCore-MD64'
 dynamic_bounding = True
-skeleton = False
-curve_3d = 'zcurve_3D6.npy'
-curve_2d = 'zcurve_2D9.npy'
-range_ = [-100, 100]
+range_ = [-0.7, 0.7]
+curve_3d = 'zcurve_3D4.npy'
+curve_2d = 'fold_2D6.npy'
 
 # Verbose Settings
-debug = True
-visualize = False
-profiling = True
+debug = False
 
+'''
 # Defined Rotations
 axis_list = [[0, 0, 1], [0, 1, 0], [1, 0, 0]]
 theta_list = [(np.pi*i)/4  for i in range(8)]
+'''
 
-def gen_3d_stl(stl_file, rot, bounds, sample_dim, debug=False):
+################################################################################
+
+def gen_3d_obj(obj_file, bounds, sample_dim, debug=False):
     '''
     '''
-    # Generate Mesh For Protein
     if debug: print("Generating Mesh...")
-    reader = vtk.vtkSTLReader()
-    reader.SetFileName(stl_file)
+
+    # Generate Mesh For Protein
+    reader = vtk.vtkOBJReader()
+    reader.SetFileName(obj_file)
     reader.Update()
 
     # Voxelize Mesh
@@ -52,7 +53,8 @@ def gen_3d_stl(stl_file, rot, bounds, sample_dim, debug=False):
         x_range = bounds[1] - bounds[0]
         y_range = bounds[3] - bounds[2]
         z_range = bounds[5] - bounds[4]
-        max_rad = max([x_range, y_range, z_range])/2
+        max_rad = max([abs(x_range), abs(y_range), abs(z_range)])
+        max_rad = max_rad/2
         temp = []
         temp.append(bounds[0]+(x_range/2)-max_rad)
         temp.append(bounds[1]-(x_range/2)+max_rad)
@@ -70,6 +72,50 @@ def gen_3d_stl(stl_file, rot, bounds, sample_dim, debug=False):
     voxel_array = vtk_np.vtk_to_numpy(voxel_output)
     voxel_array = voxel_array.reshape((sample_dim, sample_dim, sample_dim))
 
+    '''
+    xx, yy, zz = np.where(voxel_array >= 1)
+    if len(xx) == 0: return voxel_array
+    # Generate Mesh For Protein
+    append_filter = vtk.vtkAppendPolyData()
+    for i in range(len(xx)):
+        input1 = vtk.vtkPolyData()
+        sphere_source = vtk.vtkCubeSource()
+        sphere_source.SetCenter(xx[i],yy[i],zz[i])
+        sphere_source.SetXLength(1)
+        sphere_source.SetYLength(1)
+        sphere_source.SetZLength(1)
+        sphere_source.Update()
+        input1.ShallowCopy(sphere_source.GetOutput())
+        append_filter.AddInputData(input1)
+    append_filter.Update()
+
+    #  Remove Any Duplicate Points.
+    clean_filter = vtk.vtkCleanPolyData()
+    clean_filter.SetInputConnection(append_filter.GetOutputPort())
+    clean_filter.Update()
+
+    # Create a mapper and actor
+    mapper = vtk.vtkPolyDataMapper()
+    mapper.SetInputConnection(append_filter.GetOutputPort())
+
+    actor = vtk.vtkActor()
+    actor.SetMapper(mapper)
+
+    # Create a renderer, render window, and interactor
+    renderer = vtk.vtkRenderer()
+    renderWindow = vtk.vtkRenderWindow()
+    renderWindow.AddRenderer(renderer)
+    renderWindowInteractor = vtk.vtkRenderWindowInteractor()
+    renderWindowInteractor.SetRenderWindow(renderWindow)
+
+    # Add the actors to the scene
+    renderer.AddActor(actor)
+    renderer.SetBackground(0.5, 0.5, 0) #  Background color dark red
+
+    # Render and interact
+    renderWindow.Render()
+    renderWindowInteractor.Start()
+    '''
     # Fill Interiors
     if debug: print("Filling Interiors...")
     filled_voxel_array = []
@@ -80,121 +126,98 @@ def gen_3d_stl(stl_file, rot, bounds, sample_dim, debug=False):
 
     return filled_voxel_array
 
+def encode_3d_to_2d(array_3d, curve_3d, curve_2d, debug=False):
+    '''
+    Method proceses 3D voxel model and encodes into 2D image.
+
+    '''
+    if debug:
+        print('Applying Space Filling Curves...')
+        start = time.time()
+
+    # Dimension Reduction Using Space Filling Curves to 2D
+    s = int(np.sqrt(len(curve_2d)))
+    array_2d = np.zeros([s,s])
+    for i in range(len(curve_3d)):
+        c2d = curve_2d[i]
+        c3d = curve_3d[i]
+        array_2d[c2d[0], c2d[1]] = array_3d[c3d[0], c3d[1], c3d[2]]
+
+    if debug: print time.time() - start, 'secs...'
+
+    return array_2d
 
 if __name__ == '__main__':
-    # Directory Args
-    args = sys.argv[1:]
-    if len(args) >= 2:
-        folder = args[0]
-        dest_folder = args[1]
-        if folder[-1] != '/': folder += '/'
-        if dest_folder[-1] != '/': dest_folder += '/'
-    else:
-        print("Argument Error...")
-        exit()
+
+    # File Paths
+    path_to_project = '../../'
+    obj_folder = path_to_project + 'data/source/' + obj_folder + '/'
+    encoded_folder = path_to_project + 'data/final/' + encoded_folder + '/'
+    curve_2d = path_to_project + 'data/source/SFC/'+ curve_2d
+    curve_3d = path_to_project + 'data/source/SFC/'+ curve_3d
 
     # MPI Init
     comm = MPI.COMM_WORLD
     rank = comm.Get_rank()
     cores = comm.Get_size()
+
     if debug:
-        print("MPI Info...")
-        print "Rank:", rank
-        print "Number of Cores:", cores
+        print "MPI Info... Cores:", cores
+        start = time.time()
 
-    # Root Node Data Init
-    if rank == 0:
-        # Read PDBs
-        stl_files = []
-        for line in sorted(os.listdir(folder)): stl_files.append(line)
-        if debug:
-            print "Encoding PDBs in:", folder
-            print "Total STL Entries:", len(stl_files)
-
-        # Generate Space Filling Curves
-        if debug: print("Generating 3D Curve...")
-        curve_3d = gen_zcurve_3D(pow(sample_dim, 3))
-        if debug: print("Generating 2D Curve...")
-        curve_2d = gen_zcurve_2D(pow(sample_dim, 3))
-
-        # Generate Rotations
-        if debug: print("Generating Rotations...")
-        base_rotations = []
-        for axis in axis_list:
-            base_rotations.append([])
-            for theta in theta_list:
-                rotation = rotation_matrix(axis, theta)
-                base_rotations[-1].append(rotation)
-        base_indices = [[i for i in range(len(base_rotations[j]))] for j in range(len(base_rotations))]
-        indices = list(it.product(*base_indices))
-        rotations = []
-        for index in indices:
-            comb_rotation = []
-            for i in range(len(base_rotations)):
-                comb_rotation.append(base_rotations[i][index[i]])
-            rotations.append(comb_rotation)
-        rotations = np.array(rotations)
-
-        # Generate Entries
-        entries = []
-        for i in range(len(stl_files)):
-            for j in range(len(rotations)):
-                entries.append([stl_files[i], rotations[j], j])
-        entries = np.array(entries, dtype=object)
-
-    else:
-        curve_3d = None
-        curve_2d = None
-        entries = None
-
-    # MPI Broadcast Data
-    if debug: print("Broadcasting Data To Nodes...")
-    curve_3d = comm.bcast(curve_3d, root=0)
-    curve_2d = comm.bcast(curve_2d, root=0)
-    entries = comm.bcast(entries, root=0)
-
-    # MPI Cut Entries Per Node
+    # Read objs
+    if debug: print "Loading Entries..."
+    entries = []
+    for line in sorted(os.listdir(obj_folder)):
+        if line[0] != '.':
+            for l in sorted(os.listdir(obj_folder+line)):
+                if l[0] != '.': entries.append(line+'/'+l+'/model.obj')
+    entries = np.array(entries)
     entries = np.array_split(entries, cores)[rank]
+    if debug:print "MPI Core", rank, ", Processing", len(entries), "Entries"
+
+    # Load Curves
+    if debug: print("Loading Curves...")
+    curve_3d = np.load(curve_3d)
+    curve_2d = np.load(curve_2d)
+    sample_dim = int(np.cbrt(len(curve_2d)))
+
     if debug:
-        print "MPI Core", rank
-        print "Processing", len(entries), "Entries"
+        print "Init Time:", time.time() - start, "secs..."
 
     # Process Rotations
     for i in range(len(entries)):
         if debug: start = time.time()
-        if debug: print('Processing Entry ' + str(i) + '...')
-        stl_file = entries[i][0]
-        rot = entries[i][1]
-        rot_id = entries[i][2]
+        print('Processing Entry ' + str(i) + '...')
 
-        # Process STL
-        encoded_stl_2d = []
-        stl_3d_model = []
-        if debug: print('Processing STL...')
+        # Process obj
+        encoded_obj_2d = []
+        obj_3d_model = []
+        if debug: print('Processing obj...')
         if dynamic_bounding:
-            stl_3d_res = gen_3d_stl(folder+stl_file, rot, None, sample_dim, debug=debug)
+            obj_3d_res = gen_3d_obj(obj_folder+entries[i], None, sample_dim, debug=debug)
         else:
             bounds = range_ + range_ + range_
-            stl_3d_res = gen_3d_stl(stl_data_res, rot, bounds, sample_dim, debug=debug)
-        stl_3d_model.append(stl_3d_res)
-        stl_3d_model.append(stl_3d_res)
-        stl_3d_model.append(stl_3d_res)
+            obj_3d_res = gen_3d_obj(obj_folder+entries[i], bounds, sample_dim, debug=debug)
+        obj_3d_model.append(obj_3d_res)
+        obj_3d_model.append(obj_3d_res)
+        obj_3d_model.append(obj_3d_res)
 
         # Encode 3D Model with Space Filling Curve
-        encoded_res_2d = encode_3d_pdb(stl_3d_res, curve_3d, curve_2d, debug=debug)
-        encoded_stl_2d.append(encoded_res_2d)
-        encoded_stl_2d.append(encoded_res_2d)
-        encoded_stl_2d.append(encoded_res_2d)
+        encoded_res_2d = encode_3d_to_2d(obj_3d_res, curve_3d, curve_2d, debug=debug)
+        encoded_obj_2d.append(encoded_res_2d)
+        encoded_obj_2d.append(encoded_res_2d)
+        encoded_obj_2d.append(encoded_res_2d)
 
         # Transpose Array
-        encoded_stl_2d = np.array(encoded_stl_2d)
-        encoded_stl_2d = np.transpose(encoded_stl_2d, (2,1,0))
+        encoded_obj_2d = np.array(encoded_obj_2d)
+        encoded_obj_2d = np.transpose(encoded_obj_2d, (2,1,0))
 
-        # Save Encoded STL to Numpy Array File.
-        if debug: print("Saving Encoded STL...")
-        file_path = encoded_folder + entries[i][0] + '-'+ str(entries[i][1]) +'.png'
+        # Save Encoded obj to Numpy Array File.
+        if debug: print("Saving Encoded obj...")
+        file_path = encoded_folder + entries[i].split('/')[-3]+ '-'+ str(i) +'.png'
         if not os.path.exists(encoded_folder): os.makedirs(encoded_folder)
-        misc.imsave(file_path, encoded_pdb_2d)
+        misc.imsave(file_path, encoded_obj_2d)
 
         if debug: print "Processed in: ", time.time() - start, ' sec'
 

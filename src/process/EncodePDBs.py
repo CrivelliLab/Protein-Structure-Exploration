@@ -1,14 +1,13 @@
 '''
 EncodePDB.py
-Updated: 6/16/17
+Updated: 6/23/17
 
 '''
 import os, sys, time
 import numpy as np
-import matplotlib.pyplot as plt
 from scipy import misc, ndimage
 
-# MPI
+# MPI Support
 from mpi4py import MPI
 
 # 3D Modeling and Rendering
@@ -16,45 +15,46 @@ import vtk
 import vtk.util.numpy_support as vtk_np
 
 # Global Variables
-processed_file = 'WD40-20-21062017.npy'
-encoded_folder = 'WD40-MD512'
+processed_file = 'WD40.npy'
+encoded_folder = 'WD40-SD512-ZZ'
 dynamic_bounding = True
-skeleton = False
+skeleton = True
 curve_3d = 'zcurve_3D6.npy'
 curve_2d = 'zcurve_2D9.npy'
 range_ = [-100, 100]
 
 # Verbose Settings
 debug = True
-visualize = False
-profiling = True
 
 ################################################################################
 
 def gen_mesh_voxels(pdb_data, bounds, sample_dim, debug=False):
     '''
-    Method proceses PDB's atom data to create a matrix based 3d model.
+    Method proceses PDB's atom data to create a space filling atomic model.
+    The atomic model is then voxelized to generate a matrix for the space filling
+    curve encoding.
 
     '''
     # Coordinate, Radius Information
-    x = pdb_data[:,3].astype('float')
+    r = pdb_data[:,0].astype('float')
+    x = pdb_data[:,1].astype('float')
     y = pdb_data[:,2].astype('float')
-    z = pdb_data[:,1].astype('float')
-    s = pdb_data[:,0].astype('float')
+    z = pdb_data[:,3].astype('float')
+
+    if debug:
+        print("Generating Mesh...")
+        start = time.time()
 
     # Generate Mesh For Protein
-    if debug: print("Generating Mesh...")
     append_filter = vtk.vtkAppendPolyData()
     for i in range(len(pdb_data)):
         input1 = vtk.vtkPolyData()
         sphere_source = vtk.vtkSphereSource()
         sphere_source.SetCenter(x[i],y[i],z[i])
-        sphere_source.SetRadius(s[i])
+        sphere_source.SetRadius(r[i])
         sphere_source.Update()
         input1.ShallowCopy(sphere_source.GetOutput())
-        if vtk.VTK_MAJOR_VERSION <= 5:
-            append_filter.AddInputConnection(input1.GetProducerPort())
-        else: append_filter.AddInputData(input1)
+        append_filter.AddInputData(input1)
     append_filter.Update()
 
     #  Remove Any Duplicate Points.
@@ -62,9 +62,12 @@ def gen_mesh_voxels(pdb_data, bounds, sample_dim, debug=False):
     clean_filter.SetInputConnection(append_filter.GetOutputPort())
     clean_filter.Update()
 
-    start = time.time()
+    if debug:
+        print time.time() - start, 'secs...'
+        print("Voxelizing Mesh...")
+        start = time.time()
+
     # Voxelize Mesh
-    if debug: print("Voxelizing Mesh...")
     voxel_modeller = vtk.vtkVoxelModeller()
     voxel_modeller.SetInputConnection(clean_filter.GetOutputPort())
     voxel_modeller.SetSampleDimensions(sample_dim, sample_dim, sample_dim)
@@ -77,18 +80,19 @@ def gen_mesh_voxels(pdb_data, bounds, sample_dim, debug=False):
     voxel_array = vtk_np.vtk_to_numpy(voxel_output)
     voxel_array = voxel_array.reshape((sample_dim, sample_dim, sample_dim))
 
-    print time.time() - start
+    if debug:
+        print time.time() - start, 'secs...'
+        print("Filling Interiors...")
+        start = time.time()
 
-    start = time.time()
     # Fill Interiors
-    if debug: print("Filling Interiors...")
     filled_voxel_array = []
     for sect in voxel_array:
         filled_sect = ndimage.morphology.binary_fill_holes(sect).astype('int')
         filled_voxel_array.append(filled_sect)
     filled_voxel_array = np.array(filled_voxel_array)
 
-    print time.time() - start
+    if debug: print time.time() - start, 'secs...'
 
     return filled_voxel_array
 
@@ -98,6 +102,10 @@ def gen_skeleton_voxels(pdb_data, max_, min_, res_):
 
     '''
     pdb_data = pdb_data[:,1:].astype('float')
+
+    if debug:
+        print("Generating Voxelizing Skeleton...")
+        start = time.time()
 
     # Bin x, y, z Coordinates
     range_ = max_ - min_
@@ -120,6 +128,8 @@ def gen_skeleton_voxels(pdb_data, max_, min_, res_):
     pdb_3d = np.zeros([int(range_/res_)+1 for i in range(3)])
     for ind in u_indices.keys(): pdb_3d[ind[0], ind[1], ind[2]] = 1
 
+    if debug: print time.time() - start, 'secs...'
+
     return pdb_3d
 
 def encode_3d_to_2d(array_3d, curve_3d, curve_2d, debug=False):
@@ -127,16 +137,19 @@ def encode_3d_to_2d(array_3d, curve_3d, curve_2d, debug=False):
     Method proceses 3D PDB model and encodes into 2D image.
 
     '''
-    if debug: print('Applying Space Filling Curves...')
-    start = time.time()
+    if debug:
+        print('Applying Space Filling Curves...')
+        start = time.time()
 
     # Dimension Reduction Using Space Filling Curves to 2D
     s = int(np.sqrt(len(curve_2d)))
     array_2d = np.zeros([s,s])
     for i in range(len(curve_3d)):
-        array_2d[curve_2d[i][0], curve_2d[i][1]] = array_3d[curve_3d[i][0], curve_3d[i][1], curve_3d[i][2]]
+        c2d = curve_2d[i]
+        c3d = curve_3d[i]
+        array_2d[c2d[0], c2d[1]] = array_3d[c3d[0], c3d[1], c3d[2]]
 
-    print time.time() - start
+    if debug: print time.time() - start, 'secs...'
 
     return array_2d
 
@@ -145,6 +158,10 @@ def apply_rotation(pdb_data, rotation):
     Method applies rotation to pdb_data defined as list of rotation matricies.
 
     '''
+    if debug:
+        print "Applying Rotation..."
+        start = time.time()
+
     rotated_pdb_data = []
     for i in range(len(pdb_data)):
         channel = []
@@ -155,6 +172,8 @@ def apply_rotation(pdb_data, rotation):
         rotated_pdb_data.append(np.array(channel))
     rotated_pdb_data = np.array(rotated_pdb_data)
 
+    if debug: print time.time() - start, 'secs...'
+
     return rotated_pdb_data
 
 if __name__ == '__main__':
@@ -163,16 +182,17 @@ if __name__ == '__main__':
     path_to_project = '../../'
     processed_file = path_to_project + 'data/inter/' + processed_file
     encoded_folder = path_to_project + 'data/final/' + encoded_folder + '/'
-    curve_2d = path_to_project + 'data/start/SFC/'+ curve_2d
-    curve_3d = path_to_project + 'data/start/SFC/'+ curve_3d
+    curve_2d = path_to_project + 'data/source/SFC/'+ curve_2d
+    curve_3d = path_to_project + 'data/source/SFC/'+ curve_3d
 
     # MPI Init
     comm = MPI.COMM_WORLD
     rank = comm.Get_rank()
     cores = comm.Get_size()
-    if debug: print "MPI Info... Cores:", cores
 
-    if profiling: start = time.time()
+    if debug:
+        print "MPI Info... Cores:", cores
+        start = time.time()
 
     # MPI Cut Entries Per Node
     if debug: print "Loading Processed Entries..."
@@ -186,11 +206,12 @@ if __name__ == '__main__':
     curve_2d = np.load(curve_2d)
     sample_dim = int(np.cbrt(len(curve_2d)))
 
-    if profiling: print time.time() - start, "secs..."
+    if debug:
+        print "Init Time:", time.time() - start, "secs..."
 
     # Process Rotations
     for i in range(len(entries)):
-        if profiling: start = time.time()
+        if debug: start = time.time()
         print "Processing", entries[i][0], "Rotation", entries[i][1]
         pdb_data = apply_rotation(entries[i][2], entries[i][3])
         if dynamic_bounding:
@@ -230,6 +251,6 @@ if __name__ == '__main__':
         if not os.path.exists(encoded_folder): os.makedirs(encoded_folder)
         misc.imsave(file_path, encoded_pdb_2d)
 
-        if profiling: print time.time() - start, "secs..."
-
-        if debug: exit()
+        if debug:
+            print "Encoding Time:", time.time() - start, "secs..."
+            exit()

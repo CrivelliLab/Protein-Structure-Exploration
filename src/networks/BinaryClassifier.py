@@ -54,9 +54,10 @@ class ProteinNet:
         self.model.compile(optimizer=self.optimizer, loss=self.loss_fun, metrics=[categorical_accuracy])
         self.model.summary()
 
-if __name__ == '__main__':
 
-    if debug: print "Generating Dataset..."
+def load_pdb_train():
+    '''
+    '''
 
     x_train = []
     y_train = []
@@ -97,6 +98,7 @@ if __name__ == '__main__':
 
     # Load Ras PDB Images
     for i in tqdm(range(len(pdb_imgs))):
+        if pdb_imgs[]
         img = misc.imread('../data/Encoded/WD40-SD64/' + pdb_imgs[i])
         img = img.astype('float')
         img[:,:,0] = img[:,:,0]/255.0
@@ -105,11 +107,39 @@ if __name__ == '__main__':
         x_train.append(img)
         y_train.append([1, 0])
 
-    x_val = np.array(x_train[:512])
-    y_val = np.array(y_train[:512])
+    x_train = np.array(x_train)
+    y_train = np.array(y_train)
 
-    x_train = np.array(x_train[512:])
-    y_train = np.array(y_train[512:])
+    return x_train, y_train
+
+def load_obj_train():
+    '''
+    '''
+    x_train = []
+    y_train = []
+
+    # Read Ras PDB IMG File Names
+    pdb_imgs = []
+    for line in sorted(os.listdir('../data/Encoded/RAS-SD64/')):
+        if line != '.gitignore': pdb_imgs.append(line)
+
+    if debug: print "Loading RAS Encoded Images..."
+
+    # Load Ras PDB Images
+    for i in tqdm(range(len(pdb_imgs))):
+        img = misc.imread('../data/Encoded/RAS-SD64/' + pdb_imgs[i])
+        img = img.astype('float')
+        img[:,:,0] = img[:,:,0]/255.0
+        img[:,:,1] = img[:,:,1]/255.0
+        img[:,:,2] = img[:,:,2]/255.0
+        x_train.append(img)
+        y_train.append([0, 1])
+
+if __name__ == '__main__':
+
+    if debug: print "Generating Dataset..."
+
+    x_train, y_train = load_pdb_train()
 
     x_data, x_test, y_data, y_test = train_test_split(x_train, y_train, test_size=0.3, random_state=45)
 
