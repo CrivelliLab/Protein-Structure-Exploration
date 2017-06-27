@@ -1,18 +1,47 @@
 '''
 GenerateCurves.py
-Updated: 6/23/17
+Updated: 6/26/17
+
+README:
+
+The following script is used to generate 3D and 2D spacefilling curves.
+
+Global variables used to generate the curves are defined under #- Global Variables.
+gen_3d and gen_2d define the 3D and 2D curve which will be generated.
+order_3d and order_2d define what order curve will be generated.
+
+Currently the following spacefilling curves are implemented:
+
+- 3D Z-order : 'zcurve_3D'
+- 2D Z-order : 'zcurve_2D'
+- 3D Hilbert : 'hilbert_3D'
+- 2D Hilbert : 'hilbert_2D'
+- 2D Naive Folding : 'fold_2D'
+
+The 2^order determines the length along an axis. For example:
+
+- order 4 2D curve results in 16 X 16 array.
+- order 4 3D curve results in 16 X 16 X 16 array.
+
+Note: For 3D to 2D transposition, length of 3D and 2D curves must be the same.
+Script prints out pairs of orders for 3D and 2D curves that will allow for this.
+
+Generated curve array files will be save under data/source/SFC/ with the following
+naming convention:
+
+<curve><order>.npy
 
 '''
 import numpy as np
 from scipy import reshape, sqrt, identity
 from numpy.matlib import repmat, repeat
 import matplotlib.pyplot as plt
-from skimage.measure import structural_similarity as ssim
+from skimage.measure import compare_ssim as ssim
 
 #- Global Variables
 gen_3d = 'hilbert_3D'
 gen_2d = 'fold_2D'
-order_3d = 10
+order_3d = 4
 order_2d = 6
 
 #- Verbose Settings
@@ -186,21 +215,6 @@ def display_spacefilling_dim():
             print "Space Filling 3D Curve:", int(cb), 'x', int(cb), 'x', int(cb), ', order-', np.log2(cb)
             print "Total Number of Pixels:", x, '\n'
 
-
-def calc_dist_matrix(points):
-    '''
-    '''
-    numPoints = len(points)
-    distMat = sqrt(np.sum((repmat(points, numPoints, 1) - repeat(points, numPoints, axis=0))**2, axis=1))
-    return distMat.reshape((numPoints,numPoints))
-
-def mse(imageA, imageB):
-    '''
-    '''
-    err = np.sum((imageA.astype("float") - imageB.astype("float")) ** 2)
-    err /= float(imageA.shape[0] * imageA.shape[1])
-    return err
-
 if __name__ == '__main__':
 
     # File Paths
@@ -217,20 +231,3 @@ if __name__ == '__main__':
     if debug: print("Generating 2D Curve...")
     curve_2d = globals()[gen_2d](order_2d)
     np.save(curves_folder+gen_2d+str(order_2d), curve_2d)
-
-    # Distance Comparison
-    '''
-    c3d_dist_matrix = calc_dist_matrix(curve_3d)
-    c3d_dist_matrix = c3d_dist_matrix / np.amax(c3d_dist_matrix)
-    plt.imshow(c3d_dist_matrix, clim=(0.0, 1.0))
-    plt.colorbar()
-    plt.show()
-
-    c2d_dist_matrix = calc_dist_matrix(curve_2d)
-    c2d_dist_matrix = c2d_dist_matrix / np.amax(c2d_dist_matrix)
-    plt.imshow(c2d_dist_matrix, clim=(0.0, 1.0))
-    plt.colorbar()
-    plt.show()
-
-    print 'MSE Between Curves:', mse(c3d_dist_matrix, c2d_dist_matrix)
-    '''

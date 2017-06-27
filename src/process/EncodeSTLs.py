@@ -2,6 +2,29 @@
 Encodeobjs.py
 Updated: 6/23/17
 
+README:
+
+The following script is used to encode .OBJ files into 2D images using
+spacefilling curves.
+
+Global variables used to encode are defined under #- Global Variables. obj_folder
+defines the folder containing .OBJ files. Folder must be under data/source.
+
+encoded_folder defines the folder name for the encoded objects.Folder will be
+created under data/final/.
+
+dynamic_bounding defines whether dynamic or static bounding will be used to
+discretize the object. If set to False, range_ defines the window along each axis
+discretization will be done.
+
+curve_3d and curve_2d define the spacefilling curves used for encoding for 3D to
+1D and 1D to 2D respectively. Curves are under /data/source/SFC/.
+
+The output image files are saved under data/final/<encoded_folder> as .png files
+with the following naming convention:
+
+<obj_id> - <rotation_index>.png
+
 '''
 import os, sys, time
 import numpy as np

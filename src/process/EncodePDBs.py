@@ -1,8 +1,37 @@
 '''
-EncodePDB.py
-Updated: 6/23/17
+EncodePDBs.py
+Updated: 6/26/17
+
+README:
+
+The following script is used to encode PDB data points into 2D images using
+spacefilling curves.
+
+Global variables used to encode are defined under #- Global Variables. processed_file
+defines the array file containing processed pdb data and rotation permutations.
+Array file must be under data/inter/. encoded_folder defines the folder name for the
+encoded PDB images. Folder will be created under data/final/.
+
+dynamic_bounding defines whether dynamic or static bounding will be used to
+discretize the data. If set to False, range_ defines the window along each axis
+discretization will be done.
+
+skeleton defines whether the encoding will be done using only the point data from
+PDBs. If set to False, a space filling atomic model will be rendered to be used in
+discretization.
+
+curve_3d and curve_2d define the spacefilling curves used for encoding for 3D to
+1D and 1D to 2D respectively. Curves are under /data/source/SFC/.
+
+The output image files are saved under data/final/<encoded_folder> as .png files
+with the following naming convention:
+
+<pdb_id> - <rotation_index>.png
 
 '''
+visualize = False
+if visualize: from Visualizations import *
+
 import os, sys, time
 import numpy as np
 from scipy import misc, ndimage
@@ -14,16 +43,16 @@ from mpi4py import MPI
 import vtk
 import vtk.util.numpy_support as vtk_np
 
-# Global Variables
-processed_file = 'WD40.npy'
-encoded_folder = 'WD40-SD512-ZZ'
+#- Global Variables
+processed_file = 'RAS.npy'
+encoded_folder = 'RAS-MD512-HH'
 dynamic_bounding = True
-skeleton = True
-curve_3d = 'zcurve_3D6.npy'
-curve_2d = 'zcurve_2D9.npy'
-range_ = [-100, 100]
+range_ = [-70, 70]
+skeleton = False
+curve_3d = 'hilbert_3D6.npy'
+curve_2d = 'hilbert_2D9.npy'
 
-# Verbose Settings
+#- Verbose Settings
 debug = True
 
 ################################################################################
@@ -244,6 +273,11 @@ if __name__ == '__main__':
             encoded_pdb_2d.append(encoded_res_2d)
         encoded_pdb_2d = np.array(encoded_pdb_2d)
         encoded_pdb_2d = np.transpose(encoded_pdb_2d, (2,1,0))
+
+        if visualize:
+            display_3d_mesh(entries[i][2])
+            display_3d_array(pdb_3d_model)
+            display_2d_array(encoded_pdb_2d)
 
         # Save Encoded PDB to Numpy Array File.
         if debug: print("Saving Encoded PDB...")

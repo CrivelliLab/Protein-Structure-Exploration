@@ -1,13 +1,13 @@
 '''
 ProcessPDBs.py
-Updated: 06/23/17
+Updated: 06/26/17
 
 README:
 
 The following script is used to generate array files with data points needed to
 render and encode PBD files into 2D images.
 
-Global variables used to generate array file are defined under # Global Variables.
+Global variables used to generate array file are defined under #- Global Variables.
 pdb_folder defines the location of the PDBs which will be parsed. Folder must be
 under data/start/PDB/.
 
@@ -19,11 +19,11 @@ the sel_channels variable. Note: these string identifiers must be valid Prody
 tags.
 
 Rotation matricies are generated for all permutations of rotations defined under
-# Defined Rotations. Currently set to generate all permuations of 45 degree turns
+#- Defined Rotations. Currently set to generate all permuations of 45 degree turns
 along the x, y, z axis.
 
 Any hardcoded data points not provided directly from the PDBs are defined under
-# Hard Coded Knowledge. Dictionary of Van Der Waal radii can be found here.
+#- Hard Coded Knowledge. Dictionary of Van Der Waal radii can be found here.
 
 The output array file will be saved under data/inter/ with a file name corresponding
 to the pdb_folder, the sample size, and random seed used to generate the file.
@@ -63,7 +63,7 @@ amino_acids = [   'ALA', 'ARG', 'ASN', 'ASP', 'ASX', 'CYS', 'GLN', 'GLU', 'GLX',
                 'THR', 'TRP', 'TYR', 'UNK', 'VAL']
 van_der_waal_radii = {  'H' : 1.2, 'C' : 1.7, 'N' : 1.55, 'O' : 1.52, 'S' : 1.8,
                         'D' : 1.2, 'F' : 1.47, 'CL' : 1.75, 'BR' : 1.85, 'P' : 1.8,
-                        'I' : 1.98, '' : 0} # Source:____
+                        'I' : 1.98, '' : 0} # Source:https://physlab.lums.edu.pk/images/f/f6/Franck_ref2.pdf
 
 ################################################################################
 
