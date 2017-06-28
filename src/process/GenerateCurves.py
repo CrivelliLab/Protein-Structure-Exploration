@@ -36,7 +36,6 @@ import numpy as np
 from scipy import reshape, sqrt, identity
 from numpy.matlib import repmat, repeat
 import matplotlib.pyplot as plt
-from skimage.measure import compare_ssim as ssim
 
 #- Global Variables
 gen_3d = 'hilbert_3D'

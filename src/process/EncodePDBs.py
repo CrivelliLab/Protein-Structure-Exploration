@@ -29,7 +29,7 @@ with the following naming convention:
 <pdb_id> - <rotation_index>.png
 
 '''
-visualize = False
+visualize = True
 if visualize: from Visualizations import *
 
 import os, sys, time

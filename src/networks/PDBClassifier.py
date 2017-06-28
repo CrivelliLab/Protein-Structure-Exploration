@@ -25,16 +25,17 @@ from tqdm import tqdm
 # Neural Network
 import tensorflow as tf
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
-from keras.models import Model
+from keras.models import *
 from keras.layers import *
 from keras.optimizers import SGD
 from keras.datasets import cifar10
 from keras.metrics import categorical_accuracy
 from sklearn.model_selection import train_test_split
 from vis.visualization import visualize_cam, visualize_saliency
+from keras.constraints import maxnorm
 
 #- Global Variables
-data_folders = ['RAS-SD512-HH', 'WD40-SD512-HH']
+data_folders = ['RAS-MD512-HH', 'WD40-MD512-HH']
 sample = 10000
 seed = 1234
 resize = (64, 64, 3)
@@ -46,27 +47,46 @@ debug = True
 
 class ProteinNet:
 
-    def __init__(self, shape=(64, 64, 3), nb_class=2):
+    def __init__(self, shape=(64, 64, 1), nb_class=2):
         '''
         '''
         # Network Parameters
         self.shape = shape
         self.loss_fun = 'categorical_crossentropy'
-        self.optimizer = 'sgd'
+        self.optimizer = SGD(lr=0.0001, momentum=0.9, decay=0.0001/100, nesterov=False)
 
         # Input Layer
         x = Input(shape=self.shape)
 
-        l = Conv2D(32, (5, 5), activation='relu')(x)
+        l = Conv2D(32, (3, 3), padding='same', activation='relu', kernel_constraint=maxnorm(3))(x)
+        l = Dropout(0.2)(l)
+        l = Conv2D(32, (3, 3), activation='relu', padding='same', kernel_constraint=maxnorm(3))(l)
+        l = MaxPooling2D(pool_size=(2, 2))(l)
+        l = Conv2D(32, (3, 3), padding='same', activation='relu', kernel_constraint=maxnorm(3))(l)
+        l = Dropout(0.2)(l)
+        l = Conv2D(32, (3, 3), activation='relu', padding='same', kernel_constraint=maxnorm(3))(l)
+        l = MaxPooling2D(pool_size=(2, 2))(l)
+        l = Conv2D(32, (3, 3), padding='same', activation='relu', kernel_constraint=maxnorm(3))(l)
+        l = Dropout(0.2)(l)
+        l = Conv2D(32, (3, 3), activation='relu', padding='same', kernel_constraint=maxnorm(3))(l)
+        l = MaxPooling2D(pool_size=(2, 2))(l)
+        l = Flatten()(l)
+        l = Dense(512, activation='relu', kernel_constraint=maxnorm(3))(l)
+        l = Dropout(0.5)(l)
+        '''
+        l = Conv2D(64, (5, 5))(x)
         l = MaxPooling2D((2, 2))(l)
-        l = Conv2D(32, (5, 5), activation='relu')(l)
+        l = LeakyReLU(0.2)(l)
+        l = Conv2D(64, (5, 5))(l)
         l = MaxPooling2D((2, 2))(l)
-        l = Conv2D(32, (5, 5), activation='relu')(l)
+        l = LeakyReLU(0.2)(l)
+        l = Conv2D(64, (5, 5))(l)
         l = MaxPooling2D((2, 2))(l)
+        l = LeakyReLU(0.2)(l)
         l = Flatten()(l)
         l = Dense(512, activation='relu')(l)
         l = Dropout(0.5)(l)
-
+        '''
         # Output Layer
         y = Dense(nb_class, activation='softmax')(l)
 
@@ -113,6 +133,8 @@ def load_pdb_train(encoded_folders, i, sample=None, resize=None, names=False):
             #if j < 10:
                 #plt.imshow(img)
                 #plt.show()
+        #img = np.dot(img[...,:3], [0.299, 0.587, 0.114])
+        #img = np.expand_dims(img, axis=-1)
         y_ = [0 for z in range(len(encoded_folders))]
         y_[i] = 1
         x_train.append(img)
@@ -146,7 +168,7 @@ if __name__ == '__main__':
 
     # Fit Training Data
     net = ProteinNet(shape=x_train.shape[1:])
-    for i in range(10):
+    for i in range(100):
         print "Epoch", i
         net.model.fit(x_data, y_data, epochs=1, batch_size=25)
         print(net.model.evaluate(x_test, y_test, batch_size=25))
@@ -156,6 +178,6 @@ if __name__ == '__main__':
     for i in range(len(pdb_files)):
         p = net.model.predict(x_atten[i:i+1])
         atten_map = visualize_saliency(net.model, 10, [np.argmax(p[0])], x_atten[i], alpha=0.0)
-        atten_map = np.dot(atten_map[...,:3], [0.299, 0.587, 0.114])
+        #atten_map = np.dot(atten_map[...,:3], [0.299, 0.587, 0.114])
         atten_map = misc.imresize(atten_map, (512, 512), interp='nearest')
         misc.imsave('../../data/valid/attenmaps/'+pdb_files[i].split('.')[0]+'.png', atten_map)
