@@ -27,18 +27,16 @@ import tensorflow as tf
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 from keras.models import *
 from keras.layers import *
-from keras.optimizers import SGD
-from keras.datasets import cifar10
+from keras.optimizers import *
 from keras.metrics import categorical_accuracy
-from sklearn.model_selection import train_test_split
 from vis.visualization import visualize_cam, visualize_saliency
 from keras.constraints import maxnorm
+from keras.preprocessing.image import ImageDataGenerator
 
 #- Global Variables
-data_folders = ['RAS-MD512-HH', 'WD40-MD512-HH']
-sample = 10000
-seed = 1234
-resize = (64, 64, 3)
+data_folder = 'RAS-WD40-MD512-HH'
+resize = (256, 256)
+seed = 125
 
 # Verbose Settings
 debug = True
@@ -59,6 +57,14 @@ class ProteinNet:
         x = Input(shape=self.shape)
 
         l = Conv2D(32, (3, 3), padding='same', activation='relu', kernel_constraint=maxnorm(3))(x)
+        l = Dropout(0.2)(l)
+        l = Conv2D(32, (3, 3), activation='relu', padding='same', kernel_constraint=maxnorm(3))(l)
+        l = MaxPooling2D(pool_size=(2, 2))(l)
+        l = Conv2D(32, (3, 3), padding='same', activation='relu', kernel_constraint=maxnorm(3))(l)
+        l = Dropout(0.2)(l)
+        l = Conv2D(32, (3, 3), activation='relu', padding='same', kernel_constraint=maxnorm(3))(l)
+        l = MaxPooling2D(pool_size=(2, 2))(l)
+        l = Conv2D(32, (3, 3), padding='same', activation='relu', kernel_constraint=maxnorm(3))(l)
         l = Dropout(0.2)(l)
         l = Conv2D(32, (3, 3), activation='relu', padding='same', kernel_constraint=maxnorm(3))(l)
         l = MaxPooling2D(pool_size=(2, 2))(l)
@@ -96,88 +102,16 @@ class ProteinNet:
                             metrics=[categorical_accuracy])
         self.model.summary()
 
-
-def load_pdb_train(encoded_folders, i, sample=None, resize=None, names=False):
-    '''
-    Method loads in training images from defined folder. Images values are normalized
-    betweeen 0.0 and 1.0.
-
-    '''
-
-    x_train = []
-    y_train = []
-
-    # Read PDB IMG File Names
-    pdb_imgs = []
-    for line in sorted(os.listdir('../../data/final/' + encoded_folders[i] + '/')):
-        if line.endswith('.png'): pdb_imgs.append(line)
-    pdb_imgs = np.array(pdb_imgs)
-
-    # Take Random Sample
-    if sample:
-        np.random.seed(seed)
-        np.random.shuffle(pdb_imgs)
-        pdb_imgs = pdb_imgs[:sample]
-
-    if debug: print "Loading Encoded Images From", encoded_folders[i], '...'
-
-    # Load PDB Images
-    for j in tqdm(range(len(pdb_imgs))):
-        img = misc.imread('../../data/final/' + encoded_folders[i] + '/' + pdb_imgs[j])
-        img = img.astype('float')
-        img[:,:,0] = img[:,:,0]/255.0
-        img[:,:,1] = img[:,:,1]/255.0
-        img[:,:,2] = img[:,:,2]/255.0
-        if resize:
-            img = misc.imresize(img, resize, interp='bicubic')
-            #if j < 10:
-                #plt.imshow(img)
-                #plt.show()
-        #img = np.dot(img[...,:3], [0.299, 0.587, 0.114])
-        #img = np.expand_dims(img, axis=-1)
-        y_ = [0 for z in range(len(encoded_folders))]
-        y_[i] = 1
-        x_train.append(img)
-        y_train.append(y_)
-
-    x_train = np.array(x_train)
-    y_train = np.array(y_train)
-
-    if names: return x_train, y_train, pdb_imgs
-    else: return x_train, y_train
-
 if __name__ == '__main__':
-
-    if debug: print "Generating Dataset..."
-
-    # Load Training Data
-    x_train = None
-    y_train = None
-    for i in range(len(data_folders)):
-        x_, y_ = load_pdb_train(data_folders, i, sample, resize)
-        if x_train is None: x_train = x_
-        else: x_train = np.concatenate([x_train, x_], axis=0)
-        if y_train is None: y_train = y_
-        else:y_train = np.concatenate([y_train, y_], axis=0)
-
-    if debug: print "Splitting Training and Test Data..."
-    # 0.7/0.3 Train/Test Data Split
-    x_data, x_test, y_data, y_test = train_test_split(x_train, y_train, test_size=0.3, random_state=45)
 
     if debug: print "Training Network..."
 
-    # Fit Training Data
-    net = ProteinNet(shape=x_train.shape[1:])
-    for i in range(100):
-        print "Epoch", i
-        net.model.fit(x_data, y_data, epochs=1, batch_size=25)
-        print(net.model.evaluate(x_test, y_test, batch_size=25))
+    datagen = ImageDataGenerator()
+    train_flow = datagen.flow_from_directory("../../data/final/"+ data_folder +'/train',
+                    target_size=resize, batch_size=8, class_mode='categorical',
+                    seed=seed)
 
-    # Generate Test Attention Maps
-    x_atten, y_atten, pdb_files = load_pdb_train(data_folders, 0, 100, resize, True)
-    for i in range(len(pdb_files)):
-        p = net.model.predict(x_atten[i:i+1])
-        atten_map = visualize_saliency(net.model, 10, [np.argmax(p[0])], x_atten[i], alpha=0.0)
-        #atten_map = np.dot(atten_map[...,:3], [0.299, 0.587, 0.114])
-        atten_map = misc.imresize(atten_map, (512, 512), interp='nearest')
-        misc.imsave('../../data/valid/attenmaps/'+pdb_files[i].split('.')[0]+'.png', atten_map)
+    # Fit Training Data
+    net = ProteinNet(shape=[resize[0], resize[1], 3])
+    net.model.fit_generator(train_flow, epochs=100, steps_per_epoch=137984)
+    #print(net.model.evaluate(x_test, y_test, batch_size=5))
