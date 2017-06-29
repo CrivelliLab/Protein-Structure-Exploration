@@ -35,7 +35,7 @@ from keras.preprocessing.image import ImageDataGenerator
 
 #- Global Variables
 data_folder = 'RAS-WD40-MD512-HH'
-resize = (256, 256)
+resize = (512, 512)
 seed = 125
 
 # Verbose Settings
@@ -108,10 +108,14 @@ if __name__ == '__main__':
 
     datagen = ImageDataGenerator()
     train_flow = datagen.flow_from_directory("../../data/final/"+ data_folder +'/train',
-                    target_size=resize, batch_size=8, class_mode='categorical',
+                    batch_size=8, class_mode='categorical',
+                    seed=seed)
+    test_flow = datagen.flow_from_directory("../../data/final/"+ data_folder +'/test',
+                    batch_size=8, class_mode='categorical',
                     seed=seed)
 
     # Fit Training Data
     net = ProteinNet(shape=[resize[0], resize[1], 3])
-    net.model.fit_generator(train_flow, epochs=100, steps_per_epoch=137984)
+    net.model.fit_generator(train_flow, epochs=100, steps_per_epoch=27597, validation_data=test_flow,
+        validation_steps=7393)
     #print(net.model.evaluate(x_test, y_test, batch_size=5))
