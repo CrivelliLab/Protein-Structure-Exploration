@@ -22,6 +22,7 @@ from sklearn.model_selection import train_test_split
 #- Global Variables
 data_folders = ['RAS-MD512-HH', 'WD40-MD512-HH']
 seed = 45
+sample = 10000
 split = 0.3
 
 # Verbose Settings
@@ -54,6 +55,11 @@ if __name__ == '__main__':
             if line.endswith('.png'): data_files.append(line)
         data_files = np.array(data_files)
 
+        if sample:
+            np.random.seed(seed)
+            np.random.shuffle(data_files)
+            data_files = data_files[:sample]
+
         if debug: print "Splitting Training and Test Data..."
 
         x_data, x_test, y_data, y_test = train_test_split(data_files, data_files, test_size=split, random_state=seed)
@@ -61,9 +67,9 @@ if __name__ == '__main__':
         if debug: print "Copying Training Data..."
         os.mkdir(folder + "/train/" + data_folders[i])
         for j in tqdm(range(len(x_data))):
-            copyfile(data_folders[i] + '/' + x_data[i], folder + '/train/' + data_folders[i] + '/' + x_data[i])
+            copyfile(data_folders[i] + '/' + x_data[j], folder + '/train/' + data_folders[i] + '/' + x_data[j])
 
         if debug: print "Copying Testing Data..."
         os.mkdir(folder + "/test/" + data_folders[i])
         for j in tqdm(range(len(x_test))):
-            copyfile(data_folders[i] + '/' + x_test[i], folder + '/test/' + data_folders[i] + '/' + x_test[i])
+            copyfile(data_folders[i] + '/' + x_test[j], folder + '/test/' + data_folders[i] + '/' + x_test[j])

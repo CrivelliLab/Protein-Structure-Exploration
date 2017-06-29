@@ -45,7 +45,7 @@ def compare_images(encoded_folder):
             sim = ssim(img1, img2, multichannel=True)
             #if debug: print "SSIM", sim
             sims += sim
-        sims = sims / len(pdb_imgs)
+        sims = sims / len(pdb_imgs[i])
         avg += sims
     avg = avg / len(pdb_imgs)
     if debug: print 'Average Sim:', avg
