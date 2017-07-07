@@ -1,0 +1,5 @@
+# Excluding Large Data
+
+raw/ShapeNetCore/
+raw/PDB/*/*.pdb.gz
+processed/PDB/*
