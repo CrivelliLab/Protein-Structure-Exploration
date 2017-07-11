@@ -2,4 +2,4 @@
 
 raw/ShapeNetCore/
 raw/PDB/*/*.pdb.gz
-processed/PDB/*
+processed/tars/*

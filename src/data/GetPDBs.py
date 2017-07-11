@@ -5,7 +5,7 @@ Updated: 07/08/17
 
 README:
 
-This following script is used to fetch PDB files from the Protein Data Bank.
+The following script is used to fetch PDB files from the Protein Data Bank.
 
 Global variables used to fetch the PDBs are defined under #- Global Variables.
 'pdb_list_file' defines the .txt file containing list of PDB ids. .txt file should
@@ -19,9 +19,10 @@ data/raw/PDB/ .
 '''
 import os
 from prody import fetchPDB
+from tqdm import tqdm
 
 #- Global Variables
-pdb_list_file = 'WD40_ids.txt'
+pdb_list_file = 'P01111-P01112-P01116-pos_ids.txt'
 
 #- Verbose Settings
 debug = True
@@ -42,6 +43,8 @@ if __name__ == '__main__':
     if debug: print pdb_list, 'contains', len(pdb_ids), 'entries...'
 
     # Fetch PDBs
-    if debug: print("Fetching PDBs...")
-    for i in range(len(pdb_ids)):
+    if debug: print("Fetching PDBs..."); pbar = tqdm(total=len(pdb_ids))
+    for i in tqdm(range(len(pdb_ids))):
         fetchPDB(pdb_ids[i], compressed=True, folder=pdbs_folder+pdb_list)
+        if debug: pbar.update(1)
+    if debug: pbar.close()
