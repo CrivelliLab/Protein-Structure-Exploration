@@ -1,0 +1,232 @@
+Blast4-request ::= {
+  body queue-search {
+    program "blastp",
+    service "plain",
+    queries bioseq-set {
+      seq-set {
+        seq {
+          id {
+            local str "Query_234925"
+          },
+          descr {
+            user {
+              type str "CFastaReader",
+              data {
+                {
+                  label str "DefLine",
+                  data str ">sp|P01111|RASN_HUMAN GTPase NRas OS=Homo sapiens
+ GN=NRAS PE=1 SV=1"
+                }
+              }
+            },
+            title "sp|P01111|RASN_HUMAN GTPase NRas OS=Homo sapiens GN=NRAS
+ PE=1 SV=1"
+          },
+          inst {
+            repr raw,
+            mol aa,
+            length 189,
+            seq-data ncbieaa "MTEYKLVVVGAGGVGKSALTIQLIQNHFVDEYDPTIEDSYRKQVVIDG
+ETCLLDILDTAGQEEYSAMRDQYMRTGEGFLCVFAINNSKSFADINLYREQIKRVKDSDDVPMVLVGNKCDLPTRTVD
+TKQAHELAKSYGIPFIETSAKTRQGVEDAFYTLVREIRQYRMKKLNSSDDGTQGCMGLPCVVM"
+          }
+        },
+        seq {
+          id {
+            local str "Query_234926"
+          },
+          descr {
+            user {
+              type str "CFastaReader",
+              data {
+                {
+                  label str "DefLine",
+                  data str ">sp|P01112|RASH_HUMAN GTPase HRas OS=Homo sapiens
+ GN=HRAS PE=1 SV=1"
+                }
+              }
+            },
+            title "sp|P01112|RASH_HUMAN GTPase HRas OS=Homo sapiens GN=HRAS
+ PE=1 SV=1"
+          },
+          inst {
+            repr raw,
+            mol aa,
+            length 189,
+            seq-data ncbieaa "MTEYKLVVVGAGGVGKSALTIQLIQNHFVDEYDPTIEDSYRKQVVIDG
+ETCLLDILDTAGQEEYSAMRDQYMRTGEGFLCVFAINNTKSFEDIHQYREQIKRVKDSDDVPMVLVGNKCDLAARTVE
+SRQAQDLARSYGIPYIETSAKTRQGVEDAFYTLVREIRQHKLRKLNPPDESGPGCMSCKCVLS"
+          }
+        },
+        seq {
+          id {
+            local str "Query_234927"
+          },
+          descr {
+            user {
+              type str "CFastaReader",
+              data {
+                {
+                  label str "DefLine",
+                  data str ">sp|P01112-2|RASH_HUMAN Isoform 2 of GTPase HRas
+ OS=Homo sapiens GN=HRAS"
+                }
+              }
+            },
+            title "sp|P01112-2|RASH_HUMAN Isoform 2 of GTPase HRas OS=Homo
+ sapiens GN=HRAS"
+          },
+          inst {
+            repr raw,
+            mol aa,
+            length 170,
+            seq-data ncbieaa "MTEYKLVVVGAGGVGKSALTIQLIQNHFVDEYDPTIEDSYRKQVVIDG
+ETCLLDILDTAGQEEYSAMRDQYMRTGEGFLCVFAINNTKSFEDIHQYREQIKRVKDSDDVPMVLVGNKCDLAARTVE
+SRQAQDLARSYGIPYIETSAKTRQGSRSGSSSSSGTLWDPPGPM"
+          }
+        },
+        seq {
+          id {
+            local str "Query_234928"
+          },
+          descr {
+            user {
+              type str "CFastaReader",
+              data {
+                {
+                  label str "DefLine",
+                  data str ">sp|P01116|RASK_HUMAN GTPase KRas OS=Homo sapiens
+ GN=KRAS PE=1 SV=1"
+                }
+              }
+            },
+            title "sp|P01116|RASK_HUMAN GTPase KRas OS=Homo sapiens GN=KRAS
+ PE=1 SV=1"
+          },
+          inst {
+            repr raw,
+            mol aa,
+            length 189,
+            seq-data ncbieaa "MTEYKLVVVGAGGVGKSALTIQLIQNHFVDEYDPTIEDSYRKQVVIDG
+ETCLLDILDTAGQEEYSAMRDQYMRTGEGFLCVFAINNTKSFEDIHHYREQIKRVKDSEDVPMVLVGNKCDLPSRTVD
+TKQAQDLARSYGIPFIETSAKTRQRVEDAFYTLVREIRQYRLKKISKEEKTPGCVKIKKCIIM"
+          }
+        },
+        seq {
+          id {
+            local str "Query_234929"
+          },
+          descr {
+            user {
+              type str "CFastaReader",
+              data {
+                {
+                  label str "DefLine",
+                  data str ">sp|P01116-2|RASK_HUMAN Isoform 2B of GTPase KRas
+ OS=Homo sapiens GN=KRAS"
+                }
+              }
+            },
+            title "sp|P01116-2|RASK_HUMAN Isoform 2B of GTPase KRas OS=Homo
+ sapiens GN=KRAS"
+          },
+          inst {
+            repr raw,
+            mol aa,
+            length 188,
+            seq-data ncbieaa "MTEYKLVVVGAGGVGKSALTIQLIQNHFVDEYDPTIEDSYRKQVVIDG
+ETCLLDILDTAGQEEYSAMRDQYMRTGEGFLCVFAINNTKSFEDIHHYREQIKRVKDSEDVPMVLVGNKCDLPSRTVD
+TKQAQDLARSYGIPFIETSAKTRQGVDDAFYTLVREIRKHKEKMSKDGKKKKKKSKTKCVIM"
+          }
+        }
+      }
+    },
+    subject database "pdb",
+    algorithm-options {
+      {
+        name "EvalueThreshold",
+        value cutoff e-value { 1, 10, 1 }
+      },
+      {
+        name "UngappedMode",
+        value boolean FALSE
+      },
+      {
+        name "PercentIdentity",
+        value real { 0, 10, 0 }
+      },
+      {
+        name "HitlistSize",
+        value integer 500
+      },
+      {
+        name "EffectiveSearchSpace",
+        value big-integer 0
+      },
+      {
+        name "DbLength",
+        value big-integer 0
+      },
+      {
+        name "WindowSize",
+        value integer 40
+      },
+      {
+        name "SegFiltering",
+        value boolean FALSE
+      },
+      {
+        name "MaskAtHash",
+        value boolean FALSE
+      },
+      {
+        name "WordThreshold",
+        value integer 11
+      },
+      {
+        name "WordSize",
+        value integer 3
+      },
+      {
+        name "MatrixName",
+        value string "BLOSUM62"
+      },
+      {
+        name "GapOpeningCost",
+        value integer 11
+      },
+      {
+        name "GapExtensionCost",
+        value integer 1
+      },
+      {
+        name "CompositionBasedStats",
+        value integer 2
+      },
+      {
+        name "SmithWatermanMode",
+        value boolean FALSE
+      }
+    },
+    format-options {
+      {
+        name "Web_JobTitle",
+        value string "5 sequences (sp|P01111|RASN_HUMAN GTPase NRas..."
+      },
+      {
+        name "Web_RunPsiBlast",
+        value boolean TRUE
+      },
+      {
+        name "Web_StepNumber",
+        value string "1"
+      },
+      {
+        name "Web_ShortQueryAdjust",
+        value boolean TRUE
+      }
+    }
+  }
+}
+
+

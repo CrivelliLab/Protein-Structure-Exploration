@@ -11,25 +11,21 @@ Global variables used to generate array file are defined under #- Global Variabl
 pdb_folder defines the location of the PDBs which will be parsed. Folder must be
 under data/start/PDB/.
 
-A random sample can be generated from a PDB folder as defined by the seed and
-sample variables.
-
 Different channels of information can be accessed from the PDB by defining in
 the sel_channels variable. Note: these string identifiers must be valid Prody
 tags.
 
-Rotation matricies are generated for all permutations of rotations defined under
-#- Defined Rotations. Currently set to generate all permuations of 45 degree turns
-along the x, y, z axis.
+Rotation matricies are generated for all permutations of rotations defined by theta.
+Currently set to generate all permuations of 45 degree turns along the x, y, z axis.
 
 Any hardcoded data points not provided directly from the PDBs are defined under
 #- Hard Coded Knowledge. Dictionary of Van Der Waal radii can be found here.
 
-The output array file will be saved under data/inter/ with a file name corresponding
-to the pdb_folder, the sample size, and random seed used to generate the file.
-Each entry in the array file will contain the following:
+The output array file will be saved under data/interim/ with a file name corresponding
+to the pdb_folder used to generate the file. Each entry in the array file will
+contain the following:
 
-(PDB_filename, rotation_index, PDB_data, rotation_matrix)
+(pdbs_data, rotations)
 
 PDB_data is structured as follows:
 
@@ -37,6 +33,7 @@ PDB_data is structured as follows:
 
 '''
 import os, sys
+from time import time
 import numpy as np
 import itertools as it
 
@@ -45,27 +42,19 @@ from prody import *
 confProDy(verbosity='none')
 
 #- Global Variables
-seed = 21062017
-sample = None # set to None for all PDBs in folder
 pdb_folder = 'RAS'
 sel_channels = ['hydrophobic', 'polar', 'charged']
+theta = 45
 
 #- Verbose Settings
 debug = True
 
-#- Defined Rotations
-axis_list = [[0, 0, 1], [0, 1, 0], [1, 0, 0]]
-theta_list = [(np.pi*i)/4  for i in range(8)]
-
-#- Hard Coded Knowledge
-amino_acids = [   'ALA', 'ARG', 'ASN', 'ASP', 'ASX', 'CYS', 'GLN', 'GLU', 'GLX',
-                'GLY', 'HIS', 'ILE', 'LEU', 'LYS', 'MET', 'PHE', 'PRO', 'SER',
-                'THR', 'TRP', 'TYR', 'UNK', 'VAL']
-van_der_waal_radii = {  'H' : 1.2, 'C' : 1.7, 'N' : 1.55, 'O' : 1.52, 'S' : 1.8,
-                        'D' : 1.2, 'F' : 1.47, 'CL' : 1.75, 'BR' : 1.85, 'P' : 1.8,
-                        'I' : 1.98, '' : 0} # Source:https://physlab.lums.edu.pk/images/f/f6/Franck_ref2.pdf
-
 ################################################################################
+
+# Hard Coded Knowledge
+van_der_waal_radii = {  'H' : 1.2, 'C' : 1.7, 'N' : 1.55, 'O' : 1.52, 'S' : 1.8,
+'D' : 1.2, 'F' : 1.47, 'CL' : 1.75, 'BR' : 1.85, 'P' : 1.8,
+'I' : 1.98, '' : 0} # Source:https://physlab.lums.edu.pk/images/f/f6/Franck_ref2.pdf
 
 def get_pdb_data(pdb_file, channels=[], debug=False):
     '''
@@ -121,37 +110,31 @@ def get_rotation_matrix(axis, theta):
 
 if __name__ == '__main__':
 
-    # Set Random Seed
-    np.random.seed(seed)
-
     # File Paths
     path_to_project = '../../'
-    processed_file = path_to_project + 'data/inter/' + pdb_folder
-    pdb_folder = path_to_project + 'data/source/PDB/' + pdb_folder + '/'
+    interim_file = path_to_project + 'data/interim/' + pdb_folder + '_t' + str(theta)
+    pdb_folder = path_to_project + 'data/raw/PDB/' + pdb_folder + '/'
 
     # Read PDB File Names
+    if debug: print "Read PDB Ids in:", pdb_folder; t = time()
     pdb_files = []
     for line in sorted(os.listdir(pdb_folder)):
         if line.endswith('pdb.gz'): pdb_files.append(line)
-    if debug: print "Processing PDBs in:", pdb_folder
     pdb_files = np.array(pdb_files)
-
-    # Take Random Sample of PDBs
-    if sample:
-        np.random.shuffle(pdb_files)
-        pdb_files = pdb_files[:sample]
-        processed_file = path_to_project + 'data/inter/' + pdb_folder +'-'+str(sample)+'-'+str(seed)
+    if debug: print time() - t, 'secs...'
 
     # Generate Base Rotations
-    if debug: print("Generating Rotations...")
+    if debug: print("Generating Rotations..."); t = time()
     base_rotations = []
+    axis_list = [[0, 0, 1], [0, 1, 0], [1, 0, 0]]
+    theta_list = [(np.pi*(i*float(theta)/180))  for i in range(int(360/theta))]
     for axis in axis_list:
         base_rotations.append([])
         for theta in theta_list:
             rotation = get_rotation_matrix(axis, theta)
             base_rotations[-1].append(rotation)
 
-    # Generate Combinations of Base Rotations
+    ## Generate Combinations of Base Rotations
     base_indices = [[i for i in range(len(base_rotations[j]))] for j in range(len(base_rotations))]
     indices = list(it.product(*base_indices))
     rotations = []
@@ -162,21 +145,23 @@ if __name__ == '__main__':
         rotations.append(comb_rotation)
     rotations = np.array(rotations)
 
-    # Dot Multiply Rotation Combinations
+    ## Dot Multiply Rotation Combinations
     combined_rotations = []
-    for r in rotations:
-        combined_rotations.append(r[2].dot(r[1].dot(r[0])))
+    for r in rotations: combined_rotations.append(r[2].dot(r[1].dot(r[0])))
     rotations = np.array(combined_rotations)
+    if debug: print time() - t, 'secs...'
 
     # Generate Processed Data
-    if debug: print("Processing PDBs...")
-    processed_data = []
+    if debug: print("Processing PDBs..."); t = time()
+    pdbs_data = []
     for pdb_file in pdb_files:
-        pdb_data = get_pdb_data(pdb_folder + pdb_file, channels=sel_channels, debug=debug)
-        for i in range(len(rotations)):
-            processed_data.append([pdb_file.split('.')[0], i, pdb_data, rotations[i]])
-    processed_data = np.array(processed_data)
+        pdb_data = get_pdb_data(pdb_folder + pdb_file, channels=sel_channels, debug=False)
+        pdbs_data.append([pdb_file.split('.')[0], pdb_data])
+    pdbs_data = np.array(pdbs_data)
+    if debug: print time() - t, 'secs...'
 
-    # Shuffle Data And Save
-    np.random.shuffle(processed_data)
-    np.save(processed_file, processed_data)
+    # Save Data
+    if debug: print("Saving Data..."); t = time()
+    data = np.array([pdbs_data, rotations])
+    np.save(interim_file, data)
+    if debug: print time() - t, 'secs...'

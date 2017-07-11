@@ -11,8 +11,8 @@ computationally-generated protein structures.
 |--- data
 |    |--- external
 |    |--- interim
-|    |    |--- RAS_512r.npy
-|    |    |--- WD40_512r.npy
+|    |    |--- RAS_t45.npy
+|    |    |--- WD40_t45.npy
 |    |    
 |    |--- processed
 |    |    |---PDB
@@ -30,6 +30,7 @@ computationally-generated protein structures.
 |         |         |--- wd40_pdb_ids.txt
 |         |
 |         |--- SFC
+|         |--- BLAST
 |
 |--- docs
 |--- models
@@ -55,7 +56,6 @@ computationally-generated protein structures.
      |--- features
      |    |--- EncodePDBs.py
      |    |--- ProcessPDBs.py
-     |    |--- protmap2d.py
      |    |--- run_encode_pdbs.sbatch
      |
      |--- models
@@ -67,10 +67,9 @@ computationally-generated protein structures.
      |
      |--- validation
      |    |--- ValRotations.py
-     |    |--- ValSFC.py
+     |    |--- ValSFCs.py
      |
      |--- visualization
-          |--- ValidateAttenMaps.py
           |--- Visualizations.py
 
 ```
