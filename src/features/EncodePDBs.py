@@ -2,7 +2,7 @@
 EncodePDBs.py
 Updated: 6/26/17
 
-README:
+README: 100,342 - 23.5 min
 
 The following script is used to encode PDB data points into 2D images using
 spacefilling curves.
@@ -29,7 +29,7 @@ with the following naming convention:
 <pdb_id> - <rotation_index>.png
 
 '''
-import os, sys
+import os, argparse
 from time import time
 import numpy as np
 from scipy import misc, ndimage
@@ -42,12 +42,12 @@ import vtk
 import vtk.util.numpy_support as vtk_np
 
 #- Global Variables
-processed_file = 'RAS_t45.npy'
+processed_file = ''
 skeleton = False
 dynamic_bounding = True
 bounds = [-70, 70]
-curve_3d = 'hilbert_3D6.npy'
-curve_2d = 'hilbert_2D9.npy'
+curve_3d = 'hilbert_3d6.npy'
+curve_2d = 'hilbert_2d9.npy'
 
 #- debug Settings
 debug = True
@@ -78,7 +78,9 @@ def gen_mesh_voxels(pdb_data, bounds, sample_dim, debug=False):
         sphere_source.SetRadius(r[i])
         sphere_source.Update()
         input1.ShallowCopy(sphere_source.GetOutput())
-        append_filter.AddInputData(input1)
+        if vtk.VTK_MAJOR_VERSION <= 5:
+            append_filter.AddInputConnection(input1.GetProducerPort())
+        else: append_filter.AddInputData(input1)
     append_filter.Update()
 
     #  Remove Any Duplicate Points.
@@ -197,6 +199,22 @@ def apply_rotation(pdb_data, rotation, debug=False):
 
 if __name__ == '__main__':
 
+    # Cmd Line Args
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-pf', '--processed_file', help="Processed PDB Array File", type=str, default=None)
+    parser.add_argument('-sk', '--skeletal', help="Skeletal Model For Encoding", action="store_true")
+    parser.add_argument('-sb', '--static_bounds', help="Static Bounds For Encoding; comma seperated values", type=str, default=None)
+    parser.add_argument('-c3','--curve_3d', help="3d SFC Used For Encoding", type=str, default=None)
+    parser.add_argument('-c2','--curve_2d', help="2d SFC Used For Encoding", type=str, default=None)
+    args = vars(parser.parse_args())
+    if args['processed_file']: processed_file = args['processed_file']
+    if args['skeletal']: skeleton = True
+    if args['curve_3d']: curve_3d = args['curve_3d']
+    if args['curve_3d']: curve_3d = args['curve_3d']
+    if args['static_bounds']:
+        dynamic_bounding = False
+        bounds = [int(i) for i in args['static_bounds'].split(',')]
+
     # Encoded Folder Name
     encoded_folder = processed_file.replace('_','-')[:-4] + '-'
     if skeleton: encoded_folder += 'S'
@@ -208,11 +226,11 @@ if __name__ == '__main__':
     encoded_folder = encoded_folder.upper()
 
     # File Paths
-    path_to_project = '../../'
-    processed_file = path_to_project + 'data/interim/' + processed_file
-    encoded_folder = path_to_project + 'data/processed/PDB/' + encoded_folder
-    curve_2d = path_to_project + 'data/raw/SFC/'+ curve_2d
-    curve_3d = path_to_project + 'data/raw/SFC/'+ curve_3d
+    os.chdir(os.path.dirname(os.path.realpath(__file__)))
+    processed_file = '../../data/interim/' + processed_file
+    encoded_folder = '../../data/processed/tars/' + encoded_folder
+    curve_2d = '../../data/raw/SFC/'+ curve_2d
+    curve_3d = '../../data/raw/SFC/'+ curve_3d
 
     # MPI Init
     comm = MPI.COMM_WORLD
@@ -225,7 +243,8 @@ if __name__ == '__main__':
     if debug: print("Loading Curves...")
     curve_3d = np.load(curve_3d)
     curve_2d = np.load(curve_2d)
-    sample_dim = int(np.cbrt(len(curve_2d)))
+    try: sample_dim = int(np.cbrt(len(curve_2d)))
+    except: sample_dim = int(len(curve_2d) ** (1.0/3.0)) + 1
     encoded_folder += str(int(np.sqrt(len(curve_2d)))) + '/'
 
     # Load Data
@@ -287,6 +306,4 @@ if __name__ == '__main__':
         if not os.path.exists(encoded_folder): os.makedirs(encoded_folder)
         misc.imsave(file_path, encoded_pdb_2d)
 
-        if debug:
-            print "Encoding Time:", time() - t, "secs..."
-            exit()
+        if debug: print "Encoding Time:", time() - t, "secs..."; exit()

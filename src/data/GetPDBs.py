@@ -17,12 +17,12 @@ A new folder will be created named <label> containing compressed PDB files under
 data/raw/PDB/ .
 
 '''
-import os
+import os, argparse
 from prody import fetchPDB
 from tqdm import tqdm
 
 #- Global Variables
-pdb_list_file = 'P01111-P01112-P01116-pos_ids.txt'
+pdb_list_file = 'P01111P01112P01116pos_ids.txt'
 
 #- Verbose Settings
 debug = True
@@ -31,7 +31,14 @@ debug = True
 
 if __name__ == '__main__':
 
+    # Cmd Line Args
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-pl', '--pdb_list', help="PDB Ids List File", type=str, default=None)
+    args = vars(parser.parse_args())
+    if args['pdb_list']: pdb_list_file = args['pdb_list']
+
     # File Paths
+    os.chdir(os.path.dirname(os.path.realpath(__file__)))
     pdbs_folder = '../../data/raw/PDB/'
     pdb_list = pdb_list_file.split('_')[0]
     if not os.path.exists(pdbs_folder+pdb_list): os.makedirs(pdbs_folder+pdb_list)
@@ -44,7 +51,7 @@ if __name__ == '__main__':
 
     # Fetch PDBs
     if debug: print("Fetching PDBs..."); pbar = tqdm(total=len(pdb_ids))
-    for i in tqdm(range(len(pdb_ids))):
+    for i in range(len(pdb_ids)):
         fetchPDB(pdb_ids[i], compressed=True, folder=pdbs_folder+pdb_list)
         if debug: pbar.update(1)
     if debug: pbar.close()

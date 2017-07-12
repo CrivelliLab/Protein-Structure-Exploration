@@ -32,7 +32,7 @@ PDB_data is structured as follows:
 (channel, radius, x, y, z)
 
 '''
-import os, sys
+import os, argparse
 from time import time
 import numpy as np
 import itertools as it
@@ -42,7 +42,7 @@ from prody import *
 confProDy(verbosity='none')
 
 #- Global Variables
-pdb_folder = 'RAS'
+pdb_folder = 'P01111P01112P01116neg'
 sel_channels = ['hydrophobic', 'polar', 'charged']
 theta = 45
 
@@ -110,10 +110,24 @@ def get_rotation_matrix(axis, theta):
 
 if __name__ == '__main__':
 
+    # Cmd Line Args
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-pf', '--pdb_folder',
+                        help="Folder Containing PDBs", type=str, default=None)
+    parser.add_argument('-th', '--theta',
+                        help="Rotation Angle in Degrees", type=int, default=None)
+    parser.add_argument('-ch', '--channels',
+                        help="channels which will be encoded; comma seperated values",
+                        type=str, default=None)
+    args = vars(parser.parse_args())
+    if args['pdb_folder']: pdb_folder = args['pdb_folder']
+    if args['theta']: theta = args['theta']
+    if args['channels']: sel_channels = args['channels'].split(',')
+
     # File Paths
-    path_to_project = '../../'
-    interim_file = path_to_project + 'data/interim/' + pdb_folder + '_t' + str(theta)
-    pdb_folder = path_to_project + 'data/raw/PDB/' + pdb_folder + '/'
+    os.chdir(os.path.dirname(os.path.realpath(__file__)))
+    interim_file = '../../data/interim/' + pdb_folder + '_t' + str(theta)
+    pdb_folder = '../../data/raw/PDB/' + pdb_folder + '/'
 
     # Read PDB File Names
     if debug: print "Read PDB Ids in:", pdb_folder; t = time()

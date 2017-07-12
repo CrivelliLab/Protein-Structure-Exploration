@@ -31,10 +31,11 @@ naming convention:
 <curve><order>.npy
 
 '''
+import os, argparse
 import numpy as np
 
 #- Global Variables
-gen = 'zcurve_3D' # Name of function used to generate SFC
+gen = 'z_3D' # Name of function used to generate SFC
 order = 4
 
 #- Verbose Settings
@@ -42,7 +43,7 @@ debug = True
 
 ################################################################################
 
-def zcurve_3D(order):
+def z_3d(order):
     '''
     Method generates 3D z-order curve of desired order.
 
@@ -74,7 +75,7 @@ def zcurve_3D(order):
 
     return np.array(z_curve)
 
-def zcurve_2D(order):
+def z_2d(order):
     '''
     Method generates 2D z-order curve of desired order.
 
@@ -99,7 +100,7 @@ def zcurve_2D(order):
 
     return np.array(z_curve)
 
-def hilbert_3D(order):
+def hilbert_3d(order):
     '''
     Method generates 3D hilbert curve of desired order.
 
@@ -135,7 +136,7 @@ def hilbert_3D(order):
 
     return np.array(hilbert_curve)
 
-def hilbert_2D(order):
+def hilbert_2d(order):
     '''
     Method generates 2D hilbert curve of desired order.
 
@@ -157,7 +158,7 @@ def hilbert_2D(order):
 
     return np.array(hilbert_curve)
 
-def fold_2D(order):
+def fold_2d(order):
     '''
     Method generates 2D square folding curve of desired order.
 
@@ -188,12 +189,23 @@ def display_spacefilling_dim():
 
 if __name__ == '__main__':
 
+    # Cmd Line Args
+    flag = True
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-c', '--curve', help="Type Of Curve", type=str, default=None)
+    parser.add_argument('-o', '--order', help="Order Of Curve", type=int, default=None)
+    args = vars(parser.parse_args())
+    if args['curve']: gen = args['curve']; flag = False
+    if args['order']: order = args['order']; flag = False
+
     # File Paths
+    os.chdir(os.path.dirname(os.path.realpath(__file__)))
     curves_folder = '../../data/raw/SFC/'
 
     # Display Possible Order Pairings
-    if debug: print("Displaying Possible Mapping Combinations...")
-    display_spacefilling_dim()
+    if flag:
+        if debug: print("Displaying Possible Mapping Combinations...")
+        display_spacefilling_dim()
 
     # Generate Space Filling Curve
     if debug: print("Generating Curve...")
