@@ -1,1 +1,3 @@
+# Updated: 07/12/17
+# Ignore jupyter checkpoints - too large for repo
 .ipynb_checkpoints

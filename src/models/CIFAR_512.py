@@ -1,7 +1,7 @@
 '''
 CIFAR_512.py
-Author: Rafael Zamora
-Updated: 7/11/17
+Updated: 7/12/17
+[PASSING]
 
 README:
 

@@ -1,6 +1,7 @@
 '''
 ValidateRotations.py
-Updated: 06/27/17
+Updated: 07/12/17
+[NOT PASSING] - Refactoring and Documentation
 
 README:
 

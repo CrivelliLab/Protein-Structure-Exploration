@@ -1,30 +1,39 @@
 '''
 EncodePDBs.py
-Updated: 6/26/17
+Updated: 7/12/17
+[NOT PASSING] - Unimplemented Functionality
+                |- Profiling Tool
 
-README: 100,342 - 23.5 min
+README:
 
-The following script is used to encode PDB data points into 2D images using
-spacefilling curves.
+The following script is used to encode PDB data points into 2D using spacefilling
+curves.
 
-Global variables used to encode are defined under #- Global Variables. processed_file
-defines the array file containing processed pdb data and rotation permutations.
-Array file must be under data/inter/. encoded_folder defines the folder name for the
-encoded PDB images. Folder will be created under data/final/.
+Global variables used to encode are defined under #- Global Variables.
+'processed_file' defines the array file containing processed pdb data and rotation permutations.
+Array file must be under data/interim/.
 
-dynamic_bounding defines whether dynamic or static bounding will be used to
-discretize the data. If set to False, range_ defines the window along each axis
+'dynamic_bounding' defines whether dynamic or static bounding will be used to
+discretize the data. If set to False, 'bounds' defines the window along each axis
 discretization will be done.
 
-skeleton defines whether the encoding will be done using only the point data from
-PDBs. If set to False, a space filling atomic model will be rendered to be used in
+'skeleton' defines whether the encoding will be done without using radial data.
+If set to False, a space filling atomic model will be rendered to be used in
 discretization.
 
-curve_3d and curve_2d define the spacefilling curves used for encoding for 3D to
-1D and 1D to 2D respectively. Curves are under /data/source/SFC/.
+'curve_3d' and 'curve_2d' define the spacefilling curves used for encoding for 3D to
+1D and 1D to 2D respectively. Curves are under /data/raw/SFC/.
 
-The output image files are saved under data/final/<encoded_folder> as .png files
-with the following naming convention:
+Command Line Interface:
+
+$ python EncodePDBs.py [-h] [-sk] [-sb STATIC_BOUNDS] processed_file curve_3d curve_2d
+
+The output 2D files are saved under data/processed/<encoded_folder> where
+<encoded_folder> follows the naming convention
+
+- <processed_file>-(S or M for 'skeleton')()
+
+2D files are saved in the folder with the following naming convention:
 
 <pdb_id> - <rotation_index>.png
 
@@ -51,6 +60,11 @@ curve_2d = 'hilbert_2d9.npy'
 
 #- debug Settings
 debug = True
+processed_file_usage = "processed PDB .npy file"
+skeleton_usage = "use skeletal model for encoding"
+static_bounds_usage = "static bounds for encoding; comma seperated values"
+curve_3d_usage = "3d SFC used for encoding"
+curve_2d_usage = "2d SFC used for encoding"
 
 ################################################################################
 
@@ -201,16 +215,16 @@ if __name__ == '__main__':
 
     # Cmd Line Args
     parser = argparse.ArgumentParser()
-    parser.add_argument('-pf', '--processed_file', help="Processed PDB Array File", type=str, default=None)
-    parser.add_argument('-sk', '--skeletal', help="Skeletal Model For Encoding", action="store_true")
-    parser.add_argument('-sb', '--static_bounds', help="Static Bounds For Encoding; comma seperated values", type=str, default=None)
-    parser.add_argument('-c3','--curve_3d', help="3d SFC Used For Encoding", type=str, default=None)
-    parser.add_argument('-c2','--curve_2d', help="2d SFC Used For Encoding", type=str, default=None)
+    parser.add_argument('processed_file', help=processed_file_usage, type=str)
+    parser.add_argument('curve_3d', help=curve_3d_usage, type=str)
+    parser.add_argument('curve_2d', help=curve_2d_usage, type=str)
+    parser.add_argument('-sk', '--skeletal', help=skeleton_usage, action="store_true")
+    parser.add_argument('-sb', '--static_bounds', help=static_bounds_usage, type=str, default=None)
     args = vars(parser.parse_args())
-    if args['processed_file']: processed_file = args['processed_file']
+    processed_file = args['processed_file']
+    curve_3d = args['curve_3d']
+    curve_2d = args['curve_2d']
     if args['skeletal']: skeleton = True
-    if args['curve_3d']: curve_3d = args['curve_3d']
-    if args['curve_3d']: curve_3d = args['curve_3d']
     if args['static_bounds']:
         dynamic_bounding = False
         bounds = [int(i) for i in args['static_bounds'].split(',')]

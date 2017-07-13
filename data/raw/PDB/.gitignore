@@ -1,0 +1,3 @@
+# Updated: 07/12/17
+# Ignore PDB files - too large for repo
+*/*.pdb.gz

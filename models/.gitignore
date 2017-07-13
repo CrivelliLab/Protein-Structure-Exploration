@@ -1,4 +1,4 @@
-# Ignore Model Weight Files
-
+# Updated: 07/12/17
+# Ignore model files - too large for repo
 */*.hdf5
 */*.json

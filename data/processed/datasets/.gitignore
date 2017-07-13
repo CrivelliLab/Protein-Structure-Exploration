@@ -1,0 +1,6 @@
+# Updated: 07/12/17
+# Ignore dataset folders - too large for repo
+*.png
+
+# Ignore dataset binaries - too large for repo
+*.hdf5

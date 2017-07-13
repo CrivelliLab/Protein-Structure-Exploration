@@ -1,35 +1,40 @@
 '''
 ProcessPDBs.py
-Updated: 06/26/17
+Updated: 7/12/17
+[PASSING]
 
 README:
 
 The following script is used to generate array files with data points needed to
-render and encode PBD files into 2D images.
+render and encode PBD files into 2D.
 
 Global variables used to generate array file are defined under #- Global Variables.
-pdb_folder defines the location of the PDBs which will be parsed. Folder must be
+'pdb_folder' defines the location of the PDBs which will be parsed. Folder must be
 under data/start/PDB/.
 
 Different channels of information can be accessed from the PDB by defining in
-the sel_channels variable. Note: these string identifiers must be valid Prody
+the 'sel_channels' variable. Note: these string identifiers must be valid Prody
 tags.
 
-Rotation matricies are generated for all permutations of rotations defined by theta.
-Currently set to generate all permuations of 45 degree turns along the x, y, z axis.
+Rotation matricies are generated for all permutations of rotations defined by 'theta'
+degrees along the x, y, z axis.
 
-Any hardcoded data points not provided directly from the PDBs are defined under
-#- Hard Coded Knowledge. Dictionary of Van Der Waal radii can be found here.
+Command Line Interface:
 
-The output array file will be saved under data/interim/ with a file name corresponding
-to the pdb_folder used to generate the file. Each entry in the array file will
-contain the following:
+$ python ProcessPDBs.py [-h] pdb_folder theta channels
 
-(pdbs_data, rotations)
+The output array file will be saved under data/interim/ with the following naming
+convention:
+
+- <pdb_folder>_t<theta>.npy
+
+The array file will contain the following:
+
+- (PDB_data_for_all_pdbs_in_folder, rotations)
 
 PDB_data is structured as follows:
 
-(channel, radius, x, y, z)
+- (channel, radius, x, y, z)
 
 '''
 import os, argparse
@@ -38,16 +43,19 @@ import numpy as np
 import itertools as it
 
 # PDB File Parsing
-from prody import *
+from prody import parsePDB, moveAtoms, confProDy
 confProDy(verbosity='none')
 
 #- Global Variables
-pdb_folder = 'P01111P01112P01116neg'
-sel_channels = ['hydrophobic', 'polar', 'charged']
-theta = 45
+pdb_folder = ''
+sel_channels = []
+theta = 0
 
 #- Verbose Settings
 debug = True
+pdb_folder_usage = "folder containing PDBs; folder must be in data/raw/PDB"
+channels_usage = "channels which will be encoded; comma seperated values"
+theta_usage = "rotation angle in degrees"
 
 ################################################################################
 
@@ -65,6 +73,14 @@ def get_pdb_data(pdb_file, channels=[], debug=False):
         -   (van_der_waal_radii, x, y, z)
 
     Note: Data is gathered for atoms belonging to only the protein structure.
+
+    Param:
+        pdb_file - str ; file path to pdb file
+        channels - list(str) ; tags for channels selection
+        debug - boolean ; display debug info
+
+    Return:
+        pdb_data - np.array ; multichanneled pdb atomic coordinates
 
     '''
     # Parse PDB File
@@ -85,14 +101,20 @@ def get_pdb_data(pdb_file, channels=[], debug=False):
             channel_data = np.concatenate([channel_radii, channel_coords], 1)
         else: channel_data = np.empty((1,4))
         pdb_data.append(channel_data)
-    pdb_data = np.array(pdb_data)
 
-    return pdb_data
+    return np.array(pdb_data)
 
 def get_rotation_matrix(axis, theta):
     '''
     Return the rotation matrix associated with counterclockwise rotation about
     the given axis by theta radians.
+
+    Param:
+        axis - list ; (x, y, z) axis coordinates
+        theta - float ; angle of rotaion in radians
+
+    Return:
+        rotation_matrix - np.array
 
     '''
     axis = np.asarray(axis)
@@ -112,17 +134,13 @@ if __name__ == '__main__':
 
     # Cmd Line Args
     parser = argparse.ArgumentParser()
-    parser.add_argument('-pf', '--pdb_folder',
-                        help="Folder Containing PDBs", type=str, default=None)
-    parser.add_argument('-th', '--theta',
-                        help="Rotation Angle in Degrees", type=int, default=None)
-    parser.add_argument('-ch', '--channels',
-                        help="channels which will be encoded; comma seperated values",
-                        type=str, default=None)
+    parser.add_argument('pdb_folder', help=pdb_folder_usage, type=str)
+    parser.add_argument('theta', help=theta_usage, type=int)
+    parser.add_argument('channels', help=channels_usage, type=str)
     args = vars(parser.parse_args())
-    if args['pdb_folder']: pdb_folder = args['pdb_folder']
-    if args['theta']: theta = args['theta']
-    if args['channels']: sel_channels = args['channels'].split(',')
+    pdb_folder = args['pdb_folder']
+    theta = args['theta']
+    sel_channels = args['channels'].split(',')
 
     # File Paths
     os.chdir(os.path.dirname(os.path.realpath(__file__)))

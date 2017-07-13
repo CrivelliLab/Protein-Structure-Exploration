@@ -1,7 +1,7 @@
 '''
-ValSFC.py
-Author: Rafael Zamora
-Updated: 07/10/17
+ValSFCs.py
+Updated: 07/12/17
+[PASSING]
 
 README:
 
@@ -9,8 +9,8 @@ The following script is used to run validation experiments on various 3D to 2D
 spacefilling curve transpositions.
 
 Global variables used to run experiments are defined under #- Global Variables.
-'curve_3d' and 'curve_2d' defines the curves that will be compared. Curves must
-be curve array files found under data/raw/SFC/.
+'curve_3d' and 'curve_2d' defines the curves that will be compared.
+Curves must be curve array files found under data/raw/SFC/ .
 
 'normalize' defines whether generated distance matriceis of curves are normalized
 before difference metrics are caluclated.
@@ -40,6 +40,9 @@ def calc_dist_matrix(points):
     '''
     Method returns distance matrix for given list of points.
 
+    Param:
+        points - np.array ; list of coordinates
+
     '''
     numPoints = len(points)
     distMat = np.sqrt(np.sum((repmat(points, numPoints, 1) - repeat(points, numPoints, axis=0))**2, axis=1))
@@ -48,6 +51,10 @@ def calc_dist_matrix(points):
 def mse(imageA, imageB):
     '''
     Method returns the mean squared error between the two input images.
+
+    Param:
+        imageA - np.array
+        imageB - np.array
 
     '''
     err = np.sum((imageA.astype("float") - imageB.astype("float")) ** 2)

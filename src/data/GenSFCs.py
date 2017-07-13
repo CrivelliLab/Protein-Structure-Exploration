@@ -1,51 +1,65 @@
 '''
 GenSFCs.py
-Updated: 7/8/17
+Updated: 7/12/17
+[PASSING]
 
 README:
 
-The following script is used to generate 3D and 2D spacefilling curves.
+The following script is used to generate 3D and 2D space filling curves.
 
 Global variables used to generate the curves are defined under #- Global Variables.
-'gen' defines the curve which will be generated. 'order' defines what order curve will be generated.
+'curve' defines which curve will be generated.
+'order' defines what order curve will be generated.
 
-Currently the following spacefilling curves are implemented:
+Command Line Interface:
 
-- 3D Z-order : 'zcurve_3D'
-- 2D Z-order : 'zcurve_2D'
-- 3D Hilbert : 'hilbert_3D'
-- 2D Hilbert : 'hilbert_2D'
-- 2D Naive Folding : 'fold_2D'
+$ python GenSFCs.py [-h] -c curve -o order
+
+Currently, the following spacefilling curves have been implemented:
+- 3D Z-order : 'z_3d'
+- 2D Z-order : 'z_2d'
+- 3D Hilbert : 'hilbert_3d'
+- 2D Hilbert : 'hilbert_2d'
+- 2D Naive Folding : 'fold_2d'
 
 The 2^order determines the length along an axis. For example:
-
 - order 4 2D curve results in 16 X 16 array.
 - order 4 3D curve results in 16 X 16 X 16 array.
 
 Note: For 3D to 2D transposition, length of 3D and 2D curves must be the same.
-Script prints out pairs of orders for 3D and 2D curves that will map properly.
+Script prints out pairs of orders for 3D and 2D curves that will map properly
+with command line flag '-p'.
 
-Generated curve array files will be save under data/source/SFC/ with the following
+Generated curve array files will be save under data/raw/SFC/ with the following
 naming convention:
 
-<curve><order>.npy
+<curve>_<order>.npy
 
 '''
 import os, argparse
 import numpy as np
 
 #- Global Variables
-gen = 'z_3D' # Name of function used to generate SFC
-order = 4
+curve = ''
+order = 0
 
 #- Verbose Settings
 debug = True
+order_usage = "order of curve"
+pairing_usage = "print mappable 3D to 2D pairings"
+curve_usage = "type of curve; available: z_3d, z_2d, hilbert_3d, hilbert_2d, fold_2d"
 
 ################################################################################
 
 def z_3d(order):
     '''
     Method generates 3D z-order curve of desired order.
+
+    Param:
+        order - int ; order of curve
+
+    Returns:
+        np.array ; list of (x, y, z) coordinates of curve
 
     '''
     z_curve = []
@@ -79,6 +93,12 @@ def z_2d(order):
     '''
     Method generates 2D z-order curve of desired order.
 
+    Param:
+        order - int ; order of curve
+
+    Returns:
+        np.array ; list of (x, y) coordinates of curve
+
     '''
     z_curve = []
     for i in range(pow(pow(2, order),2)):
@@ -103,6 +123,12 @@ def z_2d(order):
 def hilbert_3d(order):
     '''
     Method generates 3D hilbert curve of desired order.
+
+    Param:
+        order - int ; order of curve
+
+    Returns:
+        np.array ; list of (x, y, z) coordinates of curve
 
     '''
 
@@ -140,6 +166,12 @@ def hilbert_2d(order):
     '''
     Method generates 2D hilbert curve of desired order.
 
+    Param:
+        order - int ; order of curve
+
+    Returns:
+        np.array ; list of (x, y) coordinates of curve
+
     '''
     def gen_2d(order, x, y, xi, xj, yi, yj, array):
         if order == 0:
@@ -162,6 +194,12 @@ def fold_2d(order):
     '''
     Method generates 2D square folding curve of desired order.
 
+    Param:
+        order - int ; order of curve
+
+    Returns:
+        np.array ; list of (x, y) coordinates of curve
+
     '''
     s = pow(2, order)
     curve = []
@@ -169,15 +207,14 @@ def fold_2d(order):
         for j in range(s):
             if i % 2 == 0: curve.append([j, i])
             else: curve.append([s-j-1, i])
-    curve = np.array(curve)
-    return curve
+
+    return np.array(curve)
 
 def display_spacefilling_dim():
     '''
     Method displays dimensions of various order space filling curves.
 
     '''
-    # Calculating SFC 3D to 2D Mapping Pair Dimensions
     for i in range(64):
         x = pow(2,i)
         sq = np.sqrt(x)
@@ -190,13 +227,15 @@ def display_spacefilling_dim():
 if __name__ == '__main__':
 
     # Cmd Line Args
-    flag = True
+    flag = False
     parser = argparse.ArgumentParser()
-    parser.add_argument('-c', '--curve', help="Type Of Curve", type=str, default=None)
-    parser.add_argument('-o', '--order', help="Order Of Curve", type=int, default=None)
+    parser.add_argument('curve', help=curve_usage, type=str)
+    parser.add_argument('order', help=order_usage, type=int)
+    parser.add_argument('-p', '--pairings', help=pairing_usage, action="store_true")
     args = vars(parser.parse_args())
-    if args['curve']: gen = args['curve']; flag = False
-    if args['order']: order = args['order']; flag = False
+    curve = args['curve']
+    order = args['order']
+    if args['pairings']: flag = True
 
     # File Paths
     os.chdir(os.path.dirname(os.path.realpath(__file__)))
@@ -204,10 +243,13 @@ if __name__ == '__main__':
 
     # Display Possible Order Pairings
     if flag:
-        if debug: print("Displaying Possible Mapping Combinations...")
+        print("Displaying Possible Mapping Combinations...")
         display_spacefilling_dim()
 
     # Generate Space Filling Curve
     if debug: print("Generating Curve...")
-    curve = globals()[gen](order)
-    np.save(curves_folder+gen+str(order), curve)
+    curve_array = globals()[curve](order)
+
+    # Save SFC
+    print "Curve Saved In:", curves_folder[6:] + curve + '_' + str(order)
+    np.save(curves_folder + curve + '_' + str(order), curve_array)

@@ -1,14 +1,27 @@
 '''
 Visualizations.py
-Author: Rafael Zamora
-Updated: 07/10/17
+Updated: 07/12/17
+[NOT PASSING] - Unimplemented Functionality
+                |- Attention Map Visualizations
 
 README:
 
-The following script is used to render visualizations of various 2D and 3D
-models.
+The following script is used to render visualizations of various 2D and 3D models.
 
 Global variables used to run renderings are defined under #- Global Variables.
+'pdb_id' defines the pdb which will be rendered.
+'rot_id' defines what rotation will be used to render.
+'curve_3d' defines what 3D curve to use to create 3D model from encoded pdb.
+'curve_2d' defines what 2D curve to use to create 3D model from encoded pdb.
+
+'encoded_folder' defines the name of the folder where encoded pdb is located.
+Folder must be under data/processed/tars .
+
+'processed_file' defines the name of the processed file where processed pdb is located.
+File must under data/interim .
+
+Note: The processed and encoded pdb files must exist in order to visualize the
+protein.
 
 '''
 from mayavi import mlab
@@ -41,6 +54,10 @@ def display_2d_array(array_2d, attenmap=None):
     '''
     Method displays 2-d array.
 
+    Param:
+        array_2d - np.array
+        attenmap - np.array
+
     '''
     # Display 2D Plot
     n = array_2d.shape[-1]
@@ -54,6 +71,10 @@ def display_2d_array(array_2d, attenmap=None):
 def display_3d_array(array_3d, attenmap=None):
     '''
     Method displays 3d array.
+
+    Param:
+        array_3d - np.array
+        attenmap - np.array
 
     '''
     # Color Mapping
@@ -100,6 +121,11 @@ def display_3d_array(array_3d, attenmap=None):
 def display_3d_model(pdb_data, skeletal=False, attenmap=None):
     '''
     Method renders space-filling atomic model of PDB data.
+
+    Param:
+        pdb_data - np.array ; mulitchanneled pdb atom coordinates
+        skeletal - boolean ; if true shows model without radial information
+        attenmap - np.array
 
     '''
 
@@ -148,11 +174,17 @@ def display_3d_model(pdb_data, skeletal=False, attenmap=None):
 
 def map_2d_to_3d(array_2d, curve_3d, curve_2d):
     '''
-    Method proceses 3D PDB model and encodes into 2D image.
+    Method proceses 2D array and encodes into 3D using SFC.
+
+    Param:
+        array_2d - np.array
+        curve_3d - np.array
+        curve_2d - np.array
+
+    Return:
+        array_3d - np.array
 
     '''
-
-    # Dimension Reduction Using Space Filling Curves to 2D
     s = int(np.cbrt(len(curve_3d)))
     array_3d = np.zeros([s,s,s])
     for i in range(len(curve_3d)):
@@ -165,6 +197,13 @@ def map_2d_to_3d(array_2d, curve_3d, curve_2d):
 def apply_rotation(pdb_data, rotation):
     '''
     Method applies rotation to pdb_data defined as list of rotation matricies.
+
+    Param:
+        pdb_data - np.array ; multichanneled pdb atom coordinates
+        rotation - np.array ; rotation matrix
+
+    Return:
+        pdb_data - np.array ; rotated multichanneled pdb atom coordinates
 
     '''
 

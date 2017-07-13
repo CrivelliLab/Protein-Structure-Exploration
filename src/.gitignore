@@ -1,3 +1,9 @@
+# Updated: 07/12/17
 # Ignore PyCache Files
 __pycache__
 *.pyc
+*/__pycache__
+*/*.pyc
+
+# Ignore SLURM output
+*.out

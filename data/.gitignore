@@ -1,5 +1,0 @@
-# Excluding Large Data
-
-raw/ShapeNetCore/
-raw/PDB/*/*.pdb.gz
-processed/tars/*.tar.gz

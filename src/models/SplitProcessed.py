@@ -1,6 +1,7 @@
 '''
 PrepareDatasets.py
-Updated: 06/29/17
+Updated: 7/12/17
+[NOT PASSING] - Code Refactoring and Documentation
 
 README:
 
