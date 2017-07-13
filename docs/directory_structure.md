@@ -16,9 +16,15 @@ Updated: 07/12/17
 |         |--- BLAST ~ Contains BLAST search result .csv files of Protein Data Bank
 |
 |--- docs
-|    |--- citations.md ~ Project citations
-|    |--- directory_structure.md ~
-|    |--- workflow.md ~ Workflow for large processing and training jobs
+|    |--- project_citations.md
+|    |--- directory_structure.md 
+|    |--- processing_workflow_local.md
+|    |--- processing_workflow_nersc.md
+|    |--- setup_local.md
+|    |--- setup_nersc.md
+|    |--- setup_olcf.md
+|    |--- training_workflow_local.md
+|    |--- training_workflow_olcf.md
 |
 |--- models ~ Contains model folders with network Architecture, network weights and training results
 |
