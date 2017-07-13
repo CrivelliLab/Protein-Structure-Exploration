@@ -2,7 +2,7 @@
 
 Summer VFP Project
 
-Last Updated: 07/12/17
+Last Updated: 7/12/17
 
 Lead Maintainers:
 
@@ -23,9 +23,9 @@ For more information about the **project and methodology**:
 
 For more information on **setup and installation**:
 
-- [Local Workstation](docs/setup_local.md) - for small scale data processing and network training
-- [NERSC Edison](docs/setup_nersc.md) - for large scale data processing
-- [OLCF DGX1](docs/setup_olcf.md) - for large scale network training
+- [Local Workstation](docs/setup_local.md) - for small-scale data processing and network training
+- [NERSC Edison](docs/setup_nersc.md) - for large-scale data processing
+- [OLCF DGX1](docs/setup_olcf.md) - for large-scale network training
 
 For more information about **workflows**:
 
@@ -37,5 +37,5 @@ For more information about **workflows**:
 For more information about **experiments and results**:
 
 - [Binary Classification of RAS and WD40](reports/experiments/binary_classification.md)
-- [Binary Classification of RAS PSI-BLAST Search](reports/experiments/binary_classification.md)
-- [Multi-class Classification of RAS and RAS Related Families](reports/experiments/binary_classification.md)
+- [Binary Classification of RAS PSI-BLAST Search](reports/experiments/blast_classification.md)
+- [Multi-class Classification of RAS and RAS Related Families](reports/experiments/multi_classification.md)

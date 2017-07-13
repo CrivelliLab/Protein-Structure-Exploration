@@ -62,4 +62,4 @@ if __name__ == '__main__':
     for i in range(len(pdb_ids)):
         fetchPDB(pdb_ids[i], compressed=True, folder=pdbs_folder+pdb_list)
         if debug: pbar.update(1)
-    if debug: pbar.close(); print "PDBs saved in:", pdbs_folder+pdb_list
+    if debug: pbar.close(); print "PDBs saved in:", pdbs_folder[6:]+pdb_list

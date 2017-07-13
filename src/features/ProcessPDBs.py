@@ -155,7 +155,7 @@ if __name__ == '__main__':
     pdb_files = np.array(pdb_files)
     if debug: print time() - t, 'secs...'
 
-    # Generate Base Rotations
+    # Generate Rotations
     if debug: print("Generating Rotations..."); t = time()
     base_rotations = []
     axis_list = [[0, 0, 1], [0, 1, 0], [1, 0, 0]]
@@ -183,7 +183,7 @@ if __name__ == '__main__':
     rotations = np.array(combined_rotations)
     if debug: print time() - t, 'secs...'
 
-    # Generate Processed Data
+    # Parse PDB Data
     if debug: print("Processing PDBs..."); t = time()
     pdbs_data = []
     for pdb_file in pdb_files:

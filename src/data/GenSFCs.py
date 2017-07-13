@@ -251,5 +251,5 @@ if __name__ == '__main__':
     curve_array = globals()[curve](order)
 
     # Save SFC
-    print "Curve Saved In:", curves_folder[6:] + curve + '_' + str(order)
+    print "Curve Saved In:", curves_folder[6:] + curve + '_' + str(order) + '.npy'
     np.save(curves_folder + curve + '_' + str(order), curve_array)
