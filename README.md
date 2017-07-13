@@ -26,7 +26,7 @@ For more information on the project and methodology:
 
 For more information on the directory structure:
 
-- [Directory Structure Doc](docs/directory_structrue.md)
+- [Directory Structure Doc](docs/directory_structure.md)
 
 For more information on the workflow:
 
