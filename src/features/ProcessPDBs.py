@@ -148,7 +148,7 @@ if __name__ == '__main__':
     pdb_folder = '../../data/raw/PDB/' + pdb_folder + '/'
 
     # Read PDB File Names
-    if debug: print "Read PDB Ids in:", pdb_folder; t = time()
+    if debug: print "Read PDB Ids in:", pdb_folder[6:]; t = time()
     pdb_files = []
     for line in sorted(os.listdir(pdb_folder)):
         if line.endswith('pdb.gz'): pdb_files.append(line)
@@ -197,3 +197,4 @@ if __name__ == '__main__':
     data = np.array([pdbs_data, rotations])
     np.save(interim_file, data)
     if debug: print time() - t, 'secs...'
+    print "Processed data saved in:", interim_file[:6]

@@ -59,7 +59,7 @@ curve_3d = 'hilbert_3d6.npy'
 curve_2d = 'hilbert_2d9.npy'
 
 #- debug Settings
-debug = True
+debug = False
 processed_file_usage = "processed PDB .npy file"
 skeleton_usage = "use skeletal model for encoding"
 static_bounds_usage = "static bounds for encoding; comma seperated values"
@@ -251,7 +251,10 @@ if __name__ == '__main__':
     rank = comm.Get_rank()
     cores = comm.Get_size()
 
-    if debug: print "MPI Info... Cores:", cores; t = time()
+    if rank == 0:
+        print "Encoding:", processed_file[6:]
+        print "MPI Cores:", cores;
+    if debug: t = time()
 
     # Load Curves
     if debug: print("Loading Curves...")
@@ -315,9 +318,11 @@ if __name__ == '__main__':
         encoded_pdb_2d = np.transpose(encoded_pdb_2d, (2,1,0))
 
         # Save Encoded PDB to Numpy Array File.
-        if debug: print("Saving Encoded PDB...")
+        print("Saving Encoded PDB...")
         file_path = encoded_folder + str(pdbs_data[pdb_i][0]) + '-r'+ str(r_i) +'.png'
         if not os.path.exists(encoded_folder): os.makedirs(encoded_folder)
         misc.imsave(file_path, encoded_pdb_2d)
 
         if debug: print "Encoding Time:", time() - t, "secs..."; exit()
+
+    if rank == 0: print "Encoding saved in:", encoded_folder[6:]
