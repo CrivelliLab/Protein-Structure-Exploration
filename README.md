@@ -2,11 +2,11 @@
 
 Summer VFP Project
 
-Last Updated: 7/12/17
+Last Updated: 7/14/17
 
 Lead Maintainers:
 
-- Rafael Zamora - rz4@hood.edu
+- [Rafael Zamora](https://github.com/rz4) - rz4@hood.edu
 
 - Thomas Corcoran -
 
@@ -20,6 +20,7 @@ For more information about the **project and methodology**:
 
 - [Jupyter Notebook](notebooks/Deep-Learning-Enabled-Protein-Structure-Exploration.ipynb) - project summary and interactive visualizations
 - [Directory Structure](docs/directory_structure.md) - diagram of project files and directories
+- [Project Citations](docs/project_citations.md)
 
 For more information on **setup and installation**:
 
