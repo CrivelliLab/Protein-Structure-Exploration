@@ -38,8 +38,8 @@ from scipy import misc
 #- Global Variables
 pdb_id = '1aa9'
 rot_id = 0
-curve_3d = 'hilbert_3D6.npy'
-curve_2d = 'hilbert_2D9.npy'
+curve_3d = 'hilbert_3d_6.npy'
+curve_2d = 'hilbert_2d_9.npy'
 encoded_folder = 'RAS-MD512-HH'
 processed_file = 'RAS_t45.npy'
 

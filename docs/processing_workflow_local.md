@@ -1,4 +1,4 @@
-# Local Workstation Data Processing
+# Local Workstation PDB Data Processing
 
 Updated: 7/14/17
 
@@ -9,7 +9,7 @@ into 2-D representations on a local machine. The workflow takes in a .txt file
 of PDB ids and outputs a folder containing 2D encoded PDB images.
 
 This workflow can be used on small data sets. For processing large amounts of
-data refer to the workflow on the HPC system, [NERSC Edison Work Flow](processing_workflow_nersc.md)
+data refer to the workflow on the HPC system, [NERSC Edison Workflow](processing_workflow_nersc.md).
 
 ## Procedures
 
@@ -29,9 +29,9 @@ according to the filename of the PDB ids .txt file.
 
 :Prot-Struct-Explor/$ python src/data/GetPDBs.py CLASS_ids.txt
 Reading PDB List...
-CLASS contains 100 entries...
+CLASS contains 10 entries...
 Fetching PDBs...
-100%|████████████████████████████████████████| 100/100 [00:00<00:00, 457.39it/s]
+100%|████████████████████████████████████████| 10/10 [00:00<00:00, 457.39it/s]
 PDBs saved in: data/raw/PDB/CLASS
 
 ```
@@ -105,7 +105,7 @@ To use static bounds define with comma seperated values using the ```-sb``` flag
 # Encode processed CLASS PDB data using an order 6 3D hilbert curve
 # and an order 9 2D hilbert curve
 
-:src/$ python features/EncodePDBs.py CLASS_t45.npy hilbert_3d_6.npy hilbert_2d_9.npy
+:Prot-Struct-Explor/$ python src/features/EncodePDBs.py CLASS_t45.npy hilbert_3d_6.npy hilbert_2d_9.npy
 Processing: data/interim/CLASS_t45.npy
 MPI Cores: 1
 Encodings saved in: data/processed/tars/CLASS_t45_MD_HH512
