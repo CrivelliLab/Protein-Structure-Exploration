@@ -52,7 +52,7 @@ sel_channels = []
 theta = 0
 
 #- Verbose Settings
-debug = True
+debug = False
 pdb_folder_usage = "folder containing PDBs; folder must be in data/raw/PDB"
 channels_usage = "channels which will be encoded; comma seperated values"
 theta_usage = "rotation angle in degrees"
@@ -148,7 +148,8 @@ if __name__ == '__main__':
     pdb_folder = '../../data/raw/PDB/' + pdb_folder + '/'
 
     # Read PDB File Names
-    if debug: print "Read PDB Ids in:", pdb_folder[6:]; t = time()
+    print "Read PDB Ids in:", pdb_folder[6:]
+    if debug: t = time()
     pdb_files = []
     for line in sorted(os.listdir(pdb_folder)):
         if line.endswith('pdb.gz'): pdb_files.append(line)

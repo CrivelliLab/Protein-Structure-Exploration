@@ -1,6 +1,6 @@
 # Local Workstation Data Processing
 
-Updated: 7/12/17
+Updated: 7/13/17
 
 ## Introduction
 
@@ -16,7 +16,7 @@ data refer to
 ### Generating 2D Encodings of PDBs:
 
 1. Create a line seperated .txt file of PDB ids for all PDBs you would like to
-process. Save file in the [data/raw/PDB]() directory and with the following
+process. Save file in the [data/raw/PDB](../data/raw/PDB) directory and with the following
 naming convention: **CLASS_ids.txt**
 
 2. Change directory to [src/]() and fetch PDB files from the database using
@@ -84,13 +84,6 @@ data will be save in [data/interim/]() with the following naming convention:
 
 :src/$ python features/ProcessPDBs.py CLASS 45 'hydrophobic,polar,charged'
 Read PDB Ids in: data/raw/PDB/WD40/
-0.000344038009644 secs...
-Generating Rotations...
-0.00465297698975 secs...
-Processing PDBs...
-11.7089829445 secs...
-Saving Data...
-0.132596969604 secs...
 Processed data saved in: data/interim/CLASS_t45.npy
 
 ```
@@ -114,6 +107,9 @@ Encodings saved in: data/processed/tars/CLASS_t45_MD_HH512
 MPI.
 
 ```
+# Encode processed CLASS PDB data using MPI on 4 cores
+#
+
 :src/$ mpirun -n 4 python features/EncodePDBs.py CLASS_t45.npy hilbert_3d_6.npy hilbert_2d_9.npy
 Processing: data/interim/CLASS_t45.npy
 MPI Cores: 4
@@ -125,7 +121,7 @@ Encodings saved in: data/processed/tars/CLASS_t45_MD_HH512
 [data/processed/tars/]() and run ```tar -zcf```.
 
 ```
-# Tar Encodings 
+# Tar Encodings
 #
 
 :src/$ cd ../data/processed/tars
