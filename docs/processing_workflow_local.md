@@ -1,6 +1,6 @@
 # Local Workstation Data Processing
 
-Updated: 7/13/17
+Updated: 7/14/17
 
 ## Introduction
 
@@ -9,8 +9,7 @@ into 2-D representations on a local machine. The workflow takes in a .txt file
 of PDB ids and outputs a folder containing 2D encoded PDB images.
 
 This workflow can be used on small data sets. For processing large amounts of
-data refer to
-...
+data refer to the workflow on the HPC system, [NERSC Edison Work Flow](processing_workflow_nersc.md)
 
 ## Procedures
 
@@ -96,6 +95,12 @@ Processed data saved in: data/interim/CLASS_t45.npy
 data will save in [data/processed/tars/](../data/processed/tars) in a folder
 named after the encoding parameters.
 
+> ***Important:*** By default, the script will encode the data using the atomic
+space filling model of the data. To encode only the skeleton of the model add
+the ```-sk``` flag. Also, the script by default bounds the protein models dynamically.
+To use static bounds define with comma seperated values using the ```-sb``` flag
+(ex. ```-sb '-100,100'```).
+
 ```
 # Encode processed CLASS PDB data using an order 6 3D hilbert curve
 # and an order 9 2D hilbert curve
@@ -107,14 +112,14 @@ Encodings saved in: data/processed/tars/CLASS_t45_MD_HH512
 
 ```
 
->**Note**: [src/features/encodedPDBs.py](../src/features/encodePDBs.py) is implemented
+>**Note:** [src/features/encodedPDBs.py](../src/features/encodePDBs.py) is implemented
 to run in parallel through MPI.
 
 ```
 # Encode processed CLASS PDB data using MPI on 4 cores
 #
 
-:Prot-Struct-Explor/$ mpirun -n 4 python srcfeatures/EncodePDBs.py CLASS_t45.npy hilbert_3d_6.npy hilbert_2d_9.npy
+:Prot-Struct-Explor/$ mpirun -n 4 python src/features/EncodePDBs.py CLASS_t45.npy hilbert_3d_6.npy hilbert_2d_9.npy
 Processing: data/interim/CLASS_t45.npy
 MPI Cores: 4
 Encodings saved in: data/processed/tars/CLASS_t45_MD_HH512
@@ -123,6 +128,9 @@ Encodings saved in: data/processed/tars/CLASS_t45_MD_HH512
 
 6. [Optional] Compress encodings folder using tar. Change directory to
 [data/processed/tars/](../data/processed/tars) and run ```tar -zcf```.
+
+>**Note:** Compressing is only needed to move around the encoded data. If network
+training will be done on same system, this step is not necessary.
 
 ```
 # Tar Encodings
