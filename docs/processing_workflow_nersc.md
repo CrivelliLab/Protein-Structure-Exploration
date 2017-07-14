@@ -91,9 +91,10 @@ Processed data saved in: data/interim/CLASS_t45.npy
 ```
 
 5. Run a profiling encoding job on a debug node using the
-src/nersc_edison_profile_encode.sbatch]() SLURM script. This will provide a rough
-estimation of the run time of the needed to process all encodings on **n** number
-of nodes. Using a text editor, change the parameters within the SBATCH file.
+[src/nersc_edison_profile_encode.sbatch](../src/nersc_edison_profile_encode.sbatch)
+SLURM script. This will provide a rough estimation of the run time of the needed
+to process all encodings on **n** number of nodes. Using a text editor, change
+the parameters within the SBATCH file.
 
 > ***Important:*** By default, the script will encode the data using the atomic
 space filling model of the data. To encode only the skeleton of the model add
@@ -130,20 +131,20 @@ After changing variables, submit SLURM Job. Results of profiling will
 output to profile_encode.out .
 
 ```
-# Submit SLURM Job
+# Submit SLURM job and display results
 #
 
 :Prot-Struct-Explor/$ sbatch src/nersc_edison_profile_encode.sbatch
-:Prot-Struct-Explor/$ cat profile_encode.out
 Job Summitted.
+:Prot-Struct-Explor/$ cat profile_encode.out
 
 ```
 
 6. Encode the processed PDB data into 2D by running the
-[src/nersc_edison_encode_pdbs.sbatch]() script. The encoded 2D
-data will save in [data/processed/tars/](../data/processed/tars) in a folder
-named after the encoding parameters. Using a text editor, change the parameters
-within the SBATCH file including the allocated time.
+[src/nersc_edison_encode_pdbs.sbatch](../src/nersc_edison_encode_pdbs.sbatch) script.
+The encoded 2D data will save in [data/processed/tars/](../data/processed/tars)
+in a folder named after the encoding parameters. Using a text editor, change the
+parameters within the SBATCH file including the allocated time.
 
 ***nersc_edison_encode_pdbs.sbatch***
 ```bash
@@ -173,10 +174,11 @@ srun -n 48 python src/features/EncodePDBs.py $PFILE $C3FILE $C2FILE
 After changing variables, submit SLURM Job.
 
 ```
-# Submit SLURM Job
+# Submit SLURM job
 #
 
 :Prot-Struct-Explor/$ sbatch src/nersc_edison_profile_encode.sbatch
+Job Summitted.
 
 ```
 
@@ -187,7 +189,7 @@ After changing variables, submit SLURM Job.
 training will be done on same system, this step is not necessary.
 
 ```
-# Tar Encodings
+# Tar encodings
 #
 
 :Prot-Struct-Explor/$ cd data/processed/tars

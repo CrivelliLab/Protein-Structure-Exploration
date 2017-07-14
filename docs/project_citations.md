@@ -23,3 +23,14 @@ Theory and Experiments. Bioinformatics 2011; 27 (11): 1575-1577. doi:
 (2001): 871-885.
 
 #### Literature:
+
+[[6]]() S. Mirzaei, T. Sidi, C. Keasar, and S. Crivelli, “Purely Structural Protein
+Scoring Function Using Support Vector Machine and Ensemble Learning,” IEEE/ACM
+Transactions on Computational Biology and Bioinformatics, Epub ahead of print, 2016.
+
+[[7]]() C. Tan and D. Jones, “Using neural networks and evolutionary information in decoy
+discrimination for protein tertiary structure prediction,” BMC Bioinformatics,
+vol. 9, no. 94, 2008.
+
+[[8]]() J. Hou, B. Adhikari, and J. Cheng, “DeepSF: deep convolutional neural network
+for mapping protein sequences to folds,” arXiv:1706.01010[cs.LG].
