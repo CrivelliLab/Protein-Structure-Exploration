@@ -1,4 +1,4 @@
-# Deep Learning Enabled Protein Structure Exploration
+# Deep Learning-Enabled Protein Structure Exploration
 
 Summer VFP Project
 
