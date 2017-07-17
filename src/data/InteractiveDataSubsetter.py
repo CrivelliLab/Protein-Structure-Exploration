@@ -52,6 +52,7 @@ NOTE:
     systems, although it *may* work with some modification on MacOS. 
 
 NON-CRITICAL TODO:
+    
     A) Create a nice conda env list for running this preprocessor (and ideally
         a list for running all of the distributed network on Cori but
         especially this preprocessing module).
@@ -60,15 +61,19 @@ NON-CRITICAL TODO:
         See:
         https://stackoverflow.com/questions/37572837/how-can-i-make-python-3s-print-fit-the-size-of-the-command-prompt
     D) Add tqdm progress meters. 
-    E) Add ability to generate small datasets (i.e. a percent of total dataset
-        size) from the total image set for small-scale testing. 
+    E) Rename split_classes() to segment_into_directories().
 
 CRITICAL TODO:
+
     A) Append split information and class labels to a timestamped information
         file. 
     B) Validate that the format is CIFAR10 compatible. 
     C) Add a seed to the random image shuffler to be able to reproduce the same
         datasets if needed? Might not be necessary. 
+    D) Add ability to generate small datasets (i.e. a percent of total dataset
+        size) from the total image set for small-scale testing. This will
+        probably involve moving the file counting operations that are currently
+        in split_classes() into their own discrete function. 
         
 '''
 # *****************************************************************************
@@ -179,12 +184,15 @@ def split_classes(splits_dict):
 
     INPUTS:
         "splits_dict", a dictionary containing 2 or three key/value pairs
-        depending on user's segmentation choice (i.e. train/test or
-        train/test/validation segmentation schemes). The keys of the dict are
-        expected to be the name of the split, e.g. 'train' or 'test', and are
-        used to create the subdirectory structure when segmentation occurs. 
+            depending on user's segmentation choice (i.e. train/test or
+            train/test/validation segmentation schemes). The keys of the dict 
+            are expected to be the name of the split, e.g. 'train' or 'test', 
+            and are used to create the subdirectory structure when 
+            segmentation occurs. 
     RETURNS:
-        None. Generates the desired subdirectory strucutre with all training 
+        None. Generates the desired subdirectory strucutre with all training,
+        test, and, optionally, validation data appropriately segmented into
+        discrete subdirectories. 
     '''
     cwd = os.getcwd()
     
