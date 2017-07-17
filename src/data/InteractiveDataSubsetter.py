@@ -60,6 +60,8 @@ NON-CRITICAL TODO:
         See:
         https://stackoverflow.com/questions/37572837/how-can-i-make-python-3s-print-fit-the-size-of-the-command-prompt
     D) Add tqdm progress meters. 
+    E) Add ability to generate small datasets (i.e. a percent of total dataset
+        size) from the total image set for small-scale testing. 
 
 CRITICAL TODO:
     A) Append split information and class labels to a timestamped information
