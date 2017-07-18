@@ -198,4 +198,4 @@ if __name__ == '__main__':
     data = np.array([pdbs_data, rotations])
     np.save(interim_file, data)
     if debug: print time() - t, 'secs...'
-    print "Processed data saved in:", interim_file[:6]
+    print "Processed data saved in:", interim_file[6:]

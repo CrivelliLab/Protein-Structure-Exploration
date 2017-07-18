@@ -1,5 +1,5 @@
 '''
-ModelTrainer.py
+TrainModel.py
 Updated: 07/12/17
 [NOT PASSING] - Unimplemented Functionality
                 |- Saving Training History to File

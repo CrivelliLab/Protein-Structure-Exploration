@@ -1,8 +1,7 @@
 '''
 EncodePDBs.py
-Updated: 7/12/17
-[NOT PASSING] - Unimplemented Functionality
-                |- Profiling Tool
+Updated: 7/14/17
+[PASSING]
 
 README:
 
@@ -60,6 +59,7 @@ curve_2d = 'hilbert_2d9.npy'
 
 #- debug Settings
 debug = False
+profile = False
 processed_file_usage = "processed PDB .npy file"
 skeleton_usage = "use skeletal model for encoding"
 static_bounds_usage = "static bounds for encoding; comma seperated values"
@@ -218,6 +218,7 @@ if __name__ == '__main__':
     parser.add_argument('processed_file', help=processed_file_usage, type=str)
     parser.add_argument('curve_3d', help=curve_3d_usage, type=str)
     parser.add_argument('curve_2d', help=curve_2d_usage, type=str)
+    parser.add_argument('-p', '--profile', help=skeleton_usage, action="store_true")
     parser.add_argument('-sk', '--skeletal', help=skeleton_usage, action="store_true")
     parser.add_argument('-sb', '--static_bounds', help=static_bounds_usage, type=str, default=None)
     args = vars(parser.parse_args())
@@ -225,6 +226,7 @@ if __name__ == '__main__':
     curve_3d = args['curve_3d']
     curve_2d = args['curve_2d']
     if args['skeletal']: skeleton = True
+    if args['profile']: profile = True
     if args['static_bounds']:
         dynamic_bounding = False
         bounds = [int(i) for i in args['static_bounds'].split(',')]
@@ -252,9 +254,10 @@ if __name__ == '__main__':
     cores = comm.Get_size()
 
     if rank == 0:
+        if profile: print("Profiling...")
         print "Encoding:", processed_file[6:]
         print "MPI Cores:", cores;
-    if debug: t = time()
+    if debug or profile: t = time()
 
     # Load Curves
     if debug: print("Loading Curves...")
@@ -281,10 +284,12 @@ if __name__ == '__main__':
     if debug:
         print "MPI Core", rank, "Encoding", len(entries), "Entries..."
         print "Init Time:", time() - t, "secs..."
+    if profile: init_time = time() - t
 
     # Process Rotations
     for pdb_i, r_i in entries:
         if debug: print "Processing", pdbs_data[pdb_i][0], "Rotation", r_i; t = time()
+        if profile: enc_time = time()
 
         # Apply Rotation To PDB Data
         pdb_data = apply_rotation(pdbs_data[pdb_i][1], rotations[r_i])
@@ -318,11 +323,42 @@ if __name__ == '__main__':
         encoded_pdb_2d = np.transpose(encoded_pdb_2d, (2,1,0))
 
         # Save Encoded PDB to Numpy Array File.
-        print("Saving Encoded PDB...")
+        if debug: print("Saving Encoded PDB...")
         file_path = encoded_folder + str(pdbs_data[pdb_i][0]) + '-r'+ str(r_i) +'.png'
         if not os.path.exists(encoded_folder): os.makedirs(encoded_folder)
-        misc.imsave(file_path, encoded_pdb_2d)
+        if not profile: misc.imsave(file_path, encoded_pdb_2d)
 
-        if debug: print "Encoding Time:", time() - t, "secs..."; exit()
+        if debug: print "Encoding Time:", time() - t, "secs..."; break
 
-    if rank == 0: print "Encoding saved in:", encoded_folder[6:]
+        if profile: enc_time = time() - enc_time; break
+
+    # Profiling Encoding Times
+    if profile:
+
+        # Gather Times From Cores
+        enc_times = comm.gather(enc_time, root=0)
+        init_times = comm.gather(init_time, root=0)
+        if rank == 0:
+
+            # Calculate Average Encoding Time
+            avg_enc_time = 0
+            for t in enc_times: avg_enc_time += t
+            avg_enc_time /= cores
+
+            # Calculate Average Init Time
+            avg_init_time = 0
+            for t in init_times: avg_init_time += t
+            avg_init_time /= cores
+
+            # Calculate Estimated Encoding Time
+            estimated_time = avg_enc_time * len(pdbs_data) * len(rotations)
+            estimated_time = (estimated_time / cores) + avg_init_time
+
+            # Display Results
+            print "Average encoding time based off sample of", cores, ':'
+            print avg_enc_time, 'secs'
+            print "Estimated encoding time on", cores, "cores:"
+            m, s = divmod(estimated_time, 60); h, m = divmod(m, 60)
+            print "%d:%02d:%02d" % (h, m, s), "h:m:s"
+    else:
+        if rank == 0: print "Encoding saved in:", encoded_folder[6:]

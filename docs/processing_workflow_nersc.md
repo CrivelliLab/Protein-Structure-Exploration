@@ -90,7 +90,7 @@ Processed data saved in: data/interim/CLASS_t45.npy
 
 ```
 
-5. Run a profiling encoding job on a debug node using the
+5. [Optional] Run a profiling encoding job on a debug node using the
 [src/nersc_edison_profile_encode.sbatch](../src/nersc_edison_profile_encode.sbatch)
 SLURM script. This will provide a rough estimation of the run time of the needed
 to process all encodings on **n** number of nodes. Using a text editor, change
@@ -139,6 +139,10 @@ Job Summitted.
 :Prot-Struct-Explor/$ cat profile_encode.out
 
 ```
+
+>***CAUTION:*** This is a very rough estimation from a sample size of the number of
+available cores. The average encoding time approaches the true average with more cores.
+Be sure to allocate more time than the estimation to be safe.
 
 6. Encode the processed PDB data into 2D by running the
 [src/nersc_edison_encode_pdbs.sbatch](../src/nersc_edison_encode_pdbs.sbatch) script.
