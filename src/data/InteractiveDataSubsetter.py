@@ -223,7 +223,7 @@ def split_classes(splits_dict, w_dir):
         filename_list = [x for x in os.listdir(qpath) if os.path.isfile(qpath +
             x)]
         num_dir_contents = len(filename_list)
-        train_num = int(train_s * num_dir_contents)
+        train_num = int(math.floor(train_s * num_dir_contents))
         test_num = int(math.floor(test_s * num_dir_contents))
         validation_num = num_dir_contents - (train_num + test_num)
         print('{} files found'.format(num_dir_contents))
@@ -240,7 +240,7 @@ def split_classes(splits_dict, w_dir):
                 if split_dir == 'test': split = test_num
                 try:
                     os.makedirs(os.path.join(split_dir, basename))
-                    for f in filename_list[:split]:
+                    for f in tqdm(filename_list[:split]):
                         shutil.move(os.path.join(qpath, f), os.path.join(
                             split_dir, basename))
                     filename_list = filename_list[split:]
@@ -260,7 +260,7 @@ def split_classes(splits_dict, w_dir):
                 if split_dir == 'validation': split = validation_num
                 try:
                     os.makedirs(os.path.join(split_dir, basename))
-                    for f in filename_list[:split]:
+                    for f in tqdm(filename_list[:split]):
                         shutil.move(os.path.join(qpath, f), os.path.join(
                             split_dir, basename))
                     filename_list = filename_list[split:]
@@ -852,7 +852,7 @@ def main():
             print('Canceling archive extraction.')
     
     if mode == 'sd':
-        seg_prompt = ('CONFIRM: alter current directory strucutre into {} '
+        seg_prompt = ('CONFIRM: alter current directory structure into {} '
                 'subdirectories?'.format(len(splits_dict)))
         if confirm(seg_prompt):
             split_classes(splits_dict, w_dir)
