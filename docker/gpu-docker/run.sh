@@ -16,4 +16,4 @@ DMODELS=/home/protein-structure-exploration-gpu/models
 IMG=rzamora4/protein-structure-exploration:gpu
 
 # Build Protein-Structure-Exploration:GPU
-nvidia-docker run -u 82844 -v $SRC:$DSRC -v $DATA:$DDATA -v $MODELS:$DMODELS -ti $IMG
+nvidia-docker run -v $SRC:$DSRC:Z -v $DATA:$DDATA:Z -v $MODELS:$DMODELS:Z -ti $IMG
