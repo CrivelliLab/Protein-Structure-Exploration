@@ -240,7 +240,7 @@ def split_classes(splits_dict, w_dir):
                 if split_dir == 'test': split = test_num
                 try:
                     os.makedirs(os.path.join(split_dir, basename))
-                    for f in filename_list[:split]:
+                    for f in tqdm(filename_list[:split]):
                         shutil.move(os.path.join(qpath, f), os.path.join(
                             split_dir, basename))
                     filename_list = filename_list[split:]
@@ -260,7 +260,7 @@ def split_classes(splits_dict, w_dir):
                 if split_dir == 'validation': split = validation_num
                 try:
                     os.makedirs(os.path.join(split_dir, basename))
-                    for f in filename_list[:split]:
+                    for f in tqdm(filename_list[:split]):
                         shutil.move(os.path.join(qpath, f), os.path.join(
                             split_dir, basename))
                     filename_list = filename_list[split:]
