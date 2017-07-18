@@ -20,7 +20,7 @@ For more information about the **project and methodology**:
 
 - [Jupyter Notebook](notebooks/Deep-Learning-Enabled-Protein-Structure-Exploration.ipynb) - project summary and interactive visualizations
 - [Directory Structure](docs/directory_structure.md) - diagram of project files and directories
-- [Project Citations](docs/project_citations.md)
+- [Project Citations](docs/project_citations.md) - work cited
 
 For more information on **setup and installation**:
 
