@@ -1,0 +1,7 @@
+# Updated 17 July 2017
+
+# Ignore .swp files.
+*.swp
+
+# Ignore compiled python files.
+*.pyc

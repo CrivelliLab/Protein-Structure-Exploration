@@ -1,6 +1,11 @@
-# Updated: 07/12/17
-# Ignore dataset folders - too large for repo
+# Updated: 07/17/17
+# Ignore data files (i.e. images) - too large for repo
 *.png
+*.jpg
+*.jpeg
+
+# Ignore test dataset folders - too large for repo
+testsets/
 
 # Ignore dataset binaries - too large for repo
 *.hdf5
