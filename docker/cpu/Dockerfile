@@ -1,5 +1,5 @@
 # CPU Protein-Structure-Exploration Dockerfile
-# Updated: 7/17/17
+# Updated: 7/18/17
 
 # Base Image
 FROM ubuntu:16.04
@@ -8,7 +8,7 @@ FROM ubuntu:16.04
 RUN apt-get update
 RUN apt-get install -y build-essential bzip2 cmake curl git nano \
     nasm pkg-config rsync sudo tar timidity unzip wget \
-    autoconf automake gcc g++ gfortran libjpeg-dev zlib1g-dev
+    autoconf automake gcc g++ gfortran libjpeg-dev zlib1g-dev graphviz
 RUN apt-get clean all
 
 # Build MPICH
@@ -22,17 +22,19 @@ RUN apt-get install -y python-dev python python-pip python-tk libvtk5-dev python
 RUN pip install pip --upgrade
 RUN pip install numpy
 RUN pip install prody tqdm scipy scikit-image matplotlib sklearn \
-keras tensorflow h5py opencv-python keras-vis mpi4py
+keras tensorflow h5py opencv-python keras-vis mpi4py mayavi pydot graphviz
 
 # Python3 and Packages
-RUN apt-get install -y python3-dev python3 python3-pip python3-tk libvtk5-dev python3-vtk
+RUN apt-get install -y python3-dev python3 python3-pip
 RUN pip3 install pip --upgrade
 RUN pip3 install numpy
 RUN pip3 install prody tqdm scipy scikit-image matplotlib sklearn \
-keras tensorflow h5py opencv-python keras-vis mpi4py
+keras tensorflow h5py opencv-python keras-vis pydot graphviz
+
+RUN echo 'export PS1="\[$(tput bold)\]\[\033[38;5;10m\]CPU-Docker\[$(tput sgr0)\]\[\033[38;5;15m\]:\[$(tput sgr0)\]\[\033[38;5;12m\]\W\[$(tput sgr0)\]\[\033[38;5;15m\]\\$\[$(tput sgr0)\]"' >> /etc/bash.bashrc
 
 # Enables X11 sharing and creates user home directory
-ENV USER_NAME protein-structure-exploration-cpu
+ENV USER_NAME protein-structure-exploration
 ENV HOME_DIR /home/$USER_NAME
 ENV HOST_UID 1000
 ENV HOST_GID 1000
@@ -50,6 +52,4 @@ WORKDIR ${HOME_DIR}
 RUN mkdir src
 RUN mkdir data
 RUN mkdir models
-RUN echo 'PS1="\[$(tput bold)\]\[\033[38;5;10m\]\u@Docker\[$(tput sgr0)\]\[\033[38;5;15m\]:\[$(tput sgr0)\]\[\033[38;5;12m\]\W\[$(tput sgr0)\]\[\033[38;5;15m\]\\$\[$(tput sgr0)\]"' >> .bashrc
 RUN ["/bin/bash"]
-CMD 'bash'

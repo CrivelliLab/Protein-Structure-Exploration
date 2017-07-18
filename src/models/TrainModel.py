@@ -28,7 +28,8 @@ from keras.callbacks import ModelCheckpoint
 from CIFAR_512 import CIFAR_512
 
 #- Global Variables
-network = CIFAR_512(nb_channels=3, nb_class=2, nb_gpu=7)
+network = CIFAR_512(nb_channels=3, nb_class=2, nb_gpu=1)
+exit()
 data_folder = ''
 image_size = (512, 512)
 seed = 125

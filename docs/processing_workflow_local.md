@@ -1,6 +1,7 @@
 # Local Workstation PDB Data Processing
 
-Updated: 7/14/17
+Updated: 7/18/17
+[PASSING]
 
 ## Introduction
 
@@ -12,6 +13,12 @@ This workflow can be used on small data sets. For processing large amounts of
 data refer to the workflow on the HPC system, [NERSC Edison Workflow](processing_workflow_nersc.md).
 
 ## Procedures
+
+>***IMPORTANT:*** This workflow must be run inside the Docker image environment
+detailed in [Local Workstation Setup and Installation](setup_local). After
+installing images, enter Docker image by running either [docker/cpu/run.sh](../docker/cpu/run.sh)
+or [docker/gpu/run.sh](../docker/gpu/run.sh) for a cpu or gpu enabled environment
+respectively.
 
 ### Generating 2D Encodings of PDBs:
 
@@ -27,7 +34,7 @@ according to the filename of the PDB ids .txt file.
 # Fetch PDBs defined in CLASS_ids.txt
 #
 
-:Prot-Struct-Explor/$ python src/data/GetPDBs.py CLASS_ids.txt
+Docker:protein-structure-exploration$ python src/data/GetPDBs.py CLASS_ids.txt
 Reading PDB List...
 CLASS contains 10 entries...
 Fetching PDBs...
@@ -63,11 +70,11 @@ mappings:
 # Generate 3d hilbert curve of order 6
 # Generate 2d hilbert curve of order 9
 
-::Prot-Struct-Explor/$ python src/data/GenSFCs.py hilbert_3d 6
+Docker:protein-structure-exploration$ python src/data/GenSFCs.py hilbert_3d 6
 Generating Curve...
 Curve Saved In: data/raw/SFC/hilbert_3d_6.npy
 
-::Prot-Struct-Explor/$ python src/data/GenSFCs.py hilbert_2d 9
+Docker:protein-structure-exploration$ python src/data/GenSFCs.py hilbert_2d 9
 Generating Curve...
 Curve Saved In: data/raw/SFC/hilbert_2d_9.npy
 
@@ -84,7 +91,7 @@ augmentation.
 # Process hydrophobic, polar, and charged channels of CLASS PDBs
 # with 45 degree rotation augmentations
 
-:Prot-Struct-Explor/$ python src/features/ProcessPDBs.py CLASS 45 'hydrophobic,polar,charged'
+Docker:protein-structure-exploration$ python src/features/ProcessPDBs.py CLASS 45 'hydrophobic,polar,charged'
 Read PDB Ids in: data/raw/PDB/CLASS/
 Processed data saved in: data/interim/CLASS_t45.npy
 
@@ -105,7 +112,7 @@ To use static bounds define with comma seperated values using the ```-sb``` flag
 # Encode processed CLASS PDB data using an order 6 3D hilbert curve
 # and an order 9 2D hilbert curve
 
-:Prot-Struct-Explor/$ python src/features/EncodePDBs.py CLASS_t45.npy hilbert_3d_6.npy hilbert_2d_9.npy
+Docker:protein-structure-exploration$ python src/features/EncodePDBs.py CLASS_t45.npy hilbert_3d_6.npy hilbert_2d_9.npy
 Processing: data/interim/CLASS_t45.npy
 MPI Cores: 1
 Encodings saved in: data/processed/tars/CLASS_t45_MD_HH512
@@ -119,7 +126,7 @@ to run in parallel through MPI.
 # Encode processed CLASS PDB data using MPI on 4 cores
 #
 
-:Prot-Struct-Explor/$ mpirun -n 4 python src/features/EncodePDBs.py CLASS_t45.npy hilbert_3d_6.npy hilbert_2d_9.npy
+Docker:protein-structure-exploration$ mpirun -n 4 python src/features/EncodePDBs.py CLASS_t45.npy hilbert_3d_6.npy hilbert_2d_9.npy
 Processing: data/interim/CLASS_t45.npy
 MPI Cores: 4
 Encodings saved in: data/processed/tars/CLASS_t45_MD_HH512
@@ -136,7 +143,7 @@ training will be done on same system, this step is not necessary.
 # Tar Encodings
 #
 
-:Prot-Struct-Explor/$ cd data/processed/tars
-:Prot-Struct-Explor/data/processed/tars/$ tar -zcf CLASS_t45_MD_HH512 CLASS_t45_MD_HH512.tar.gz
+Docker:protein-structure-exploration$ cd data/processed/tars
+Docker:tars/$ tar -zcf CLASS_t45_MD_HH512 CLASS_t45_MD_HH512.tar.gz
 
 ```

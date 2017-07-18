@@ -1,6 +1,8 @@
 # NERSC Edison PDB Data Processing
 
 Updated: 7/14/17
+[NOT PASSING] - Out of date
+                |- Running with Docker/Shifter
 
 ## Introduction
 
