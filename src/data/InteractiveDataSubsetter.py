@@ -601,8 +601,10 @@ def get_inputs():
         for distributed network training on a large dataset. The binary data format 
         is desireable for very large datasets and distributed networks where data IO 
         bottlenecks are a concern. 
-    INPUTS: None.
-    RETURNS: A variable-length dict of 4 - 7 key/value pairs depending on whether the
+    INPUTS: 
+        None.
+    RETURNS: 
+        A variable-length dict of 4 - 7 key/value pairs depending on whether the
         selected split type is train/test ("tt") or train/test/validation
         ("ttv") and what segmentation mode is slected. The dict contains the split 
         proportions for the given mode, the image shape information if the mode 
