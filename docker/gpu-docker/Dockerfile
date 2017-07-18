@@ -1,5 +1,8 @@
-FROM ubuntu:16.04
+# GPU Enabled Protein-Structure-Exploration Dockerfile
+# Updated: 7/17/17
 
+# Base Images
+FROM ubuntu:16.04
 FROM nvidia/cuda:8.0-cudnn5-devel
 
 # Install Dependencies
@@ -16,14 +19,21 @@ RUN apt-get clean all
 #  && ./configure && make -j4 && make install && make clean && rm /build/mpich-3.2.tar.gz
 
 # Python and Packages
-RUN apt-get install -y python-dev python python-pip
+RUN apt-get install -y python-dev python python-pip python-tk libvtk5-dev python-vtk
 RUN pip install pip --upgrade
 RUN pip install numpy
-RUN pip install tqdm scipy scikit-image matplotlib sklearn \
-keras tensorflow-gpu h5py opencv-python keras-vis
+RUN pip install prody tqdm scipy scikit-image matplotlib sklearn \
+keras tensorflow-gpu h5py opencv-python keras-vis mpi4py mayavi
+
+# Python3 and Packages
+RUN apt-get install -y python3-dev python3 python3-pip
+RUN pip3 install pip --upgrade
+RUN pip3 install numpy
+RUN pip3 install tqdm scipy scikit-image matplotlib sklearn \
+keras tensorflow h5py opencv-python keras-vis
 
 # Enables X11 sharing and creates user home directory
-ENV USER_NAME prot-struct-exp-gpu
+ENV USER_NAME protein-structure-exploration-gpu
 ENV HOME_DIR /home/$USER_NAME
 ENV HOST_UID 1000
 ENV HOST_GID 1000
@@ -40,6 +50,7 @@ WORKDIR ${HOME_DIR}
 # Setup Bash Enviro
 RUN mkdir src
 RUN mkdir data
+RUN mkdir models
 RUN echo 'PS1="\[$(tput bold)\]\[\033[38;5;10m\]\u@Docker\[$(tput sgr0)\]\[\033[38;5;15m\]:\[$(tput sgr0)\]\[\033[38;5;12m\]\W\[$(tput sgr0)\]\[\033[38;5;15m\]\\$\[$(tput sgr0)\]"' >> .bashrc
 RUN ["/bin/bash"]
 CMD 'bash'

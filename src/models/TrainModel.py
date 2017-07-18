@@ -28,7 +28,7 @@ from keras.callbacks import ModelCheckpoint
 from CIFAR_512 import CIFAR_512
 
 #- Global Variables
-network = CIFAR_512(nb_channels=3, nb_class=2)
+network = CIFAR_512(nb_channels=3, nb_class=2, nb_gpu=7)
 data_folder = ''
 image_size = (512, 512)
 seed = 125
@@ -38,10 +38,12 @@ debug = True
 
 ################################################################################
 
+
 if __name__ == '__main__':
 
     # File Paths
-    data_folder = "../../data/processed/"+ data_folder
+    os.chdir(os.path.dirname(os.path.realpath(__file__)))
+    data_folder = "../../data/processed/datasets/"+ data_folder
     model_folder = '../../models/' + network.__name__ + '/'
 
     # Intiate Keras Flow From Directory

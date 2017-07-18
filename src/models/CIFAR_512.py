@@ -20,12 +20,13 @@ from keras.optimizers import SGD
 from keras.metrics import categorical_accuracy
 from keras.constraints import maxnorm
 from keras.utils import plot_model
+from ParallelModels import make_parallel
 
 ################################################################################
 
 class CIFAR_512:
 
-    def __init__(self, nb_channels, nb_class=2):
+    def __init__(self, nb_channels, nb_class=2, nb_gpu=1):
         '''
         '''
         # Network Parameters
@@ -74,6 +75,7 @@ class CIFAR_512:
 
         # Compile Model
         self.model = Model(inputs=x, outputs=y)
+        self.model = make_parallel(self.model, nb_gpu)
         self.model.compile(optimizer=self.optimizer, loss='categorical_crossentropy', metrics=[categorical_accuracy])
         self.model.summary()
 
