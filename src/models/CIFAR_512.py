@@ -11,15 +11,14 @@ classification betweeen the different images.
 
 '''
 import os
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
+#os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
 # Neural Network
 from keras.models import Model
-from keras.layers import Conv2D, MaxPool2D, Dropout, Input, Flatten, Dense
+from keras.layers import Conv2D, MaxPooling2D, Dropout, Input, Flatten, Dense
 from keras.optimizers import SGD
 from keras.metrics import categorical_accuracy
 from keras.constraints import maxnorm
-from keras.utils import plot_model
 from ParallelModels import make_parallel
 
 ################################################################################
@@ -33,7 +32,7 @@ class CIFAR_512:
         self.optimizer = SGD(lr=0.00001, momentum=0.9, decay=0.00001/100, nesterov=False)
 
         # Input Layer
-        x = Input(shape=(45, 45, nb_channels))
+        x = Input(shape=(512, 512, nb_channels))
 
         # Hidden Layers
 
@@ -82,7 +81,7 @@ class CIFAR_512:
         # Save Model Diagram
         model_path = '../../models/CIFAR_512/'
         if not os.path.exists(model_path): os.makedirs(model_path)
-        plot_model(self.model, to_file=model_path+'model.png')
+        #plot_model(self.model, to_file=model_path+'model.png')
 
         # Save Model JSON
         with open(model_path+'model.json', 'w') as f:
