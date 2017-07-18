@@ -60,3 +60,8 @@ if __name__ == '__main__':
     if debug: print "Training Network..."
     history = network.model.fit_generator(train_flow, epochs=100, steps_per_epoch=7000,
                 validation_data=test_flow, callbacks=[save,], validation_steps=3000)
+
+    # Save Training History
+    loss_history = history.history["loss"]
+    loss_history = np.array(loss_history)
+    np.savetxt(model_folder+"loss_history.csv", loss_history, delimiter=',')
