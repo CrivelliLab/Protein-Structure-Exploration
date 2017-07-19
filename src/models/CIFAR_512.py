@@ -11,7 +11,7 @@ classification betweeen the different images.
 
 '''
 import os
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
+#os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
 # Neural Network
 from keras.models import Model
@@ -19,7 +19,6 @@ from keras.layers import Conv2D, MaxPooling2D, Dropout, Input, Flatten, Dense
 from keras.optimizers import SGD
 from keras.metrics import categorical_accuracy
 from keras.constraints import maxnorm
-from keras.utils import plot_model
 from ParallelModels import make_parallel
 
 ################################################################################

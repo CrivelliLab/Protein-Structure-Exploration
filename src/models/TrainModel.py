@@ -28,9 +28,8 @@ from keras.callbacks import ModelCheckpoint
 from CIFAR_512 import CIFAR_512
 
 #- Global Variables
-network = CIFAR_512(nb_channels=3, nb_class=2, nb_gpu=1)
-exit()
-data_folder = ''
+network = CIFAR_512(nb_channels=3, nb_class=2, nb_gpu=7)
+data_folder='RAS-WD40-MD512-HH-FULL'
 image_size = (512, 512)
 seed = 125
 
@@ -45,22 +44,24 @@ if __name__ == '__main__':
     # File Paths
     os.chdir(os.path.dirname(os.path.realpath(__file__)))
     data_folder = "../../data/processed/datasets/"+ data_folder
-    model_folder = '../../models/' + network.__name__ + '/'
+    model_folder = '../../models/' + 'CIFAR_512' + '/'
 
     # Intiate Keras Flow From Directory
     datagen = ImageDataGenerator()
     train_flow = datagen.flow_from_directory(data_folder +'/train',
-                target_size=image_size, batch_size=2, class_mode='categorical',
+                target_size=image_size, batch_size=63, class_mode='categorical',
                 seed=seed)
     test_flow = datagen.flow_from_directory(data_folder +'/test',
-                target_size=image_size, batch_size=2, class_mode='categorical',
+                target_size=image_size, batch_size=63, class_mode='categorical',
                 seed=seed)
     save = ModelCheckpoint( model_folder + 'weights.hdf5', verbose=1, save_weights_only=True, period=5)
 
     # Fit Training Data
     if debug: print "Training Network..."
-    history = network.model.fit_generator(train_flow, epochs=100, steps_per_epoch=7000,
-                validation_data=test_flow, callbacks=[save,], validation_steps=3000)
+    history = network.model.fit_generator(train_flow, epochs=100,
+            steps_per_epoch=7509,
+                validation_data=test_flow, callbacks=[save,],
+                validation_steps=625)
 
     # Save Training History
     loss_history = history.history["loss"]
