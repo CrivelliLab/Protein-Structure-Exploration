@@ -11,12 +11,6 @@ RUN apt-get install -y build-essential bzip2 cmake curl git nano \
     autoconf automake gcc g++ gfortran libjpeg-dev zlib1g-dev graphviz
 RUN apt-get clean all
 
-# Build MPICH
-#RUN mkdir /build/
-#RUN cd /build && wget http://www.mpich.org/static/downloads/3.2/mpich-3.2.tar.gz \
-#  && tar xvzf mpich-3.2.tar.gz && cd /build/mpich-3.2 \
-#  && ./configure && make -j4 && make install && make clean && rm /build/mpich-3.2.tar.gz
-
 # Python and Packages
 RUN apt-get install -y python-dev python python-pip python-tk libvtk5-dev python-vtk
 RUN pip install pip --upgrade
@@ -32,6 +26,12 @@ RUN pip3 install prody tqdm scipy scikit-image matplotlib sklearn \
 keras tensorflow h5py opencv-python keras-vis pydot graphviz
 
 RUN echo 'export PS1="\[$(tput bold)\]\[\033[38;5;10m\]CPU-Docker\[$(tput sgr0)\]\[\033[38;5;15m\]:\[$(tput sgr0)\]\[\033[38;5;12m\]\W\[$(tput sgr0)\]\[\033[38;5;15m\]\\$\[$(tput sgr0)\]"' >> /etc/bash.bashrc
+
+# Build MPICH
+RUN mkdir /build/
+RUN cd /build && wget http://www.mpich.org/static/downloads/3.2/mpich-3.2.tar.gz \
+  && tar xvzf mpich-3.2.tar.gz && cd /build/mpich-3.2 \
+  && ./configure && make -j4 && make install && make clean && rm /build/mpich-3.2.tar.gz
 
 # Enables X11 sharing and creates user home directory
 ENV USER_NAME protein-structure-exploration
@@ -53,3 +53,4 @@ RUN mkdir src
 RUN mkdir data
 RUN mkdir models
 RUN ["/bin/bash"]
+CMD echo $UID && bash

@@ -87,7 +87,7 @@ def display_3d_array(array_3d, attenmap=None):
         c = cm[j]
 
         # Coordinate Information
-        xx, yy, zz = np.where(array_3d[j] >= 1)
+        xx, yy, zz = np.where(array_3d[j] >= 0.1)
 
         # Generate Voxels For Protein
         append_filter = vtk.vtkAppendPolyData()
