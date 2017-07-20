@@ -1,9 +1,32 @@
 '''
 FILENAME: DatasetResizer.py
 INITIAL DATE: 18 July 2017
-REVISED DATE: 18 July 2017
+REVISED DATE: 19 July 2017
 
 PROGRAM STATUS: Unfinished, non-operable. 
+
+PROGRAM DESCRIPTION:
+
+    This module is designed to allow for resizing a dataset in order to match
+    the number of files in each of the test and training splits (no validation
+    split support at this time!) with the number of GPU devices that you will
+    be distributing accross. The program ensures that the total numbers of 
+    train and test elements are cleanly divisible by the number of GPUs you
+    plan to train on. This is accomplished by calculating the total number
+    of elements accross all classes in both the train and test splits and then 
+    dividing these numbers by the number of GPU devices to be used (remainders
+    are truncated via forced integer division) in order to get the ideal dataset
+    size for the given number of GPUs. The new dataset size is then subtracted
+    from the original, and that number of files is then deleted from the class
+    files of the split in question. In order to preserve the proportions of the
+    original dataset, this program deletes files from split subclasses
+    accoridng to the realtive size of the subclass in the given split. 
+
+    For example, given a segmented dataset with 1000 train and 100 test elements 
+    with 3 classes A, B, and C, where the total number of A elements is 425,
+    the total number of B elements is 500, and the total number of C elements
+    is 175, this program will 
+    
 '''
 
 import glob
