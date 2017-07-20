@@ -1,0 +1,5 @@
+# Updated 20 July 2017
+
+# Ignore compiled and swap files:
+*.pyc
+*.swp
