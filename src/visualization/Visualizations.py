@@ -36,12 +36,12 @@ import vtk
 from scipy import misc
 
 #- Global Variables
-pdb_id = '1aa9'
-rot_id = 0
+pdb_id = '3conA'
+rot_id = 176
 curve_3d = 'hilbert_3d_6.npy'
 curve_2d = 'hilbert_2d_9.npy'
-encoded_folder = 'RAS-MD512-HH'
-processed_file = 'RAS_t45.npy'
+encoded_folder = 'RASCLEANBOUNDED0%64-T45-MS-HH512'
+processed_file = 'RASCLEANBOUNDED0%64_t45.npy'
 
 render_attenmap = False
 
@@ -224,9 +224,9 @@ if __name__ == '__main__':
     path_to_project = '../../'
     curve_2d = path_to_project + 'data/raw/SFC/'+ curve_2d
     curve_3d = path_to_project + 'data/raw/SFC/'+ curve_3d
-    encoded_folder = path_to_project + 'data/processed/PDB/' + encoded_folder + '/'
+    encoded_folder = path_to_project + 'data/processed/tars/' + encoded_folder + '/'
     processed_file = path_to_project + 'data/interim/' + processed_file
-    pdb = pdb_id + '-' + str(rot_id) + '.png'
+    pdb = pdb_id + '-r' + str(rot_id) + '.png'
 
     # Load Curves
     if debug: print("Loading Curves...")

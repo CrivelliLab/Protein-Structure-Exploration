@@ -17,4 +17,4 @@ DMODELS=/home/protein-structure-exploration/models
 IMG=protein-structure-exploration:cpu
 
 # Build Protein-Structure-Exploration:GPU
-docker run -v $SRC:$DSRC -v $DATA:$DDATA -v $MODELS:$DMODELS -u $UID -ti $IMG
+docker run -v $SRC:$DSRC -v $DATA:$DDATA -v $MODELS:$DMODELS -ti $IMG
