@@ -5,7 +5,7 @@
 *.jpeg
 
 # Ignore test dataset folders - too large for repo
-testsets/
+*/
 
 # Ignore dataset binaries - too large for repo
 *.hdf5
