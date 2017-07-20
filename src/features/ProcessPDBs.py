@@ -1,6 +1,6 @@
 '''
 ProcessPDBs.py
-Updated: 7/12/17
+Updated: 7/20/17
 [PASSING]
 
 README:
@@ -9,7 +9,7 @@ The following script is used to generate array files with data points needed to
 render and encode PBD files into 2D.
 
 Global variables used to generate array file are defined under #- Global Variables.
-'pdb_folder' defines the location of the PDBs which will be parsed. Folder must be
+'pdb_list' defines the .csv list of PDB chains which will be parsed. .csv must be
 under data/start/PDB/.
 
 Different channels of information can be accessed from the PDB by defining in
@@ -21,12 +21,12 @@ degrees along the x, y, z axis.
 
 Command Line Interface:
 
-$ python ProcessPDBs.py [-h] pdb_folder theta channels
+$ python ProcessPDBs.py [-h] pdb_list theta channels
 
 The output array file will be saved under data/interim/ with the following naming
 convention:
 
-- <pdb_folder>_t<theta>.npy
+- <pdb_list>_t<theta>.npy
 
 The array file will contain the following:
 
@@ -47,13 +47,13 @@ from prody import parsePDB, moveAtoms, confProDy
 confProDy(verbosity='none')
 
 #- Global Variables
-pdb_folder = ''
+pdb_list = ''
 sel_channels = []
 theta = 0
 
 #- Verbose Settings
 debug = False
-pdb_folder_usage = "folder containing PDBs; folder must be in data/raw/PDB"
+pdb_list_usage = "PDB and chain ids list .csv file; .txt file must be in data/raw/PDB/"
 channels_usage = "channels which will be encoded; comma seperated values"
 theta_usage = "rotation angle in degrees"
 
@@ -64,7 +64,7 @@ van_der_waal_radii = {  'H' : 1.2, 'C' : 1.7, 'N' : 1.55, 'O' : 1.52, 'S' : 1.8,
 'D' : 1.2, 'F' : 1.47, 'CL' : 1.75, 'BR' : 1.85, 'P' : 1.8,
 'I' : 1.98, '' : 0} # Source:https://physlab.lums.edu.pk/images/f/f6/Franck_ref2.pdf
 
-def get_pdb_data(pdb_file, channels=[], debug=False):
+def get_pdb_data(pdb_file, chain, channels=[], debug=False):
     '''
     Method parses radii and coordinate information for each atom of different
     channel present in the PDB file, and returns as numpy array.
@@ -86,6 +86,8 @@ def get_pdb_data(pdb_file, channels=[], debug=False):
     # Parse PDB File
     if debug: print "Parsing:", pdb_file
     molecule = parsePDB(pdb_file).select('protein')
+
+    if chain: molecule = molecule.select('chain '+chain)
 
     # Set Protein's Center Of Mass At Origin
     moveAtoms(molecule, to=np.zeros(3))
@@ -134,15 +136,16 @@ if __name__ == '__main__':
 
     # Cmd Line Args
     parser = argparse.ArgumentParser()
-    parser.add_argument('pdb_folder', help=pdb_folder_usage, type=str)
+    parser.add_argument('pdb_list', help=pdb_list_usage, type=str)
     parser.add_argument('theta', help=theta_usage, type=int)
     parser.add_argument('channels', help=channels_usage, type=str)
     args = vars(parser.parse_args())
-    pdb_folder = args['pdb_folder']
+    pdb_list = args['pdb_list']
     theta = args['theta']
     sel_channels = args['channels'].split(',')
 
     # File Paths
+    pdb_folder = pdb_list.split('.')[0]
     os.chdir(os.path.dirname(os.path.realpath(__file__)))
     interim_file = '../../data/interim/' + pdb_folder + '_t' + str(theta)
     pdb_folder = '../../data/raw/PDB/' + pdb_folder + '/'
@@ -155,6 +158,15 @@ if __name__ == '__main__':
         if line.endswith('pdb.gz'): pdb_files.append(line)
     pdb_files = np.array(pdb_files)
     if debug: print time() - t, 'secs...'
+
+    # Read File
+    if debug: print("Reading PDB Chains...")
+    with open('../../data/raw/PDB/'+pdb_list) as f:
+        lines = f.readlines()
+        pdb_chains = {}
+        for x in lines:
+            x = x.strip().split(',')
+            pdb_chains[x[0].lower()] = x[1:]
 
     # Generate Rotations
     if debug: print("Generating Rotations..."); t = time()
@@ -188,8 +200,14 @@ if __name__ == '__main__':
     if debug: print("Processing PDBs..."); t = time()
     pdbs_data = []
     for pdb_file in pdb_files:
-        pdb_data = get_pdb_data(pdb_folder + pdb_file, channels=sel_channels, debug=False)
-        pdbs_data.append([pdb_file.split('.')[0], pdb_data])
+        chains = pdb_chains[pdb_file[:-7]]
+        if len(chains) == 0:
+            pdb_data = get_pdb_data(pdb_folder + pdb_file, None, channels=sel_channels, debug=False)
+            pdbs_data.append([pdb_file.split('.')[0], pdb_data])
+        else:
+            for chain in chains:
+                pdb_data = get_pdb_data(pdb_folder + pdb_file, chain, channels=sel_channels, debug=False)
+                pdbs_data.append([pdb_file.split('.')[0]+chain, pdb_data])
     pdbs_data = np.array(pdbs_data)
     if debug: print time() - t, 'secs...'
 

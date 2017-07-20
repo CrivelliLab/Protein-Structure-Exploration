@@ -1,6 +1,6 @@
 '''
 ParseBlast.py
-Updated: 07/12/17
+Updated: 07/20/17
 [PASSING]
 
 README:
@@ -26,9 +26,9 @@ will be stored in an unknown set.
 PDB id list .txt files will be save under data/raw/PDB with the following
 naming conventions:
 
-- <positive_uniprots>pos_ids.txt - positive set
-- <positive_uniprots>neg_ids.txt - negative set
-- <positive_uniprots>unk_ids.txt - unkown set
+- <positive_uniprots>pos.csv - positive set
+- <positive_uniprots>neg.csv - negative set
+- <positive_uniprots>unk.csv - unkown set
 
 '''
 import os, shutil, argparse
@@ -74,7 +74,8 @@ if __name__ == '__main__':
         for line in f.readlines():
             cols = line.split(',')
             if len(cols) > 2:
-                pdb_id = cols[1].split('|')[3]
+                cols = cols[1].split('|')
+                pdb_id = cols[3].lower() + cols[4][0]
                 hits.append(pdb_id)
     hits = list(set(hits)) # remove duplicates
 
@@ -119,13 +120,13 @@ if __name__ == '__main__':
 
     # Write Results To File
     if debug: print("Writing PDB Ids To File...")
-    with open(pdb_folder + pdb_id_file + 'pos_ids.txt', 'w') as f:
-        for i in range(len(pos)): f.write(pos[i]+'\n')
+    with open(pdb_folder + pdb_id_file + 'pos.csv', 'w') as f:
+        for i in range(len(pos)): f.write(pos[i][:4]+','+pos[i][4]+'\n')
         print "Pos Hits Saved in:", f.name
-    with open(pdb_folder + pdb_id_file + 'neg_ids.txt', 'w') as f:
-        for i in range(len(neg)): f.write(neg[i]+'\n')
+    with open(pdb_folder + pdb_id_file + 'neg.csv', 'w') as f:
+        for i in range(len(neg)): f.write(pos[i][:4]+','+pos[i][4]+'\n')
         print "Neg Hits Saved in:", f.name
-    with open(pdb_folder + pdb_id_file + 'unk_ids.txt', 'w') as f:
-        for i in range(len(unk)): f.write(unk[i]+'\n')
+    with open(pdb_folder + pdb_id_file + 'unk.csv', 'w') as f:
+        for i in range(len(unk)): f.write(pos[i][:4]+','+pos[i][4]+'\n')
         print "Unk Hits Saved in:", f.name
     shutil.rmtree(pdb_folder+'temp')

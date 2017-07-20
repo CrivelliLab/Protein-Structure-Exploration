@@ -32,6 +32,10 @@ RUN mkdir /build/
 RUN cd /build && wget http://www.mpich.org/static/downloads/3.2/mpich-3.2.tar.gz \
   && tar xvzf mpich-3.2.tar.gz && cd /build/mpich-3.2 \
   && ./configure && make -j4 && make install && make clean && rm /build/mpich-3.2.tar.gz
+RUN cd /build && wget https://bitbucket.org/mpi4py/mpi4py/downloads/mpi4py-2.0.0.tar.gz \
+  && tar xvzf mpi4py-2.0.0.tar.gz
+RUN cd /build/mpi4py-2.0.0 && python setup.py build && python setup.py install && rm -rf /build/
+RUN /sbin/ldconfig
 
 # Enables X11 sharing and creates user home directory
 ENV USER_NAME protein-structure-exploration
@@ -53,4 +57,3 @@ RUN mkdir src
 RUN mkdir data
 RUN mkdir models
 RUN ["/bin/bash"]
-CMD echo $UID && bash

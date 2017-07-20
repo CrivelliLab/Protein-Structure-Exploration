@@ -229,7 +229,7 @@ if __name__ == '__main__':
     if args['profile']: profile = True
     if args['static_bounds']:
         dynamic_bounding = False
-        bounds = [int(i) for i in args['static_bounds'].split(',')]
+        b = [int(i) for i in args['static_bounds'][1:-1].split(',')]
 
     # Encoded Folder Name
     encoded_folder = processed_file.replace('_','-')[:-4] + '-'
@@ -301,7 +301,7 @@ if __name__ == '__main__':
                 temp = np.amax(np.abs(channel[:, 1:])) + 2
                 if temp > dia: dia = temp
             bounds = [pow(-1,l+1)*dia for l in range(6)]
-        else: bounds = bounds + bounds + bounds
+        else: bounds = b + b + b
 
         # Process Channels
         encoded_pdb_2d = []

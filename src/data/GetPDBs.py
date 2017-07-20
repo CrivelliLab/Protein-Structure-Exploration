@@ -8,10 +8,10 @@ README:
 The following script is used to fetch PDB files from the Protein Data Bank.
 
 Global variables used to fetch the PDBs are defined under #- Global Variables.
-'pdb_list_file' defines the .txt file containing list of PDB ids. .txt file
-should be under data/raw/PDB/ and filename should be formated as follows:
+'pdb_list_file' defines the .csv file containing list of PDB ids and chain identifiers.
+.txt file should be under data/raw/PDB/ and filename should be formated as follows:
 
-- <label>_ids.txt
+- <label>.csv
 
 Command Line Interface:
 
@@ -33,7 +33,7 @@ pdb_list_file = ''
 
 #- Verbose Settings
 debug = True
-pdb_list_usage = "PDB ids list .txt file; .txt file must be in data/raw/PDB/"
+pdb_list_usage = "PDB and chain ids list .csv file; .txt file must be in data/raw/PDB/"
 
 ################################################################################
 
@@ -53,8 +53,12 @@ if __name__ == '__main__':
 
     # Read File
     if debug: print("Reading PDB List...")
-    with open(pdbs_folder+pdb_list_file) as f: pdb_ids = f.readlines()
-    pdb_ids = [x.strip() for x in pdb_ids]
+    with open(pdbs_folder+pdb_list_file) as f:
+        lines = f.readlines()
+        pdb_ids = []
+        for x in lines:
+            pdb_id = x.strip().split(',')[0]
+            pdb_ids.append(pdb_id)
     if debug: print pdb_list, 'contains', len(pdb_ids), 'entries...'
 
     # Fetch PDBs
