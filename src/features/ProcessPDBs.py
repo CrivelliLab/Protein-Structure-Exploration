@@ -166,7 +166,9 @@ if __name__ == '__main__':
         pdb_chains = {}
         for x in lines:
             x = x.strip().split(',')
-            pdb_chains[x[0].lower()] = x[1:]
+            if x[0].lower() in pdb_chains:
+                pdb_chains[x[0].lower()] = pdb_chains[x[0].lower()] + x[1:]
+            else: pdb_chains[x[0].lower()] = x[1:]
 
     # Generate Rotations
     if debug: print("Generating Rotations..."); t = time()
@@ -209,6 +211,7 @@ if __name__ == '__main__':
                 pdb_data = get_pdb_data(pdb_folder + pdb_file, chain, channels=sel_channels, debug=False)
                 pdbs_data.append([pdb_file.split('.')[0]+chain, pdb_data])
     pdbs_data = np.array(pdbs_data)
+    print len(pdbs_data)
     if debug: print time() - t, 'secs...'
 
     # Save Data
