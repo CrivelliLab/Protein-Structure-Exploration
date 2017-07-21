@@ -2,7 +2,7 @@
 FILE NAME: InteractiveDataSubsetter.py
 
 INITIAL DATE: 8 July 2017
-REVISED DATE: 17 July 2017
+REVISED DATE: 20 July 2017
 
 PROGRAM STATUS: Core functionality tested and operational. Significant 
     clunkiness & TODOs. High probability of bugs being present. 
@@ -432,13 +432,15 @@ def create_hdf5(splits_dict, images_shape_dict, sep_hdf5s_flag, w_dir):
         print('Creating datasests in separate .hdf5 files')
 
         # Getting the input data shapes. 
-        slice_dicts['train']['slice_data_shape'] = (len(train_addrs), 
-                img_h, img_w, img_d) # Tensorflow likes this 'NHWC' format. 
-        slice_dicts['test']['slice_data_shape'] = (len(test_addrs),
-                img_h, img_w, img_d) 
+        # NOTE: Tensorflow like 'NHWC' format, however for compatibility with
+        # NERSC's code and per TF docs 'NCHW' is used instead.
+        slice_dicts['train']['slice_data_shape'] = (len(train_addrs), img_d,
+                img_h, img_w)
+        slice_dicts['test']['slice_data_shape'] = (len(test_addrs), img_d,
+                img_h, img_w) 
         if len(splits_dict) == 3:
             slice_dicts['validation']['slice_data_shape'] = (len(val_addrs),
-                    img_h, img_w, img_d) 
+                    img_d, img_h, img_w) 
         
         # Programmer's Note: type(slice_dicts) = ,class 'collections.defaultdict'>
         # Programmer's Note: type(slice_dicts[slice_dict]) = <class 'dict'>
@@ -475,10 +477,10 @@ def create_hdf5(splits_dict, images_shape_dict, sep_hdf5s_flag, w_dir):
     
     # Single dataset file case. 
     else:
-        train_data_shape = (len(train_addrs), img_h, img_w, img_d)
-        test_data_shape = (len(test_addrs), img_h, img_w, img_d)
+        train_data_shape = (len(train_addrs), img_d, img_h, img_w)
+        test_data_shape = (len(test_addrs), img_d, img_h, img_w)
         if len(splits_dict) == 3:
-            validation_data_shape = (len(val_addrs), img_h, img_w, img_d)
+            validation_data_shape = (len(val_addrs), img_d, img_h, img_w)
         
         # TODO: cwd()
         hdf5_path = os.path.join(w_dir, single_file_name)
