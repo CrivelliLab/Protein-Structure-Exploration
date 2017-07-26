@@ -124,9 +124,9 @@ if __name__ == '__main__':
         for i in range(len(pos)): f.write(pos[i][:4]+','+pos[i][4]+'\n')
         print "Pos Hits Saved in:", f.name
     with open(pdb_folder + pdb_id_file + 'neg.csv', 'w') as f:
-        for i in range(len(neg)): f.write(pos[i][:4]+','+pos[i][4]+'\n')
+        for i in range(len(neg)): f.write(neg[i][:4]+','+neg[i][4]+'\n')
         print "Neg Hits Saved in:", f.name
     with open(pdb_folder + pdb_id_file + 'unk.csv', 'w') as f:
-        for i in range(len(unk)): f.write(pos[i][:4]+','+pos[i][4]+'\n')
+        for i in range(len(unk)): f.write(unk[i][:4]+','+unk[i][4]+'\n')
         print "Unk Hits Saved in:", f.name
     shutil.rmtree(pdb_folder+'temp')

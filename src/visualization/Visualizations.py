@@ -36,14 +36,14 @@ import vtk
 from scipy import misc
 
 #- Global Variables
-pdb_id = '3conA'
-rot_id = 176
+pdb_id = '1aa9'
+rot_id = 360
 curve_3d = 'hilbert_3d_6.npy'
 curve_2d = 'hilbert_2d_9.npy'
-encoded_folder = 'RASCLEANBOUNDED0%64-T45-MS-HH512'
+encoded_folder = 'RAS-MD512-HH'
 processed_file = 'RASCLEANBOUNDED0%64_t45.npy'
 
-render_attenmap = False
+render_attenmap = True
 
 #- Verbose Settings
 debug = True
@@ -116,9 +116,39 @@ def display_3d_array(array_3d, attenmap=None):
         cube_actor = tvtk.Actor(mapper=cube_mapper, property=p)
         v.scene.add_actor(cube_actor)
 
+    if attenmap is not None:
+        xx, yy, zz = np.where(attenmap >= 0.1)
+
+        # Generate Voxels For Protein
+        append_filter = vtk.vtkAppendPolyData()
+        for i in range(len(xx)):
+            input1 = vtk.vtkPolyData()
+            voxel_source = vtk.vtkCubeSource()
+            voxel_source.SetCenter(xx[i],yy[i],zz[i])
+            voxel_source.SetXLength(1)
+            voxel_source.SetYLength(1)
+            voxel_source.SetZLength(1)
+            voxel_source.Update()
+            input1.ShallowCopy(voxel_source.GetOutput())
+            append_filter.AddInputData(input1)
+        append_filter.Update()
+
+        #  Remove Any Duplicate Points.
+        clean_filter = vtk.vtkCleanPolyData()
+        clean_filter.SetInputConnection(append_filter.GetOutputPort())
+        clean_filter.Update()
+
+        # Render Voxels
+        pd = tvtk.to_tvtk(clean_filter.GetOutput())
+        cube_mapper = tvtk.PolyDataMapper()
+        configure_input_data(cube_mapper, pd)
+        p = tvtk.Property(opacity=1.0, color=(1.0,1.0,1.0))
+        cube_actor = tvtk.Actor(mapper=cube_mapper, property=p)
+        v.scene.add_actor(cube_actor)
+
     mlab.show()
 
-def display_3d_model(pdb_data, skeletal=False, attenmap=None):
+def display_3d_model(pdb_data, skeletal=False, attenmap=None, dia=None):
     '''
     Method renders space-filling atomic model of PDB data.
 
@@ -169,6 +199,39 @@ def display_3d_model(pdb_data, skeletal=False, attenmap=None):
         p = tvtk.Property(opacity=1.0, color=c)
         sphere_actor = tvtk.Actor(mapper=sphere_mapper, property=p)
         v.scene.add_actor(sphere_actor)
+
+    if attenmap is not None:
+        xx, yy, zz = np.where(attenmap >= 0.1)
+        xx = (xx * (dia*2)/len(attenmap[0])) - dia
+        yy = (yy * (dia*2)/len(attenmap[0])) - dia
+        zz = (zz * (dia*2)/len(attenmap[0])) - dia
+
+        # Generate Voxels For Protein
+        append_filter = vtk.vtkAppendPolyData()
+        for i in range(len(xx)):
+            input1 = vtk.vtkPolyData()
+            voxel_source = vtk.vtkCubeSource()
+            voxel_source.SetCenter(xx[i],yy[i],zz[i])
+            voxel_source.SetXLength(1)
+            voxel_source.SetYLength(1)
+            voxel_source.SetZLength(1)
+            voxel_source.Update()
+            input1.ShallowCopy(voxel_source.GetOutput())
+            append_filter.AddInputData(input1)
+        append_filter.Update()
+
+        #  Remove Any Duplicate Points.
+        clean_filter = vtk.vtkCleanPolyData()
+        clean_filter.SetInputConnection(append_filter.GetOutputPort())
+        clean_filter.Update()
+
+        # Render Voxels
+        pd = tvtk.to_tvtk(clean_filter.GetOutput())
+        cube_mapper = tvtk.PolyDataMapper()
+        configure_input_data(cube_mapper, pd)
+        p = tvtk.Property(opacity=1.0, color=(1.0,1.0,1.0))
+        cube_actor = tvtk.Actor(mapper=cube_mapper, property=p)
+        v.scene.add_actor(cube_actor)
 
     mlab.show()
 
@@ -226,7 +289,7 @@ if __name__ == '__main__':
     curve_3d = path_to_project + 'data/raw/SFC/'+ curve_3d
     encoded_folder = path_to_project + 'data/processed/tars/' + encoded_folder + '/'
     processed_file = path_to_project + 'data/interim/' + processed_file
-    pdb = pdb_id + '-r' + str(rot_id) + '.png'
+    pdb = pdb_id + '-' + str(rot_id) + '.png'
 
     # Load Curves
     if debug: print("Loading Curves...")
@@ -250,7 +313,7 @@ if __name__ == '__main__':
     rot = data[1][rot_id]
     pdb_data = None
     for d in data[0]:
-        if d[0] == pdb_id: pdb_data = d[1]
+        if d[0] == pdb_id+'A': pdb_data = d[1]
     pdb_data = apply_rotation(pdb_data, rot)
 
     # Load Attention Map
@@ -258,9 +321,9 @@ if __name__ == '__main__':
     attenmap_3d = None
     if render_attenmap:
         if debug: print("Loading Attention Map...")
-        attenmap_2d = misc.imread('../../data/valid/attenmaps/' + pdb)
-        attenmap_2d = img.astype('float')/255.0
-        #img[img < 0.2] = 0
+        attenmap_2d = misc.imread('../../data/valid/' + pdb)
+        attenmap_2d = attenmap_2d.astype('float')/255.0
+        attenmap_2d[attenmap_2d < 0.5] = 0
         attenmap_3d = map_2d_to_3d(attenmap_2d, curve_3d, curve_2d)
 
         # Calculate Diameter
@@ -271,7 +334,7 @@ if __name__ == '__main__':
 
     # Render Visualizations
     if debug: print("Rendering Models...")
-    display_3d_model(pdb_data, skeletal=True, attenmap=attenmap_3d)
-    display_3d_model(pdb_data, attenmap=attenmap_3d)
+    display_3d_model(pdb_data, skeletal=True)
+    display_3d_model(pdb_data, attenmap=attenmap_3d, dia=dia)
     display_3d_array(decoded_pdb, attenmap=attenmap_3d)
-    display_2d_array(encoded_pdb, attenmap=attenmap_2d)
+    display_2d_array(encoded_pdb)

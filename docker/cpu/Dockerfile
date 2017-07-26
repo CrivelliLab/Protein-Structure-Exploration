@@ -1,5 +1,9 @@
 # CPU Protein-Structure-Exploration Dockerfile
 # Updated: 7/18/17
+#
+# README:
+#
+# Docker container uses Ubuntu 16.04 as the base image.
 
 # Base Image
 FROM ubuntu:16.04

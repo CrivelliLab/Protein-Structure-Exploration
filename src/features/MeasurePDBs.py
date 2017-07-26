@@ -108,5 +108,6 @@ if __name__ == '__main__':
                     pdb_chain = pdbs_data[j][0][4]
                     f.write(pdb_id+','+pdb_chain+'\n')
                     i +=1
+                else: print pdbs_data[j][0][:4], pdbs_data[j][0][4]
         print "PDBs within ", bounds[0], 'and', bounds[1], ':', i
         print "PDB ids saved in:", file_path[6:]
