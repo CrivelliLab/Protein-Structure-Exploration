@@ -28,8 +28,8 @@ from keras.callbacks import ModelCheckpoint
 from CIFAR_512 import CIFAR_512
 
 #- Global Variables
-network = CIFAR_512(nb_channels=3, nb_class=2, nb_gpu=2)
-base_name = 'KRAS_HRAS_24_JULY_BIG'
+network = CIFAR_512(nb_channels=3, nb_class=2, nb_gpu=4)
+base_name = 'PSIBLAST_24_JULY_BIG'
 image_size = (512, 512)
 seed = 125
 
@@ -49,19 +49,19 @@ if __name__ == '__main__':
     # Intiate Keras Flow From Directory
     datagen = ImageDataGenerator()
     train_flow = datagen.flow_from_directory(data_folder +'/train',
-                target_size=image_size, batch_size=20, class_mode='categorical',
+                target_size=image_size, batch_size=100, class_mode='categorical',
                 seed=seed)
     test_flow = datagen.flow_from_directory(data_folder +'/test',
-                target_size=image_size, batch_size=20, class_mode='categorical',
+                target_size=image_size, batch_size=100, class_mode='categorical',
                 seed=seed)
     save = ModelCheckpoint( model_folder + 'weights.hdf5', verbose=1, save_weights_only=True, period=5)
 
     # Fit Training Data
     if debug: print "Training Network..."
     history = network.model.fit_generator(train_flow, epochs=100,
-            steps_per_epoch=4600,
+            steps_per_epoch=1425,
                 validation_data=test_flow, callbacks=[save,],
-                validation_steps=1145)
+                validation_steps=356)
 
     # Save Training History
     loss_history = history.history["loss"]

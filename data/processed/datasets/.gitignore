@@ -1,9 +1,4 @@
-# Updated: 07/17/17
-# Ignore data files (i.e. images) - too large for repo
-*.png
-*.jpg
-*.jpeg
-
+# Updated: 07/26/17
 # Ignore test dataset folders - too large for repo
 */
 
