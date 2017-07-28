@@ -1,4 +1,4 @@
-# NERSC Edison PDB Data Processing
+# NERSC Cori PDB Data Processing
 
 Updated: 7/14/17
 [NOT PASSING] - Out of date

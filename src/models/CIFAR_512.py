@@ -15,11 +15,12 @@ import os
 
 # Neural Network
 from keras.models import Model
-from keras.layers import Conv2D, MaxPooling2D, Dropout, Input, Flatten, Dense
+from keras.layers import Conv2D, MaxPooling2D, Dropout, Input, Flatten, Dense, BatchNormalization
 from keras.optimizers import SGD
 from keras.metrics import categorical_accuracy
 from keras.constraints import maxnorm
 from ParallelModels import make_parallel
+from keras.utils import plot_model
 
 ################################################################################
 
@@ -41,29 +42,37 @@ class CIFAR_512:
         l = Dropout(0.2)(l)
         l = Conv2D(32, (3, 3), activation='relu', padding='same', kernel_constraint=maxnorm(3))(l)
         l = MaxPooling2D(pool_size=(2, 2))(l)
+        l = BatchNormalization()(l)
         l = Conv2D(32, (3, 3), padding='same', activation='relu', kernel_constraint=maxnorm(3))(l)
         l = Dropout(0.2)(l)
         l = Conv2D(32, (3, 3), activation='relu', padding='same', kernel_constraint=maxnorm(3))(l)
         l = MaxPooling2D(pool_size=(2, 2))(l)
+        l = BatchNormalization()(l)
         l = Conv2D(32, (3, 3), padding='same', activation='relu', kernel_constraint=maxnorm(3))(l)
         l = Dropout(0.2)(l)
         l = Conv2D(32, (3, 3), activation='relu', padding='same', kernel_constraint=maxnorm(3))(l)
         l = MaxPooling2D(pool_size=(2, 2))(l)
+        l = BatchNormalization()(l)
         l = Conv2D(32, (3, 3), padding='same', activation='relu', kernel_constraint=maxnorm(3))(l)
         l = Dropout(0.2)(l)
         l = Conv2D(32, (3, 3), activation='relu', padding='same', kernel_constraint=maxnorm(3))(l)
         l = MaxPooling2D(pool_size=(2, 2))(l)
+        l = BatchNormalization()(l)
         l = Conv2D(32, (3, 3), padding='same', activation='relu', kernel_constraint=maxnorm(3))(l)
         l = Dropout(0.2)(l)
         l = Conv2D(32, (3, 3), activation='relu', padding='same', kernel_constraint=maxnorm(3))(l)
         l = MaxPooling2D(pool_size=(2, 2))(l)
+        l = BatchNormalization()(l)
         l = Conv2D(32, (3, 3), padding='same', activation='relu', kernel_constraint=maxnorm(3))(l)
         l = Dropout(0.2)(l)
         l = Conv2D(32, (3, 3), activation='relu', padding='same', kernel_constraint=maxnorm(3))(l)
         l = MaxPooling2D(pool_size=(2, 2))(l)
+
         l = Flatten()(l)
 
         ## Fully Connected Layers
+        l = Dense(1024, activation='relu', kernel_constraint=maxnorm(3))(l)
+        l = Dropout(0.5)(l)
         l = Dense(1024, activation='relu', kernel_constraint=maxnorm(3))(l)
         l = Dropout(0.5)(l)
 
@@ -75,7 +84,7 @@ class CIFAR_512:
         # Save Model Diagram
         model_path = '../../models/CIFAR_512/'
         if not os.path.exists(model_path): os.makedirs(model_path)
-        plot_model(self.model, to_file=model_path+'model.png', show_shapes=True, show_layer_names=False)
+        plot_model(self.model, to_file=model_path+'model.png', show_shapes=False, show_layer_names=False)
 
         # Save Model JSON
         with open(model_path+'model.json', 'w') as f:

@@ -281,10 +281,7 @@ if __name__ == '__main__':
             for j in range(len(rotations)): entries.append([i,j])
         entries = np.array(entries)
         np.random.shuffle(entries)
-        print len(entries)
-        exit()
-    else:
-        entries = None
+    else: entries = None
     entries = comm.bcast(entries, root=0)
     entries = np.array_split(entries, cores)[rank]
     if debug:

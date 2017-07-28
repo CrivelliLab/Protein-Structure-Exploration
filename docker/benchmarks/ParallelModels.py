@@ -5,7 +5,7 @@ from keras.models import Model
 
 import tensorflow as tf
 
-def parallel_gpu(model, gpu_count):
+def make_parallel(model, gpu_count):
 
     def get_slice(data, idx, parts):
         shape = tf.shape(data)

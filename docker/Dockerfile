@@ -46,10 +46,12 @@ RUN echo 'export PS1="\[$(tput bold)\]\[\033[38;5;10m\]\u@DL_Docker\[$(tput sgr0
 RUN echo 'export PS1="\[$(tput bold)\]\[\033[38;5;10m\]\u@DL_Docker\[$(tput sgr0)\]\[\033[38;5;15m\]:\[$(tput sgr0)\]\[\033[38;5;12m\]\W\[$(tput sgr0)\]\[\033[38;5;15m\]\\$\[$(tput sgr0)\]"' >> ~/.bashrc
 
 # Create Project Folder
-RUN ["mkdir", "/home/project"]
+WORKDIR /home/
+RUN ["mkdir", "benchmarks"]
+ADD benchmarks/tensorflow_on_slurm.py benchmarks/tensorflow_on_slurm.py
+ADD benchmarks/ParallelModels.py benchmarks/ParallelModels.py
+ADD benchmarks/MNIST_CPU.py benchmarks/MNIST_CPU.py
+ADD benchmarks/MNIST_GPU.py benchmarks/MNIST_GPU.py
+ADD benchmarks/MNIST_SLURM.py benchmarks/MNIST_SLURM.py
+RUN ["mkdir", "project"]
 WORKDIR /home/project
-RUN ["mkdir", "test"]
-ADD test/MNIST.py test/MNIST.py
-ADD test/ParallelModels.py test/ParallelModels.py
-ADD test/SlurmMNIST.py test/SlurmMNISTs.py
-ADD test/tensorflow_on_slurm.py test/tensorflow_on_slurm.py

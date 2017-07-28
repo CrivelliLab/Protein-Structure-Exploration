@@ -22,19 +22,20 @@ respectively.
 
 ### Generating 2D Encodings of PDBs:
 
-1. Create a line seperated .txt file of PDB ids for all PDBs you would like to
-process. Save file in the [data/raw/PDB](../data/raw/PDB) directory and with the
-following naming convention: **CLASS_ids.txt**
+1. Create a .csv file of PDB ids for all PDBs you would like to process. Each
+line should contain a PDB id followed by chains identifiers of desired structures.
+Save file in the [data/raw/PDB](../data/raw/PDB) directory and with the following
+naming convention: **CLASS.csv**
 
 2. Fetch PDB files from the database using the [src/data/GetPDBs.py](../src/data/GetPDBs.py)
 script. This will create a folder in [data/raw/PDB](../data/raw/PDB) named
-according to the filename of the PDB ids .txt file.
+according to the filename of the PDB and chain ids .csv file.
 
 ```
-# Fetch PDBs defined in CLASS_ids.txt
+# Fetch PDBs defined in CLASS.csv
 #
 
-Docker:protein-structure-exploration$ python src/data/GetPDBs.py CLASS_ids.txt
+Docker:protein-structure-exploration$ python src/data/GetPDBs.py CLASS.csv
 Reading PDB List...
 CLASS contains 10 entries...
 Fetching PDBs...
@@ -91,7 +92,7 @@ augmentation.
 # Process hydrophobic, polar, and charged channels of CLASS PDBs
 # with 45 degree rotation augmentations
 
-Docker:protein-structure-exploration$ python src/features/ProcessPDBs.py CLASS 45 'hydrophobic,polar,charged'
+Docker:protein-structure-exploration$ python src/features/ProcessPDBs.py CLASS.csv 45 'hydrophobic,polar,charged'
 Read PDB Ids in: data/raw/PDB/CLASS/
 Processed data saved in: data/interim/CLASS_t45.npy
 
