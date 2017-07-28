@@ -3,3 +3,5 @@
 # Ignore compiled and swap files:
 *.pyc
 *.swp
+# Ignore weights files - too big for repo
+*/*/.hdf5
