@@ -1,6 +1,6 @@
-# Updated: 07/26/17
-# Ignore test dataset folders - too large for repo
-*/
+# Updated: 07/27/17
 
-# Ignore dataset binaries - too large for repo
-*.hdf5
+# Removed all files from here after directory restructuring. 
+# There should be no files on this level other than the readme
+# at this point. 
+
