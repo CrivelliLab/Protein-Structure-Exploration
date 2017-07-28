@@ -4,4 +4,4 @@
 *.pyc
 *.swp
 # Ignore weights files - too big for repo
-*/*/.hdf5
+*/*/*/.hdf5
