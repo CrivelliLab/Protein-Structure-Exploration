@@ -1,8 +1,6 @@
-# Updated: 07/17/17
+# Updated: 07/26/17
 # Ignore encoded pdb images - too many for repo
 */*.png
-*/*.jpg
-*/*.jpeg
 
 # Ignore encoded pdb tars - too large for repo
 *.tar.gz
