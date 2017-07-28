@@ -36,14 +36,15 @@ import vtk
 from scipy import misc
 
 #- Global Variables
-pdb_id = '1aa9'
-rot_id = 360
+pdb_id = '1he8B'
+rot_id = 0
 curve_3d = 'hilbert_3d_6.npy'
 curve_2d = 'hilbert_2d_9.npy'
-encoded_folder = 'RAS-MD512-HH'
-processed_file = 'RASCLEANBOUNDED0%64_t45.npy'
+encoded_folder = 'WD40-MD512-HH'
+processed_file = 'HRASBOUNDED0%64_t45.npy'
 
 render_attenmap = True
+threshold = 0.4
 
 #- Verbose Settings
 debug = True
@@ -63,7 +64,7 @@ def display_2d_array(array_2d, attenmap=None):
     n = array_2d.shape[-1]
     cm = [jet(float(i)/n)[:3] for i in range(n)]
     for i in range(n):
-        if i == 0: cmap = ListedColormap([[0,0,0,0.5], cm[i][:3]])
+        if i == 0: cmap = ListedColormap([[0,0,0,0.0], cm[i][:3]])
         else: cmap = ListedColormap([[0,0,0,0], cm[i][:3]])
         plt.imshow(array_2d[:,:,i], cmap=cmap, interpolation='nearest')
     plt.show()
@@ -82,7 +83,7 @@ def display_3d_array(array_3d, attenmap=None):
     cm = [jet(float(i)/n)[:3] for i in range(n)]
 
     # Dislay 3D Array Rendering
-    v = mlab.figure()
+    v = mlab.figure(bgcolor=(1.0,1.0,1.0))
     for j in range(len(array_3d)):
         c = cm[j]
 
@@ -142,7 +143,7 @@ def display_3d_array(array_3d, attenmap=None):
         pd = tvtk.to_tvtk(clean_filter.GetOutput())
         cube_mapper = tvtk.PolyDataMapper()
         configure_input_data(cube_mapper, pd)
-        p = tvtk.Property(opacity=1.0, color=(1.0,1.0,1.0))
+        p = tvtk.Property(opacity=1.0, color=(0.9,0.9,0.9))
         cube_actor = tvtk.Actor(mapper=cube_mapper, property=p)
         v.scene.add_actor(cube_actor)
 
@@ -164,7 +165,7 @@ def display_3d_model(pdb_data, skeletal=False, attenmap=None, dia=None):
     cm = [jet(float(i)/n)[:3] for i in range(n)]
 
     # Dislay 3D Mesh Rendering
-    v = mlab.figure()
+    v = mlab.figure(bgcolor=(1.0,1.0,1.0))
     for j in range(len(pdb_data)):
         c = cm[j]
 
@@ -229,7 +230,7 @@ def display_3d_model(pdb_data, skeletal=False, attenmap=None, dia=None):
         pd = tvtk.to_tvtk(clean_filter.GetOutput())
         cube_mapper = tvtk.PolyDataMapper()
         configure_input_data(cube_mapper, pd)
-        p = tvtk.Property(opacity=1.0, color=(1.0,1.0,1.0))
+        p = tvtk.Property(opacity=1.0, color=(0.9,0.9,0.9))
         cube_actor = tvtk.Actor(mapper=cube_mapper, property=p)
         v.scene.add_actor(cube_actor)
 
@@ -289,13 +290,14 @@ if __name__ == '__main__':
     curve_3d = path_to_project + 'data/raw/SFC/'+ curve_3d
     encoded_folder = path_to_project + 'data/processed/tars/' + encoded_folder + '/'
     processed_file = path_to_project + 'data/interim/' + processed_file
-    pdb = pdb_id + '-' + str(rot_id) + '.png'
+    pdb = pdb_id + '-r' + str(rot_id) + '.png'
 
     # Load Curves
     if debug: print("Loading Curves...")
     curve_3d = np.load(curve_3d)
     curve_2d = np.load(curve_2d)
 
+    '''
     # Load Encoded PDB
     if debug: print("Loading Encoded PDB...")
     encoded_pdb = misc.imread(encoded_folder + pdb)
@@ -306,35 +308,37 @@ if __name__ == '__main__':
         decoded_channel = map_2d_to_3d(channel, curve_3d, curve_2d)
         decoded_pdb.append(decoded_channel)
     decoded_pdb = np.array(decoded_pdb)
-
+    '''
     # Load PDB Data
+
     if debug: print("Loading PDB Data...")
     data = np.load(processed_file)
     rot = data[1][rot_id]
     pdb_data = None
     for d in data[0]:
-        if d[0] == pdb_id+'A': pdb_data = d[1]
+        if d[0] == pdb_id: pdb_data = d[1]
     pdb_data = apply_rotation(pdb_data, rot)
 
     # Load Attention Map
     attenmap_2d = None
     attenmap_3d = None
+    dia = 0
     if render_attenmap:
         if debug: print("Loading Attention Map...")
         attenmap_2d = misc.imread('../../data/valid/' + pdb)
         attenmap_2d = attenmap_2d.astype('float')/255.0
-        attenmap_2d[attenmap_2d < 0.5] = 0
+        attenmap_2d[attenmap_2d <threshold] = 0
         attenmap_3d = map_2d_to_3d(attenmap_2d, curve_3d, curve_2d)
 
         # Calculate Diameter
-        dia = 0
         for channel in pdb_data:
             temp = np.amax(np.abs(channel[:, 1:])) + 2
             if temp > dia: dia = temp
+        print dia
 
     # Render Visualizations
     if debug: print("Rendering Models...")
-    display_3d_model(pdb_data, skeletal=True)
+    #display_3d_model(pdb_data, skeletal=True)
     display_3d_model(pdb_data, attenmap=attenmap_3d, dia=dia)
-    display_3d_array(decoded_pdb, attenmap=attenmap_3d)
-    display_2d_array(encoded_pdb)
+    #display_3d_array(decoded_pdb, attenmap=attenmap_3d)
+    #display_2d_array(encoded_pdb)

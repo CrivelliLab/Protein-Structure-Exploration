@@ -11,6 +11,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy import misc
 
+
 #- Global Variables
 folder = 'WD40-MD512-HH'
 
@@ -24,13 +25,13 @@ def compare_images(encoded_folder):
     # Read PDB IMG File Names
     pdb_imgs = []
     for line in sorted(os.listdir('../../data/final/' + encoded_folder + '/')):
-        if line.endswith('-0.png'):
+        if line.endswith('-r0.png'):
             pdb_imgs.append(line)
     pdb_imgs = np.array(pdb_imgs)
 
     pdb_imgs1 = []
     for line in sorted(os.listdir('../../data/final/RAS-MD512-HH/')):
-        if line.endswith('-0.png'):
+        if line.endswith('-r0.png'):
             pdb_imgs1.append(line)
     pdb_imgs1 = np.array(pdb_imgs1)
 
