@@ -1,0 +1,10 @@
+# Updated 18 July 2017
+
+# Ignore .swp files.
+*.swp
+
+# Ignore compiled python files.
+*.pyc
+
+# Ignore testing datasets.
+testsets/
