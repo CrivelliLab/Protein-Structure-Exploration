@@ -36,15 +36,15 @@ import vtk
 from scipy import misc
 
 #- Global Variables
-pdb_id = '1he8B'
-rot_id = 0
+pdb_id = '1aa9A'
+rot_id = 100
 curve_3d = 'hilbert_3d_6.npy'
 curve_2d = 'hilbert_2d_9.npy'
-encoded_folder = 'WD40-MD512-HH'
+encoded_folder = 'HRASBOUNDED0%64-T45-MS-HH512'
 processed_file = 'HRASBOUNDED0%64_t45.npy'
 
-render_attenmap = True
-threshold = 0.4
+render_attenmap = False
+threshold = 0.6
 
 #- Verbose Settings
 debug = True
@@ -297,7 +297,6 @@ if __name__ == '__main__':
     curve_3d = np.load(curve_3d)
     curve_2d = np.load(curve_2d)
 
-    '''
     # Load Encoded PDB
     if debug: print("Loading Encoded PDB...")
     encoded_pdb = misc.imread(encoded_folder + pdb)
@@ -308,7 +307,7 @@ if __name__ == '__main__':
         decoded_channel = map_2d_to_3d(channel, curve_3d, curve_2d)
         decoded_pdb.append(decoded_channel)
     decoded_pdb = np.array(decoded_pdb)
-    '''
+
     # Load PDB Data
 
     if debug: print("Loading PDB Data...")
@@ -338,7 +337,7 @@ if __name__ == '__main__':
 
     # Render Visualizations
     if debug: print("Rendering Models...")
-    #display_3d_model(pdb_data, skeletal=True)
+    display_3d_model(pdb_data, skeletal=True)
     display_3d_model(pdb_data, attenmap=attenmap_3d, dia=dia)
-    #display_3d_array(decoded_pdb, attenmap=attenmap_3d)
-    #display_2d_array(encoded_pdb)
+    display_3d_array(decoded_pdb, attenmap=attenmap_3d)
+    display_2d_array(encoded_pdb)

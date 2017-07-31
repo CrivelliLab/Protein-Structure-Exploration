@@ -7,6 +7,7 @@ from mayavi import mlab
 import matplotlib.pyplot as plt
 from matplotlib.colors import ListedColormap
 from matplotlib.cm import jet
+import matplotlib.ticker as ticker
 from tvtk.api import tvtk
 from tvtk.common import configure_input_data
 from tqdm import tqdm
@@ -18,14 +19,16 @@ from prody import parsePDB, moveAtoms, confProDy
 confProDy(verbosity='none')
 
 #- Global Variables
-pdb_id = '1crpA'
-rot_id = 0
+pdb_id = '1aa9A'
+rot_id = 100
 curve_3d = 'hilbert_3d_6.npy'
 curve_2d = 'hilbert_2d_9.npy'
 processed_file = 'HRASBOUNDED0%64_t45.npy'
 pdb_folder = 'HRASBOUNDED0%64'
-
-render_attenmap = True
+threshold = 0.7
+nn = 6
+eps = 2.5
+samples = 10
 
 #- Verbose Settings
 debug = True
@@ -190,6 +193,17 @@ def display_3d_model(pdb_data, pointcloud=None, centroids=None):
 
     mlab.show()
 
+def closest_nodes(node, nodes, nb_hits):
+    nodes = np.asarray(nodes)
+    dist_2 = np.sum((nodes - node)**2, axis=1)
+    hits = []
+    for i in range(nb_hits):
+        x = np.argmin(dist_2)
+        dist_2[x] = 1000
+        if nodes[x] is [-1,-1,-1]: print "eror";continue
+        hits.append(x)
+    return hits
+
 if __name__ == '__main__':
 
     # File Paths
@@ -211,20 +225,21 @@ if __name__ == '__main__':
         if d[0] == pdb_id: pdb_data = d[1]
     pdb_data = apply_rotation(pdb_data, rot)
 
-    # Load Attention Map
-    attenmap_2d = None
-    attenmap_3d = None
-    attenmap_2d = misc.imread('../../data/analysis/' + pdb)
-    attenmap_2d = attenmap_2d.astype('float')/255.0
-    attenmap_2d[attenmap_2d < 0.2] = 0
-    attenmap_3d = map_2d_to_3d(attenmap_2d, curve_3d, curve_2d)
-
+    # Calculate Protein Diameter
     dia = 0
-    # Calculate Diameter
     for channel in pdb_data:
         temp = np.amax(np.abs(channel[:, 1:])) + 2
         if temp > dia: dia = temp
 
+    # Load Saliency Map
+    attenmap_2d = None
+    attenmap_3d = None
+    attenmap_2d = misc.imread('../../data/analysis/' + pdb)
+    attenmap_2d = attenmap_2d.astype('float')/255.0
+    attenmap_2d[attenmap_2d < threshold] = 0
+    attenmap_3d = map_2d_to_3d(attenmap_2d, curve_3d, curve_2d)
+
+    # Generate Saliency Pointcloud
     xx, yy, zz = np.where(attenmap_3d > 0.0)
     ww = [attenmap_3d[xx[i],yy[i],zz[i]] for i in range(len(xx))]
     xx = (xx * (dia*2)/len(attenmap_3d[0])) - dia
@@ -232,14 +247,14 @@ if __name__ == '__main__':
     zz = (zz * (dia*2)/len(attenmap_3d[0])) - dia
     saliency_pointcloud = np.array([xx,yy,zz])
     saliency_pointcloud = np.transpose(saliency_pointcloud, (1,0))
-    print len(saliency_pointcloud)
 
-    db = DBSCAN(eps=2, min_samples=15).fit(saliency_pointcloud)
+    # Cluster Saliency Pointcloud, ignoring noise if present.
+    db = DBSCAN(eps=eps, min_samples=samples).fit(saliency_pointcloud)
     core_samples_mask = np.zeros_like(db.labels_, dtype=bool)
     core_samples_mask[db.core_sample_indices_] = True
     labels = db.labels_
 
-    # Number of clusters in labels, ignoring noise if present.
+    # Calculate Centroid of Saliency Clusters
     cluster_centroids = []
     n_clusters_ = len(set(labels)) - (1 if -1 in labels else 0)
     for i in range(n_clusters_):
@@ -249,14 +264,14 @@ if __name__ == '__main__':
         z_mean = np.mean(saliency_pointcloud[cluster_indexes,2])
         cluster_centroids.append([x_mean, y_mean, z_mean])
     cluster_centroids = np.array(cluster_centroids)
-    print cluster_centroids
 
+    # Parse PDB
     molecule = parsePDB(pdb_folder+pdb_id[:-1]+'.pdb.gz').select('protein')
     molecule = molecule.select('chain '+pdb_id[-1])
     moveAtoms(molecule, to=np.zeros(3))
     hv = molecule.getHierView()[pdb_id[-1]]
 
-    # Gather Atom Information
+    # Gather Residuel Information
     res_centroids = []
     residuels = []
     for i, residue in enumerate(hv.iterResidues()):
@@ -271,25 +286,47 @@ if __name__ == '__main__':
         z_mean = np.mean(res_coord[:,2])
         res_centroids.append([x_mean, y_mean, z_mean])
         residuels.append(residue)
-
     res_centroids = np.array(res_centroids)
 
-    def closest_nodes(node, nodes, nb_hits):
-        nodes = np.asarray(nodes)
-        dist_2 = np.sum((nodes - node)**2, axis=1)
-        hits = []
-        for i in range(nb_hits):
-            x = np.argmin(dist_2)
-            dist_2[x] = 1000
-            hits.append(x)
-        return hits
-
+    # Calculate Nearest Neighbors
     cluster_hits = []
     for i in range(len(cluster_centroids)):
-        hits = closest_nodes(cluster_centroids[i], res_centroids, 10)
-        cluster_hits.append(sorted(hits))
+        hits = closest_nodes(cluster_centroids[i], res_centroids, nn)
+        cluster_hits.append(hits)
     cluster_hits = np.array(cluster_hits)
-    print cluster_hits
+
+    #display_3d_model(None, saliency_pointcloud, cluster_centroids)
+
+    # Generate Focus Map
+    mat = np.zeros((len(cluster_hits), len(residuels)))
+    for i in range(len(cluster_hits)):
+        for j in range(len(cluster_hits[i])):
+            mat[i][cluster_hits[i][j]] = len(cluster_hits[i]) - j
+
+    # Dissplay Focus Map
+    sections = int(len(residuels)/60) + (len(residuels)%60 > 0)
+    f, axarray = plt.subplots(sections, figsize=(9,9))
+    for i in range(sections):
+        ax = axarray[i]
+        cax = ax.matshow(mat[:,0+(60*i):60+(60*i)], cmap=plt.cm.Blues)
+
+        #if i+1 == sections:
 
 
-    display_3d_model(pdb_data, saliency_pointcloud, cluster_centroids)
+        ax.set_xticklabels([''] + [str(j) for j in range(0+(60*i),60+(60*i),5)])
+        ax.yaxis.set_major_locator(ticker.MultipleLocator(2))
+        ax.xaxis.set_major_locator(ticker.MultipleLocator(5))
+        ax.xaxis.set_ticks_position('bottom')
+
+        if i == 0:
+            ax.set_title(pdb[:-4] + ", N-Nearest Neighbor Residues of Saliency Clusters; n="+str(nn) +"; eps="+str(eps)+"; min_sample="+str(samples))
+    plt.ylabel('Saliency Cluster')
+    plt.xlabel('Residues')
+    f.subplots_adjust(bottom=0.2)
+    cbar_ax = f.add_axes([0.25, -0.55, 0.5, 0.7])
+    cbar = f.colorbar(cax, ticks=[0, nn/2, nn],pad=0.5,location='top')
+    cbar.ax.set_xticklabels(['Low', 'Medium', 'High'])
+
+
+
+    plt.show()
