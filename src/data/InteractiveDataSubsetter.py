@@ -205,7 +205,7 @@ def split_classes(splits_dict, w_dir):
     # Dict keys are split names, will be directory names. I.e. 'train', 'test'.
     split_dirs = [key for key in splits_dict.keys()]
     
-    print('Searching current working directory for subdirectories...')
+    print('Searching working directory for subdirectories...')
     qpaths = get_subdirectories(w_dir)
     print('{} subdirectories found:'.format(len(qpaths)))
     for qpath in qpaths:
@@ -430,17 +430,17 @@ def create_hdf5(splits_dict, images_shape_dict, sep_hdf5s_flag, w_dir):
     # Separate files case first. 
     if sep_hdf5s_flag:
         print('Creating datasests in separate .hdf5 files')
-
         # Getting the input data shapes. 
         # NOTE: Tensorflow like 'NHWC' format, however for compatibility with
-        # NERSC's code and per TF docs 'NCHW' is used instead.
-        slice_dicts['train']['slice_data_shape'] = (len(train_addrs), img_d,
-                img_h, img_w)
-        slice_dicts['test']['slice_data_shape'] = (len(test_addrs), img_d,
-                img_h, img_w) 
+        # NERSC's code and per TF docs 'NCHW' should be used instead. This code
+        # needs to be modified to support that functionality!
+        slice_dicts['train']['slice_data_shape'] = (len(train_addrs),
+                img_h, img_w, img_d)
+        slice_dicts['test']['slice_data_shape'] = (len(test_addrs),
+                img_h, img_w, img_d) 
         if len(splits_dict) == 3:
             slice_dicts['validation']['slice_data_shape'] = (len(val_addrs),
-                    img_d, img_h, img_w) 
+                    img_h, img_w, img_d) 
         
         # Programmer's Note: type(slice_dicts) = ,class 'collections.defaultdict'>
         # Programmer's Note: type(slice_dicts[slice_dict]) = <class 'dict'>
