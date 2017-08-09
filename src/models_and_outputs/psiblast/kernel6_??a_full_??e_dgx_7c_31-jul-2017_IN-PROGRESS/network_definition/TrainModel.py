@@ -25,11 +25,11 @@ In order to make use of this script for training on new data you must specify
 the correct data folder name, the correct number of gpus to be used in
 training, the correct image dimensions, the correct batch sizes and
 corresponding training and validation steps, and the number of epochs you wish
-to train for. 
+to train for.
 
 TODO:
     Turn this into a master script that allows for more automated setting of
-    run parameters. Right now this is very manual. 
+    run parameters. Right now this is very manual.
 
 '''
 import os, sys

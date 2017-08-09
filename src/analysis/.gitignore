@@ -1,2 +1,4 @@
-HKRAS_CIFAR_512.py
+#HKRAS_CIFAR_512.py
 *.hdf5
+*.png
+*_CIFAR_512.py

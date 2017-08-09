@@ -19,16 +19,16 @@ from prody import parsePDB, moveAtoms, confProDy
 confProDy(verbosity='none')
 
 #- Global Variables
-pdb_id = '1aa9A'
-rot_id = 100
+pdb_id = '4dsnA'
+rot_id = 0
 curve_3d = 'hilbert_3d_6.npy'
 curve_2d = 'hilbert_2d_9.npy'
-processed_file = 'HRASBOUNDED0%64_t45.npy'
-pdb_folder = 'HRASBOUNDED0%64'
-threshold = 0.7
+processed_file = 'KRASBOUNDED0%64_t45.npy'
+pdb_folder = 'KRASBOUNDED0%64'
+threshold = 0.9
 nn = 6
-eps = 2.5
-samples = 10
+eps = 2.0
+samples = 6
 
 #- Verbose Settings
 debug = True
@@ -234,9 +234,11 @@ if __name__ == '__main__':
     # Load Saliency Map
     attenmap_2d = None
     attenmap_3d = None
-    attenmap_2d = misc.imread('../../data/analysis/' + pdb)
+    attenmap_2d = misc.imread('KRAS_SALIENCY/' + pdb)
     attenmap_2d = attenmap_2d.astype('float')/255.0
     attenmap_2d[attenmap_2d < threshold] = 0
+    plt.matshow(attenmap_2d)
+    plt.show()
     attenmap_3d = map_2d_to_3d(attenmap_2d, curve_3d, curve_2d)
 
     # Generate Saliency Pointcloud
@@ -295,7 +297,7 @@ if __name__ == '__main__':
         cluster_hits.append(hits)
     cluster_hits = np.array(cluster_hits)
 
-    #display_3d_model(None, saliency_pointcloud, cluster_centroids)
+    display_3d_model(None, saliency_pointcloud, cluster_centroids)
 
     # Generate Focus Map
     mat = np.zeros((len(cluster_hits), len(residuels)))
@@ -309,10 +311,6 @@ if __name__ == '__main__':
     for i in range(sections):
         ax = axarray[i]
         cax = ax.matshow(mat[:,0+(60*i):60+(60*i)], cmap=plt.cm.Blues)
-
-        #if i+1 == sections:
-
-
         ax.set_xticklabels([''] + [str(j) for j in range(0+(60*i),60+(60*i),5)])
         ax.yaxis.set_major_locator(ticker.MultipleLocator(2))
         ax.xaxis.set_major_locator(ticker.MultipleLocator(5))
@@ -326,7 +324,4 @@ if __name__ == '__main__':
     cbar_ax = f.add_axes([0.25, -0.55, 0.5, 0.7])
     cbar = f.colorbar(cax, ticks=[0, nn/2, nn],pad=0.5,location='top')
     cbar.ax.set_xticklabels(['Low', 'Medium', 'High'])
-
-
-
     plt.show()
