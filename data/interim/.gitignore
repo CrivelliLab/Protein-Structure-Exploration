@@ -1,4 +1,0 @@
-# Updated: 07/12/17
-# Ignore Numpy Array Files - too large for repo
-
-*.npy

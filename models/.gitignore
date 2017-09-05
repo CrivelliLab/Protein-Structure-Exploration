@@ -1,7 +1,0 @@
-# Updated: 07/26/17
-# Ignore model files - too large for repo
-*/*.hdf5
-*/*.json
-
-# Ignore final results .tar.gz files - too big for repo.
-*.tar.gz
