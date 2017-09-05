@@ -1,10 +1,13 @@
 # Updated 5 September 2017
+# Project-level .gitignore.
 
 # All compiled scripts and cache directories.
 **/*.pyc
 **/__pycache__
+
 # All swap files.
 **/*.swp
+
 # All network training outputs, dataset zips, image files. 
 **/*.hdf5
 **/*.png
@@ -13,12 +16,16 @@
 **/*.csv
 **/*.p
 **/*.gz
+
 # Numpy array files.
 **/*.npy
+
 # Jupyter checkpoints.
 **/*.ipynb_checkpoints
+
 # SLURM output.
 **/*.out
+
 # Mac-specific directory files.
 **/.DS_Store
 **/._.DS_Store
