@@ -19,3 +19,6 @@
 **/*.ipynb_checkpoints
 # SLURM output.
 **/*.out
+# Mac-specific directory files.
+**/.DS_Store
+**/._.DS_Store
