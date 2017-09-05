@@ -1,3 +1,11 @@
+
+
+
+NOTE: Below is now depricated but preserved for historical reasons. Now
+sticking to 1, 2, 4, and 6 card runs to keep things even. Elements have been
+moved back to their home directories to get the nice even splits that they were
+at before. 
+
 The HH-512-MS-FULL dataset has been modified in order to fit on 7 cards.
 Originally it was of size:
 
