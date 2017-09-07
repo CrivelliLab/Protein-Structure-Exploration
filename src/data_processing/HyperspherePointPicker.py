@@ -8,8 +8,6 @@ import matplotlib
 from matplotlib import pyplot as plt
 from mpl_toolkits.mplot3d import axes3d
 
-visualize = True
-
 def gen_hypersphere_points(num_points, dimensions, viz = False):
     '''
     Generates 3 vectors consisting of independent random samples from 3
@@ -30,6 +28,8 @@ def gen_hypersphere_points(num_points, dimensions, viz = False):
     approach:
         http://mathworld.wolfram.com/SpherePointPicking.html
     '''
+    np.random.seed(9283764) # For consistant random coordinate generation.
+
     def sample_unit_sphere(npoints, dims):
         vector = np.random.randn(dims, npoints)
         vector /= np.linalg.norm(vector, axis=0)
