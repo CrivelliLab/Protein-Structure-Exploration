@@ -28,8 +28,8 @@ from VGG_16_ENHANCED import VGG_16_ENHANCED
 # *****************************************************************************
 # Global Variables
 # *****************************************************************************
-network = VGG_16_ENHANCED(nb_channels=3, nb_class=2, nb_gpu=2)
-data_folder_name = 'psiblast/HH-512-MS-FULL' # Must match dataset directory structure.
+network = VGG_16_ENHANCED(nb_channels=3, nb_class=2, nb_gpu=4)
+data_folder_name = 'psiblast/HH-512-MS-FULL-SEPARATE-AUGMENTS' # Must match dataset directory structure.
 image_size = (512, 512) # Resolution of input images. 
 seed = 125 # Random seed for reproducibility. 
 
@@ -49,20 +49,20 @@ if __name__ == '__main__':
     # Intiate Keras Flow From Directory
     datagen = ImageDataGenerator()
     train_flow = datagen.flow_from_directory(data_folder +'/train',
-                target_size=image_size, batch_size=20, class_mode='categorical',
+                target_size=image_size, batch_size=16, class_mode='categorical',
                 seed=seed)
     test_flow = datagen.flow_from_directory(data_folder +'/test',
-                target_size=image_size, batch_size=20, class_mode='categorical',
+                target_size=image_size, batch_size=16, class_mode='categorical',
                 seed=seed)
     weights_save = ModelCheckpoint(output_folder + 'weights.hdf5', verbose=1,
             save_weights_only=True, period=5)
 
     # Fit Training Data
     if debug: print "Training Network..."
-    history = network.model.fit_generator(train_flow, epochs=100,
-            steps_per_epoch=7125,
+    history = network.model.fit_generator(train_flow, epochs=150,
+            steps_per_epoch=8352,
                 validation_data=test_flow, callbacks=[weights_save,],
-                validation_steps=1780)
+                validation_steps=2784)
 
     # Save Training History
     loss_history = history.history["loss"]
