@@ -1,6 +1,6 @@
 '''
 TrainModel.py
-Updated: 12 September 2017
+Updated: 11 September 2017
 [PASSING]
 
 README:
@@ -28,12 +28,12 @@ from keras.models import load_model
 import pickle
 
 # Network import
-from VGG_16 import VGG_16
+from VGG_16_ENHANCED import VGG_16_ENHANCED
 
 # *****************************************************************************
 # Global Variables
 # *****************************************************************************
-network = VGG_16(nb_channels=3, nb_class=2, nb_gpu=2)
+network = VGG_16_ENHANCED(nb_channels=3, nb_class=2, nb_gpu=4)
 data_folder_name = 'psiblast/HH-512-MS-FULL-SEPARATE-AUGMENTS' # Must match dataset directory structure.
 image_size = (512, 512) # Resolution of input images. 
 seed = 125 # Random seed for reproducibility. 
@@ -66,7 +66,7 @@ if __name__ == '__main__':
     # Streams epoch results to a .csv file - appends to preexisting file. 
     csv_logger = CSVLogger(output_folder + 'training_log.csv', separator=',', append=True)
     # Stop the training if validation accuracy stops improving.
-    early_stopper = EarlyStopping(monitor='val_loss', min_delta=.001, patience=5,
+    early_stopper = EarlyStopping(monitor='val_categorical_accuracy', min_delta=.001, patience=3,
             mode='auto')
 
     # Check for the existance of a previous weights file, load if present.

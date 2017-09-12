@@ -1,6 +1,6 @@
 '''
 VGG_16_ENHANCED.py
-Updated: 8 September 2017
+Updated: 12 September 2017
 [PASSING]
 
 README:
@@ -8,11 +8,11 @@ README:
     This network is inspired by the VGG team's ILSVRC14-winning
     submission. See: https://gist.github.com/baraldilorenzo/07d7802847aaad0a35d3
 
-    The network has been updated in a number of ways to take advantage of
-    recent advances in deep learning research (e.g some versions have SELU
-    activations), as well as the powerful hardware that we are training on (the 
-    Nvidia DGX-1 with Tesla P100s is the target platform for this architecture). 
-    However, it is largely the same. 
+    This network is a near 1-1 implementation of the original VGG16 network
+    with modifications made only to match updated API syntax. The only
+    significant variation from the original reference network is that the two
+    dense layers in this implementation have only 2048 neurons each instead of
+    the reference implementations 4096 (for memory resons on our hardware).
 
 '''
 # *****************************************************************************
@@ -30,12 +30,12 @@ from ParallelModels import make_parallel
 # *****************************************************************************
 # NETWORK DEFINITION
 # *****************************************************************************
-class VGG_16_ENHANCED:
+class VGG_16:
 
     def __init__(self, nb_channels, nb_class=2, nb_gpu=1):
         
         # Parameters
-        self.optimizer = SGD(lr=0.00001, momentum=0.9, decay=0.00001/100, nesterov=False)
+        self.optimizer = SGD(lr=0.1, momentum=0.9, decay=.000006, nesterov=True)
 
         # Input Layer
         x = Input(shape=(512, 512, nb_channels))
@@ -43,42 +43,44 @@ class VGG_16_ENHANCED:
         # Convolution Layers
         l = Conv2D(64, (3, 3), padding='same', activation='relu', 
                 kernel_constraint=maxnorm(3))(x)
-        l = Dropout(0.2)(l)
         l = Conv2D(64, (3, 3), padding='same', activation='relu',
                 kernel_constraint=maxnorm(3))(l)
         l = MaxPooling2D(pool_size=(2, 2))(l)
         
         l = Conv2D(128, (3, 3), padding='same', activation='relu', 
                 kernel_constraint=maxnorm(3))(l)
-        l = Dropout(0.2)(l)
         l = Conv2D(128, (3, 3), padding='same', activation='relu',
                 kernel_constraint=maxnorm(3))(l)
         l = MaxPooling2D(pool_size=(2, 2))(l)
 
         l = Conv2D(256, (3, 3), padding='same', activation='relu', 
                 kernel_constraint=maxnorm(3))(l)
-        l = Dropout(0.2)(l)
         l = Conv2D(256, (3, 3), padding='same', activation='relu',
                 kernel_constraint=maxnorm(3))(l)
-        l = MaxPooling2D(pool_size=(2, 2))(l)
-
-        l = Conv2D(512, (3, 3), padding='same', activation='relu', 
-                kernel_constraint=maxnorm(3))(l)
-        l = Dropout(0.2)(l)
-        l = Conv2D(512, (3, 3), padding='same', activation='relu',
+        l = Conv2D(256, (3, 3), padding='same', activation='relu', 
                 kernel_constraint=maxnorm(3))(l)
         l = MaxPooling2D(pool_size=(2, 2))(l)
 
         l = Conv2D(512, (3, 3), padding='same', activation='relu', 
                 kernel_constraint=maxnorm(3))(l)
-        l = Dropout(0.2)(l)
         l = Conv2D(512, (3, 3), padding='same', activation='relu',
+                kernel_constraint=maxnorm(3))(l)
+        l = Conv2D(512, (3, 3), padding='same', activation='relu', 
+                kernel_constraint=maxnorm(3))(l)
+        l = MaxPooling2D(pool_size=(2, 2))(l)
+
+        l = Conv2D(512, (3, 3), padding='same', activation='relu', 
+                kernel_constraint=maxnorm(3))(l)
+        l = Conv2D(512, (3, 3), padding='same', activation='relu',
+                kernel_constraint=maxnorm(3))(l)
+        l = Conv2D(512, (3, 3), padding='same', activation='relu', 
                 kernel_constraint=maxnorm(3))(l)
         l = MaxPooling2D(pool_size=(2, 2))(l)
 
         l = Flatten()(l)
 
-        ## Fully Connected Layers
+        # Fully Connected Layers. NOTE: # of dense neurons is half that of
+        # the original VGG 16 paper due to memory constraints on DGX.
         l = Dense(2048, activation='relu', kernel_constraint=maxnorm(3))(l)
         l = Dropout(0.5)(l)
 
