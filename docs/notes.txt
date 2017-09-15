@@ -1,0 +1,17 @@
+OctNet: Learning Deep 3D Representations at High Resolutions:
+  * Andreas Geiger, November 2016
+  - Using our OctNet, we investigate the impact of high resolution in- puts wrt.
+  accuracy on the three tasks and demonstrate that higher resolutions are
+  particularly beneficial for orientation estimation and semantic point cloud
+  labeling. (128^3 and above)
+
+Large-Scale Shape Retrieval with Sparse 3D Convolutional Neural Networks:
+  * Evgeny Burnaev, July 2017
+  - Adding a third spatial dimension in the input grid correspondingly increases
+   computational costs. Num- ber of cells scales as a power of three w.r.t. the
+   resolution of the voxel grid. Low resolution grids make it difficult to
+   differentiate between similar shapes, and lose some of the fine details
+   available in 2D renderings of equivalent resolution.
+   - Computational complexity of 3D convolution for image with dimensions of
+   N × M × K with filters sizes of n × m × k is equal to O(NMKnmk)
+   - ModelNet40, 0.0301 sec/sample on Titan X 12Gb, 90.30 % accuracy, 60-70 dim
