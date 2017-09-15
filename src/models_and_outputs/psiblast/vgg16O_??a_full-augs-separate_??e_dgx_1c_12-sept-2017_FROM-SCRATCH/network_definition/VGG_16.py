@@ -41,50 +41,37 @@ class VGG_16:
         x = Input(shape=(512, 512, nb_channels))
 
         # Convolution Layers
-        l = Conv2D(64, (3, 3), padding='same', activation='relu', 
-                kernel_constraint=maxnorm(3))(x)
-        l = Conv2D(64, (3, 3), padding='same', activation='relu',
-                kernel_constraint=maxnorm(3))(l)
+        l = Conv2D(64, (3, 3), padding='same', activation='relu')(x)
+        l = Conv2D(64, (3, 3), padding='same', activation='relu')(l)
         l = MaxPooling2D(pool_size=(2, 2))(l)
         
-        l = Conv2D(128, (3, 3), padding='same', activation='relu', 
-                kernel_constraint=maxnorm(3))(l)
-        l = Conv2D(128, (3, 3), padding='same', activation='relu',
-                kernel_constraint=maxnorm(3))(l)
+        l = Conv2D(128, (3, 3), padding='same', activation='relu')(l)
+        l = Conv2D(128, (3, 3), padding='same', activation='relu')(l)
         l = MaxPooling2D(pool_size=(2, 2))(l)
 
-        l = Conv2D(256, (3, 3), padding='same', activation='relu', 
-                kernel_constraint=maxnorm(3))(l)
-        l = Conv2D(256, (3, 3), padding='same', activation='relu',
-                kernel_constraint=maxnorm(3))(l)
-        l = Conv2D(256, (3, 3), padding='same', activation='relu', 
-                kernel_constraint=maxnorm(3))(l)
+        l = Conv2D(256, (3, 3), padding='same', activation='relu')(l)
+        l = Conv2D(256, (3, 3), padding='same', activation='relu')(l)
+        l = Conv2D(256, (3, 3), padding='same', activation='relu')(l)
         l = MaxPooling2D(pool_size=(2, 2))(l)
 
-        l = Conv2D(512, (3, 3), padding='same', activation='relu', 
-                kernel_constraint=maxnorm(3))(l)
-        l = Conv2D(512, (3, 3), padding='same', activation='relu',
-                kernel_constraint=maxnorm(3))(l)
-        l = Conv2D(512, (3, 3), padding='same', activation='relu', 
-                kernel_constraint=maxnorm(3))(l)
+        l = Conv2D(512, (3, 3), padding='same', activation='relu')(l)
+        l = Conv2D(512, (3, 3), padding='same', activation='relu')(l)
+        l = Conv2D(512, (3, 3), padding='same', activation='relu')(l)
         l = MaxPooling2D(pool_size=(2, 2))(l)
 
-        l = Conv2D(512, (3, 3), padding='same', activation='relu', 
-                kernel_constraint=maxnorm(3))(l)
-        l = Conv2D(512, (3, 3), padding='same', activation='relu',
-                kernel_constraint=maxnorm(3))(l)
-        l = Conv2D(512, (3, 3), padding='same', activation='relu', 
-                kernel_constraint=maxnorm(3))(l)
+        l = Conv2D(512, (3, 3), padding='same', activation='relu')(l)
+        l = Conv2D(512, (3, 3), padding='same', activation='relu')(l)
+        l = Conv2D(512, (3, 3), padding='same', activation='relu')(l)
         l = MaxPooling2D(pool_size=(2, 2))(l)
 
         l = Flatten()(l)
 
         # Fully Connected Layers. NOTE: # of dense neurons is half that of
         # the original VGG 16 paper due to memory constraints on DGX.
-        l = Dense(2048, activation='relu', kernel_constraint=maxnorm(3))(l)
+        l = Dense(2048, activation='relu')(l)
         l = Dropout(0.5)(l)
 
-        l = Dense(2048, activation='relu', kernel_constraint=maxnorm(3))(l)
+        l = Dense(2048, activation='relu')(l)
         l = Dropout(0.5)(l)
         
         # Output Layer

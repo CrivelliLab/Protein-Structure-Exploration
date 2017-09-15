@@ -28,12 +28,12 @@ from keras.models import load_model
 import pickle
 
 # Network import
-from VGG_16 import VGG_16
+from SIMPLENET_MODIFIED import SIMPLENET_MODIFIED
 
 # *****************************************************************************
 # Global Variables
 # *****************************************************************************
-network = VGG_16(nb_channels=3, nb_class=2, nb_gpu=4)
+network = SIMPLENET_MODIFIED(nb_channels=3, nb_class=2, nb_gpu=1)
 data_folder_name = 'psiblast/HH-512-MS-FULL-SEPARATE-AUGMENTS' # Must match dataset directory structure.
 image_size = (512, 512) # Resolution of input images. 
 seed = 125 # Random seed for reproducibility. 
@@ -54,10 +54,10 @@ if __name__ == '__main__':
     # Intiate Keras Flow From Directory
     datagen = ImageDataGenerator()
     train_flow = datagen.flow_from_directory(data_path +'/train',
-                target_size=image_size, batch_size=16, class_mode='categorical',
+                target_size=image_size, batch_size=4, class_mode='categorical',
                 seed=seed)
     test_flow = datagen.flow_from_directory(data_path +'/test',
-                target_size=image_size, batch_size=16, class_mode='categorical',
+                target_size=image_size, batch_size=4, class_mode='categorical',
                 seed=seed)
     # Every three epochs save the weights if they are better than previous. 
     weights_save = ModelCheckpoint(output_folder + 'weights.hdf5',
@@ -66,7 +66,7 @@ if __name__ == '__main__':
     # Streams epoch results to a .csv file - appends to preexisting file. 
     csv_logger = CSVLogger(output_folder + 'training_log.csv', separator=',', append=True)
     # Stop the training if validation accuracy stops improving.
-    early_stopper = EarlyStopping(monitor='val_loss', min_delta=.001, patience=5,
+    early_stopper = EarlyStopping(monitor='val_loss', min_delta=.001, patience=7,
             mode='auto')
 
     # Check for the existance of a previous weights file, load if present.
@@ -77,9 +77,9 @@ if __name__ == '__main__':
     # Fit Training Data
     if debug: print "Training Network..."
     history = network.model.fit_generator(train_flow, epochs=100,
-            steps_per_epoch=8352,
+            steps_per_epoch=33408,
                 validation_data=test_flow, callbacks=[weights_save, csv_logger,
-                    early_stopper,], validation_steps=2784)
+                    early_stopper,], validation_steps=11136)
 
     # Save Training History - currently these only save after training
     # completes.
