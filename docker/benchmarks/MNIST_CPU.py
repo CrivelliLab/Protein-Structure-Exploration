@@ -1,23 +1,24 @@
 '''
 MNIST_CPU.py
-Updated: 08/28/17
+Updated: 09/25/17
 
 README:
 
-Script is used to benchmark CPU system on the MNIST dataset.
+This script is used to benchmark CPU system on the MNIST dataset using the Keras
+nueral network library.
 
 The network defined in this benchmark gets to 99.25% test accuracy after 12
-epochs (there is still a lot of margin for parameter tuning). 16 seconds per
-epoch on a GRID K520 GPU.
+epochs (204 seconds per epoch). The network utilizes convolutional
+layers to preform multi-class classification between the different handwritten
+character images.
 
 '''
-import keras
 from keras.datasets import mnist
 from keras.models import Sequential
-from keras.layers import Dense, Dropout, Flatten
-from keras.layers import Conv2D, MaxPooling2D
-from keras import backend as K
-import numpy as np
+from keras.optimizers import Adadelta
+from keras.utils import to_categorical
+from keras.losses import categorical_crossentropy
+from keras.layers import Dense, Dropout, Flatten, Conv2D, MaxPooling2D
 
 epochs = 10
 batch_size = 128
@@ -26,7 +27,13 @@ batch_size = 128
 
 def define_model():
     '''
-    Method defines Keras model.
+    Method defines Keras model. Network is made up of 2 convolutional layers,
+    one with 32 feature maps and kernel size of 3, followed by another with 64
+    feature maps and kernel size of 3. Both layers use the RELU activation
+    function. A max pooling of 2 is applied to the convolutions with a dropout
+    of 0.25 followed by a fully-connected layer of 128 nuerons with 0.5 dropout.
+    The output layer consist of a fully-connected layer containing 10 output
+    neurons (for each MNIST character class) with softmax activation.
 
     '''
     model = Sequential()
@@ -43,8 +50,9 @@ def define_model():
 
 def load_mnist():
     '''
-    Method loads MNIST dataset.
-    
+    Method loads MNIST dataset. The images are 28x28 pixels with one channel.
+    The pixel values are normailized between 0.0 and 1.0.
+
     '''
     # Input image dimensions
     img_rows, img_cols = 28, 28
@@ -61,23 +69,22 @@ def load_mnist():
     x_test = x_test.astype('float32')/ 255.0
 
     # Convert class vectors to binary class matrices
-    y_train = keras.utils.to_categorical(y_train, 10)
-    y_test = keras.utils.to_categorical(y_test, 10)
+    y_train = to_categorical(y_train, 10)
+    y_test = to_categorical(y_test, 10)
 
     return x_train, x_test, y_train, y_test
 
 
 if __name__ == '__main__':
 
+    # Load training and test images
     x_train, x_test, y_train, y_test = load_mnist()
 
+    # Define and compile Keras model
     model = define_model()
-
-    model.compile(loss=keras.losses.categorical_crossentropy,
-                  optimizer=keras.optimizers.Adadelta(),
+    model.compile(loss=categorical_crossentropy, optimizer=Adadelta(),
                   metrics=['accuracy'])
 
-    history = model.fit(x_train, y_train,
-                        batch_size=batch_size,
-                        epochs=epochs, verbose=1,
-                        validation_data=(x_test, y_test))
+    # Train Keras model
+    model.fit(x_train, y_train, batch_size=batch_size, epochs=epochs, verbose=1,
+              validation_data=(x_test, y_test))

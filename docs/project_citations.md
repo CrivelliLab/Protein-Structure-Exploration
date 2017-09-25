@@ -1,6 +1,6 @@
 # Project Citations
 
-Updated: 7/14/17
+Updated: 09/25/17
 
 #### Data and Algorithms:
 
@@ -36,3 +36,12 @@ vol. 9, no. 94, 2008.
 
 [[8]]() J. Hou, B. Adhikari, and J. Cheng, “DeepSF: deep convolutional neural network
 for mapping protein sequences to folds,” arXiv:1706.01010[cs.LG].
+
+[[9]]() Z. Wu, S. Song, A. Khosla, F. Yu, L. Zhang, X. Tang and J. Xiao. 3D ShapeNets:
+A Deep Representation for Volumetric Shapes. CVPR2015.
+
+[[10]]() D. Maturana and S. Scherer. VoxNet: A 3D Convolutional Neural Network for
+Real-Time Object Recognition. IROS2015.				
+
+[[11]]() Ragoza, M.; Hochuli, J.; Idrobo, E.; Sunseri, J.; Koes, D. R. Protein−Ligand
+Scoring with Convolutional Neural Networks. J. Chem. Inf. Model. 2017, 57, 942−957.
