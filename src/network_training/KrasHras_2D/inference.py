@@ -8,12 +8,12 @@ This script is used to run inference on KRAS/HRAS data using a trained
 classifier.
 
 '''
+import os, sys; sys.path.insert(0, '../')
 import numpy as np
 from models import *
 from scipy import misc
 from sklearn.metrics import roc_auc_score
 from keras_extra import make_parallel_gpu
-import os, sys; sys.path.insert(0, '../')
 
 model_def = CIFAR_NET
 weight_file = 'weights/'+model_def.__name__+'.hdf5'

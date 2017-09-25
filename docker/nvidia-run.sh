@@ -7,7 +7,7 @@
 PROJECT="$(dirname "$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )")"
 
 # Variables
-#IMG=rzamora4:rzamora4/hpc-deeplearning
+#IMG=rzamora4/hpc-deeplearning:latest
 IMG=dl-docker:latest
 
 # Build Protein-Structure-Exploration:GPU

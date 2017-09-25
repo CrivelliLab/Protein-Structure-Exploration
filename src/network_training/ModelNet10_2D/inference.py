@@ -8,12 +8,12 @@ This script is used to run inference on ModelNet10 data using a trained
 classifier.
 
 '''
+import os, sys; sys.path.insert(0, '../../misc')
 import numpy as np
 from models import *
 from scipy import misc
 from sklearn.metrics import roc_auc_score
 from keras_extra import make_parallel_gpu
-import os, sys; sys.path.insert(0, '../../misc')
 
 batch_size = 1
 model_def = CIFAR_NET

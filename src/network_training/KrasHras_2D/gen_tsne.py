@@ -7,13 +7,13 @@ README:
 This script is used to generate T-SNE embedding of trained Kras/Hras classifier.
 
 '''
+import os, sys; sys.path.insert(0, '../')
 import numpy as np
 from models import *
 from tqdm import tqdm
 from scipy import misc
 from sklearn.manifold import TSNE
 from keras_extra import make_parallel_gpu
-import os, sys; sys.path.insert(0, '../')
 
 model_def = CIFAR_NET
 weight_file = 'weights/'+model_def.__name__+'.hdf5'

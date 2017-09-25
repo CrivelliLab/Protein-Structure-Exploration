@@ -5,7 +5,7 @@ Updated: 9/12/17
 README:
 
 '''
-import os, time, sys; sys.path.insert(0, '../../misc')
+import os, time, sys; sys.path.insert(0, '../')
 import numpy as np
 from keras.callbacks import CSVLogger, ModelCheckpoint
 from BinvoxDataGenerator import ImageDataGenerator
