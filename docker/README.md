@@ -1,4 +1,4 @@
-# Directory /docker
+# Directory /docker/
 Updated: 09/25/17
 
 This directory contains files that are used to build and run a deep learning

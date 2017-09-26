@@ -7,7 +7,7 @@ environment for deep neural network training.
 ## Cloning Repository from Github
 
 ```
-$ git clone -
+$ git clone https://github.com/tjosc/Protein-Structure-Exploration.git
 
 ```
 

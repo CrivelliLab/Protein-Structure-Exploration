@@ -40,6 +40,7 @@ if __name__ == '__main__':
     if not os.path.exists('logs'): os.makedirs('logs')
     if not os.path.exists('weights'): os.makedirs('weights')
 
+    # Flow from directory image generators
     datagen = ImageDataGenerator()
     train_flow = datagen.flow_from_directory(data_folder +'/train', color_mode="grayscale",
                 target_size=(512, 512), batch_size=batch_size, class_mode='categorical',
@@ -62,5 +63,5 @@ if __name__ == '__main__':
 
     # Train Model
     model.fit_generator(train_flow, epochs=epochs, steps_per_epoch=train_count//batch_size,
-                        validation_data=validation_flow, callbacks=[csv_logger,checkpointer,earlystopper],
-                        validation_steps=val_count//batch_size)
+                        validation_data=validation_flow, validation_steps=val_count//batch_size,
+                        callbacks=[csv_logger,checkpointer,earlystopper])
