@@ -55,11 +55,12 @@ if __name__ == '__main__':
 
     # Callbacks
     date = time.strftime("%d%m%Y")
+    earlystopper = EarlyStopping(patience=5)
     csv_logger = CSVLogger('logs/'+model_def.__name__+date+".csv", separator=',')
     checkpointer = ModelCheckpoint(filepath='weights/'+model_def.__name__+date+'.hdf5',
                                    verbose=0, save_best_only=True)
 
     # Train Model
     model.fit_generator(train_flow, epochs=epochs, steps_per_epoch=train_count//batch_size,
-                        validation_data=validation_flow, callbacks=[csv_logger,checkpointer],
+                        validation_data=validation_flow, callbacks=[csv_logger,checkpointer,earlystopper],
                         validation_steps=val_count//batch_size)

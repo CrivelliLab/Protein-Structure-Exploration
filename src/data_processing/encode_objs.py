@@ -5,8 +5,8 @@ Updated: 09/25/17
 README:
 
 This script is used to encode 3D object files into 2D images. Objects are
-voxelized using binvox into 256x256x256 array and then down-sampled to 64x64x64.
-The resulting array is encoded into 2D images using hilbert curves.
+voxelized using binvox into 256x256x256 array and then down-sampled to
+64x64x64. The resulting array is encoded into 2D images using hilbert curves.
 
 '''
 import os
@@ -86,70 +86,69 @@ if __name__ == '__main__':
     rank = comm.Get_rank()
     cores = comm.Get_size()
 
+    np.random.seed(seed)
+
     # Get file paths and broadcast
     if rank == 0:
         if not os.path.exists(encoded_folder): os.makedirs(encoded_folder)
         if not os.path.exists(binvox_folder): os.makedirs(binvox_folder)
+        if not os.path.exists(encoded_folder+'train/'): os.makedirs(encoded_folder+'train/')
+        if not os.path.exists(binvox_folder+'train/'): os.makedirs(binvox_folder+'train/')
+        if not os.path.exists(encoded_folder+'test/'): os.makedirs(encoded_folder+'test/')
+        if not os.path.exists(binvox_folder+'test/'): os.makedirs(binvox_folder+'test/')
         entries = []
         for folder in sorted(os.listdir(data_folder)):
-            if not os.path.exists(encoded_folder+folder): os.makedirs(encoded_folder+folder)
-            if not os.path.exists(binvox_folder+folder): os.makedirs(binvox_folder+folder)
-            for file_ in sorted(os.listdir(data_folder+folder)):
+            if not os.path.exists(encoded_folder+'train/'+folder): os.makedirs(encoded_folder+'train/'+folder)
+            if not os.path.exists(binvox_folder+'train/'+folder): os.makedirs(binvox_folder+'train/'+folder)
+            if not os.path.exists(encoded_folder+'test/'+folder): os.makedirs(encoded_folder+'test/'+folder)
+            if not os.path.exists(binvox_folder+'test/'+folder): os.makedirs(binvox_folder+'test/'+folder)
+            for file_ in sorted(os.listdir(data_folder+folder+'/train')):
                 if not file_.endswith(file_type): continue
-                obj_path = folder+'/'+ file_
-                entries.append(obj_path)
+                obj_path = 'train/'+folder+'/'+ file_
+                for i in range(nb_rots): entries.append([obj_path, i])
+            for file_ in sorted(os.listdir(data_folder+folder+'/test')):
+                if not file_.endswith(file_type): continue
+                obj_path = 'test/'+folder+'/'+ file_
+                for i in range(nb_rots): entries.append([obj_path, i])
         entries = np.array(entries)
+        rand_seeds = [np.random.rand(3) for i in range(nb_rots)]
         np.random.shuffle(entries)
-    else: entries = None
+    else:
+        entries = None
+        rand_seeds = None
     entries = comm.bcast(entries, root=0)
+    rand_seeds = comm.bcast(rand_seeds, root=0)
     entries = np.array_split(entries, cores)[rank]
     print(len(entries))
 
     for i in range(len(entries)):
-        entry = entries[i]
+        entry = entries[i][0]
+        index = int(entries[i][1])
+        inverse_entry = entry.split('/')
+        inverse_entry = inverse_entry[1] + '/' + inverse_entry[0] + '/' + inverse_entry[2]
+        mesh_base = trimesh.load_mesh(data_folder+inverse_entry)
+
+        mesh_rr = mesh_base.apply_transform(trimesh.transformations.random_rotation_matrix(rand_seeds[index]))
+        off_obj = trimesh.io.export.export_off(mesh_rr)
+        inverse_mesh_rr_file = inverse_entry.split('.')[0] + '-r' + str(index) + '.off'
+        mesh_rr_file = entry.split('.')[0] + '-r' + str(index) + '.off'
+        with open(data_folder + inverse_mesh_rr_file, 'w') as fb: fb.write(off_obj)
 
         # Binvox object file
-        binvox_off_file_256(data_folder + entry)
+        binvox_off_file_256(data_folder + inverse_mesh_rr_file)
 
         # Load Binvox File
-        binvox_file = entry.split('.') + '.binvox'
+        binvox_file = inverse_mesh_rr_file.split('.')[0] + '.binvox'
         model = read_binvox(data_folder+binvox_file)
 
         # Encode and Save Resulting Data Structure
         model = reduce_256_to_64(model.astype('int'))
         encoded_2d = map_3d_to_2d(model, curve_3d, curve_2d)
-        png_file = binvox_file.split('.') + '.png'
+        png_file = mesh_rr_file.split('.')[0] + '.png'
         misc.imsave(encoded_folder+png_file, encoded_2d)
         os.remove(data_folder+binvox_file)
 
         # Copy file to binvoxed folder
-        binvox_off_file_64(data_folder + entry)
-        move(data_folder+binvox_file, binvox_folder+entry.split('.') + '-r0.binvox')
-
-        if nb_rots > 1:
-            rand_seeds = [np.random.rand(3) for i in range(nb_rots-1)]
-            mesh_base = trimesh.load_mesh(data_folder+entry)
-            for i in range(len(rand_seeds)):
-                mesh_rr = mesh_base.apply_transform(trimesh.transformations.random_rotation_matrix(random_seeds[i]))
-                off_obj = trimesh.io.export.export_off(mesh_rr)
-                mesh_rr_file = entry.split('.') + '-r' + str(i+1) + '.off'
-                with open(data_folder + mesh_rr_file, 'w') as fb: fb.write(off_file)
-
-                # Binvox object file
-                binvox_off_file_256(data_folder + mesh_rr_file)
-
-                # Load Binvox File
-                binvox_file = mesh_rr_file.split('.') + '.binvox'
-                model = read_binvox(binvox_folder+binvox_file)
-
-                # Encode and Save Resulting Data Structure
-                model = reduce_256_to_64(model.astype('int'))
-                encoded_2d = map_3d_to_2d(model, curve_3d, curve_2d)
-                png_file = binvox_file.split('.') + '.png'
-                misc.imsave(encoded_folder+png_file, encoded_2d)
-                os.remove(data_folder+binvox_file)
-
-                # Copy file to binvoxed folder
-                binvox_off_file_64(data_folder + mesh_rr_file)
-                move(data_folder+binvox_file, binvox_folder+binvox_file)
-                os.remove(data_folder + mesh_rr_file)
+        binvox_off_file_64(data_folder + inverse_mesh_rr_file)
+        move(data_folder+binvox_file, binvox_folder+mesh_rr_file.split('.')[0] + '.binvox')
+        os.remove(data_folder + inverse_mesh_rr_file)

@@ -8,7 +8,7 @@ This script is used to run inference on ModelNet10 data using a trained
 classifier.
 
 '''
-import os, sys; sys.path.insert(0, '../../misc')
+import os, sys; sys.path.insert(0, '../')
 import numpy as np
 from models import *
 from scipy import misc
@@ -35,7 +35,6 @@ if __name__ == '__main__':
     if gpus > 1 : model = make_parallel_gpu(model, gpu)
     model.load_weights(weight_file)
     model.compile(loss=loss, optimizer=optimizer, metrics=metrics)
-    datagen = ImageDataGenerator()
 
     # Infer Data
     results = {}
@@ -64,8 +63,8 @@ if __name__ == '__main__':
         avg_acc = 0
         for key in sorted(results.keys()):
             acc = results[key][1] / results[key][2]
-            line = str(key) + ',' + "{0:.4f}".format(acc)+','+str(results[key][0]) +'\n'
-            fw.write(line)
+            #line = str(key) + ',' + "{0:.4f}".format(acc)+','+str(results[key][0]) +'\n'
+            #fw.write(line)
             if np.argmax(acc) == results[key][0]: avg_acc +=1
             else: print(str(key), np.argmax(acc), results[key][0])
         avg_acc = avg_acc / len(results.keys())
