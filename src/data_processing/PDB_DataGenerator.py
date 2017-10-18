@@ -1,13 +1,11 @@
 '''
 PDB_DataGenerator.py
-Updated: 10/6/17
+Updated: 10/16/17
 
 '''
 import os
 import numpy as np
 from itertools import product
-from time import time
-from scipy import misc
 
 ################################################################################
 
@@ -24,34 +22,88 @@ class PDB_DataGenerator(object):
     'I' : 1.98, '' : 0} # Source:https://physlab.lums.edu.pk/images/f/f6/Franck_ref2.pdf
     max_radius = 2.0
 
-    def __init__(self, size=64, center=[0,0,0], resolution=1.0, nb_rotations=0, seed=9999):
+    def __init__(self, size=64, center=[0,0,0], resolution=1.0, nb_rots=0,
+                 channels=None, map_to_2d=False, seed=9999):
         '''
         '''
+        # Random Seed
+        self.seed = seed
+
+        # Channels
+        if channels: self.channels = channels
+        else: print("Error: No Channels Defined."); exit()
+
+        # Window Parameters
         self.size = size
         self.center = center
         self.resolution = resolution
         self.bounds = [ -(size * resolution)/2, -(size * resolution)/2,
                         -(size * resolution)/2, (size * resolution)/2,
                         (size * resolution)/2,  (size * resolution)/2]
-
         self.tolerance = int(self.max_radius/resolution)
         self.tolerance_perms = np.array([x for x in product(*[[z for z in
                 range(-self.tolerance, self.tolerance+1)] for y in range(3)])])
+
+        # 2D Mapping Parameters
+        self.map_to_2d = map_to_2d
+        if self.map_to_2d:
+            self.size_2d = np.sqrt(self.size**3)
+            if self.size_2d % 1.0 != 0:
+                print("Error: 3D Space not mappable to 2D with Hilbert Curve.")
+                exit()
+            else: self.size_2d = int(self.size_2d)
+            curve_3d = self.__hilbert_3d(int(np.log2(self.size)))
+            curve_2d = self.__hilbert_2d(int(np.log2(self.size_2d)))
+            keys = [','.join(curve_3d[i].astype('str')) for i in range(len(curve_3d))]
+            self.mapping = dict(zip(keys, curve_2d))
+
+        # Random Rotation Parameters
+        self.nb_rots = nb_rots
+        if self.nb_rots > 0:
+            self.random_rotations = self.__gen_random_rotations(nb_rots)
+
+
+        # File Paths
 
     def generate(self):
         '''
         '''
         pass
 
-    def parse_pdb(self, path):
+    def generate_data(self, path, chain, rot):
+        '''
+        '''
+        # Parse PBD Atomic Data
+        pdb_data = self.__parse_pdb(path, chain)
+
+        # Apply Rotation To Data
+        if rot > 0:
+            pdb_data = self.__apply_rotation(pdb_data, self.random_rotations[rot-1])
+
+        # Remove Outlier Atoms
+        pdb_data = self.__remove_outlier_atoms(pdb_data)
+
+        # Calculate Distances From Voxels
+        pdb_data, distances, indexes = self.__calc_distances_from_voxels(pdb_data)
+
+        # Calculate Indexes and Values of Occuppied Voxels
+        indexes, values = self.__apply_channels(pdb_data, distances, indexes)
+
+        # Generate Volumetric Representation
+        if self.map_to_2d:
+            array = self.__generate_voxel_2d(indexes, values, self.mapping)
+        else:
+            array = self.__generate_voxel_3d(indexes, values)
+
+        return array
+
+    def __parse_pdb(self, path, chain):
         '''
         Method parses atomic coordinate data from PDB. Coordinates are center
         around the centroid of the protein and then translated to the center
         coordinate defined for the DataGenerator.
 
         '''
-        # Get Chain Information
-        chain = path.split('/')[-1].split('.')[0].split('_')[1]
 
         # Parse Coordinates
         data = []
@@ -72,7 +124,7 @@ class PDB_DataGenerator(object):
 
         return data
 
-    def remove_outlier_atoms(self, data):
+    def __remove_outlier_atoms(self, data):
         '''
         Method removes atoms outside of the window defined by the size of the
         voxel map, center of window and resolution of window.
@@ -94,7 +146,7 @@ class PDB_DataGenerator(object):
 
         return data
 
-    def calc_distances_from_voxels(self, data):
+    def __calc_distances_from_voxels(self, data):
         '''
         Method calculates the distances from atoms to voxel centers for all atoms and
         voxels within the window.
@@ -122,7 +174,7 @@ class PDB_DataGenerator(object):
 
         return data, distances, nearest_voxels_with_tolerance
 
-    def apply_channels(self, data, distances, nearest_voxels_indexes):
+    def __apply_channels(self, data, distances, nearest_voxels_indexes):
         '''
         Method extracts channel information from data and returns voxel_source
         indexes with corresponding values.
@@ -136,11 +188,10 @@ class PDB_DataGenerator(object):
 
         # Split Channels
         chans = np.zeros((len(nearest_voxels_indexes),1)).astype('int')
-        channels = [hydrophobic_res, polar_res, charged_res, alpha_carbons, beta_carbons]
-        for i in range(len(channels)):
+        for i in range(len(self.channels)):
             x = ['1'] + ['0' for j in range(i)]
             x = ''.join(x)
-            indexes = channels[i](data)
+            indexes = self.channels[i](data)
             chans[indexes] += int(x, 2)
 
         # Get Occupancy Values and Voxel Indexes
@@ -150,38 +201,37 @@ class PDB_DataGenerator(object):
 
         return voxel_indexes, values
 
-    def generate_voxel_rep(self, voxel_indexes, values):
+    def __generate_voxel_3d(self, voxel_indexes, values):
         '''
         Method generates nxnxnxc voxel representations of the channel occupancies.
 
         '''
-        vox_3d = np.zeros((len(list(bin(np.max(voxel_indexes[:,3]))[2:])), self.size, self.size, self.size))
+        vox_3d = np.zeros((self.size, self.size, self.size, len(list(bin(np.max(voxel_indexes[:,3]))[2:]))))
         for i in range(len(voxel_indexes)):
             ind = voxel_indexes[i,:3]
             chans = list(bin(voxel_indexes[i,3])[2:])
             for j in range(len(chans)):
                 z = int(chans[j])
-                if z == 1: vox_3d[len(chans)-1 - j, ind[0],ind[1],ind[2]] = values[i]
+                if z == 1: vox_3d[ind[0],ind[1],ind[2],len(chans)-1 - j] = values[i]
         return vox_3d
 
-    def map_3d_to_2d(self, array_3d, curve_3d, curve_2d):
+    def __generate_voxel_2d(self, voxel_indexes, values, mapping):
         '''
         Method maps 3D PDB array into 2D array.
 
         '''
 
-        # Dimension Reduction Using Space Filling Curves from 3D to 2D
-        s = int(np.sqrt(len(curve_2d)))
-        array_2d = np.zeros([len(array_3d), s,s])
-        for i in range(len(curve_3d)):
-            c2d = curve_2d[i]
-            c3d = curve_3d[i]
-            for j in range(len(array_3d)):
-                array_2d[j, c2d[0], c2d[1]] = array_3d[j, c3d[0], c3d[1], c3d[2]]
+        vox_2d = np.zeros((self.size_2d, self.size_2d, len(list(bin(np.max(voxel_indexes[:,3]))[2:]))))
+        for i in range(len(voxel_indexes)):
+            ind = ','.join(voxel_indexes[i,:3].astype('str'))
+            ind = mapping[ind]
+            chans = list(bin(voxel_indexes[i,3])[2:])
+            for j in range(len(chans)):
+                z = int(chans[j])
+                if z == 1: vox_2d[ind[0],ind[1], len(chans)-1 - j] = values[i]
+        return vox_2d
 
-        return array_2d
-
-    def hilbert_3d(order):
+    def __hilbert_3d(self, order):
         '''
         Method generates 3D hilbert curve of desired order.
 
@@ -221,9 +271,9 @@ class PDB_DataGenerator(object):
         hilbert_curve = []
         gen_3d(order, 0, 0, 0, n, 0, 0, 0, n, 0, 0, 0, n, hilbert_curve)
 
-        return np.array(hilbert_curve)
+        return np.array(hilbert_curve).astype('int')
 
-    def hilbert_2d(order):
+    def __hilbert_2d(self, order):
         '''
         Method generates 2D hilbert curve of desired order.
 
@@ -249,9 +299,9 @@ class PDB_DataGenerator(object):
         hilbert_curve = []
         gen_2d(order, 0, 0, n, 0, 0, n, hilbert_curve)
 
-        return np.array(hilbert_curve)
+        return np.array(hilbert_curve).astype('int')
 
-    def gen_random_rotations(nb_rot):
+    def __gen_random_rotations(self, nb_rot):
         '''
         Method generates random rotations by sampling hypersphere.
 
@@ -264,47 +314,66 @@ class PDB_DataGenerator(object):
         np.random.seed(self.seed)
 
         # Sample rotations
-        vector = np.random.randn(nb_rot, 3)
+        vector = np.random.randn(3, nb_rot)
         vector /= np.linalg.norm(vector, axis=0)
-        xi, yi, zi = vector
-        print(vector.shape)
-
-        # Combine the three Nx1 coordinate arrays into one Nx3 array describing x, y ,
-        # z points.
-        coordinate_arry = np.stack((xi, yi, zi), axis=-1)
-        print coordinate_arry.shape
+        coordinate_arry = np.transpose(vector, (1,0))
 
         # Convert to Rotation Matrix
         rotations = []
         for c in coordinate_arry:
             angle = np.arctan(c[2]/np.sqrt((c[0]**2)+(c[1]**2)))
             axis = np.dot(np.array([[0,1],[-1,0]]), np.array([c[0],c[1]]))
-            rot1 = get_rotation_matrix([axis[0],axis[1],0],angle)
+            rot1 = self.__get_rotation_matrix([axis[0],axis[1],0],angle)
             if c[0] < 0 and c[1] < 0 or c[0] < 0 and c[1] > 0 :
-                rot2 = get_rotation_matrix([0,0,1], np.arctan(c[1]/c[0]) + np.pi)
-            else: rot2 = get_rotation_matrix([0,0,1], np.arctan(c[1]/c[0]))
+                rot2 = self.__get_rotation_matrix([0,0,1], np.arctan(c[1]/c[0]) + np.pi)
+            else: rot2 = self.__get_rotation_matrix([0,0,1], np.arctan(c[1]/c[0]))
             rot = np.dot(rot1, rot2)
             rotations.append(rot)
         rotations = np.array(rotations)
 
-        return rotations
+        return(rotations)
 
-    def apply_rotation(pdb_data, rotation):
+    def __get_rotation_matrix(self, axis, theta):
+        '''
+        Return the rotation matrix associated with counterclockwise rotation about
+        the given axis by theta radians.
+
+        Param:
+            axis - list ; (x, y, z) axis coordinates
+            theta - float ; angle of rotaion in radians
+
+        Return:
+            rotation_matrix - np.array
+
+        '''
+        axis = np.asarray(axis)
+        axis = axis/np.sqrt(np.dot(axis, axis))
+        a = np.cos(theta/2.0)
+        b, c, d = -axis*np.sin(theta/2.0)
+        aa, bb, cc, dd = a*a, b*b, c*c, d*d
+        bc, ad, ac, ab, bd, cd = b*c, a*d, a*c, a*b, b*d, c*d
+
+        rotation_matrix = np.array([[aa+bb-cc-dd, 2*(bc+ad), 2*(bd-ac)],
+                                    [2*(bc-ad), aa+cc-bb-dd, 2*(cd+ab)],
+                                    [2*(bd+ac), 2*(cd-ab), aa+dd-bb-cc]])
+
+        return rotation_matrix
+
+    def __apply_rotation(self, data, rotation):
         '''
         Method applies rotation to pdb_data defined as list of rotation matricies.
 
         '''
-        rotated_pdb_data = []
-        for i in range(len(pdb_data)):
-            channel = []
-            for coord in pdb_data[i]:
-                temp = np.dot(rotation, coord[1:])
-                temp = [coord[0], temp[0], temp[1], temp[2]]
-                channel.append(np.array(temp))
-            rotated_pdb_data.append(np.array(channel))
-        rotated_pdb_data = np.array(rotated_pdb_data)
+        # Get Atomic Coordinates
+        coords = data[:,3:].astype('float')
 
-        return rotated_pdb_data
+        # Apply Rotation
+        coords = np.dot(coords, rotation)
+
+        # Update with Rotated Coordinates
+        rotated_data = np.concatenate([data[:,:3], coords],axis=1)
+
+        return rotated_data
 
 def hydrophobic_res(data):
     '''
