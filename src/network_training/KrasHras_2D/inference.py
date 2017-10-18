@@ -73,5 +73,5 @@ if __name__ == '__main__':
         print(y_true, y_score)
         y_true = np.array(y_true)
         y_score = np.array(y_score)
-        auc = average_precision_score(y_true, y_score)
+        auc = roc_auc_score(y_true, y_score)
         print(auc)

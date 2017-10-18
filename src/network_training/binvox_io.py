@@ -41,7 +41,7 @@ def write_binvox(file_path, np_array):
         voxels_flat = np_array.flatten()
         fp.write('#binvox 1\n'.encode('ascii'))
         fp.write(('dim '+' '.join(map(str, dims))+'\n').encode('ascii'))
-        fp.write(('translate 0\n').encode('ascii'))
+        fp.write(('translate 0 0 0\n').encode('ascii'))
         fp.write(('scale 1.0\n').encode('ascii'))
         fp.write('data\n'.encode('ascii'))
 

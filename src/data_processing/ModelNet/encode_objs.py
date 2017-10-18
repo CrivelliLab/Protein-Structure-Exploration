@@ -20,9 +20,9 @@ from binvox_io import read_binvox, write_binvox
 #- Global Variables
 curve_3d = 'hilbert_3d_6.npy'
 curve_2d = 'hilbert_2d_9.npy'
-data_folder = '../../data/raw/ModelNet10/'
-encoded_folder = '../../data/raw/ModelNet10_rot30/'
-binvox_folder = '../../data/raw/ModelNet10_rot30_binvox/'
+data_folder = '../../../data/raw/ModelNet10/'
+encoded_folder = '../../../data/raw/ModelNet10_rot30/'
+binvox_folder = '../../../data/raw/ModelNet10_rot30_binvox/'
 file_type = '.off'
 nb_rots = 30
 seed = 45
@@ -73,8 +73,8 @@ if __name__ == '__main__':
 
     # File Paths
     os.chdir(os.path.dirname(os.path.realpath(__file__)))
-    curve_2d = '../../data/misc/'+ curve_2d
-    curve_3d = '../../data/misc/'+ curve_3d
+    curve_2d = 'data/'+ curve_2d
+    curve_3d = 'data/'+ curve_3d
 
     # Load Curves
     print("Loading Curves...")

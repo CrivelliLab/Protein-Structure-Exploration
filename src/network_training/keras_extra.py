@@ -16,7 +16,7 @@ from keras.layers.core import Lambda
 
 ################################################################################
 
-def make_parallel_gpu(self, model, gpu_count):
+def make_parallel_gpu(model, gpu_count):
     '''
     Method distributes equal-length training batches to n-defined GPUs.
 

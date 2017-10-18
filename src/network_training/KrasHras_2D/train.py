@@ -21,19 +21,21 @@ model_def = CIFAR_NET
 gpus = 1
 seed = 125
 
+data_folder = "../../../data/split/KRAS_HRAS_seed45"
+
 ################################################################################
 
 if __name__ == '__main__':
 
     # File Paths
     os.chdir(os.path.dirname(os.path.realpath(__file__)))
-    data_folder = "../../../data/split/KRAS_HRAS_seed45"
-    train_count = 0
+    train_count = 0; val_count = 0
+
+    # Count number of images in training and validation sets
     for root, dirs, files in os.walk(data_folder+'/train'):
         for file_ in files:
             if file_.endswith(".png"): train_count += 1
-    val_count = 0
-    for root, dirs, files in os.walk(data_folder+'/test'):
+    for root, dirs, files in os.walk(data_folder+'/validation'):
         for file_ in files:
             if file_.endswith(".png"): val_count += 1
     if not os.path.exists('logs'): os.makedirs('logs')

@@ -1,6 +1,6 @@
 '''
 png_to_binvox.pycd
-Updated: 9/7/17
+Updated: 8/7/17
 
 TODO:
 
