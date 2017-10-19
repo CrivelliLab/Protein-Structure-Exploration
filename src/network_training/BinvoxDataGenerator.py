@@ -330,8 +330,7 @@ def load_img(path, grayscale=False, target_size=None):
                           'The use of `array_to_img` requires PIL.')
     data = read_binvox(path)
     img = data.astype('int')
-    if len(img.shape) == 4: img = np.transpose(img, (1,2,3,0))
-    else: img = np.expand_dims(img, -1)
+    if len(img.shape) != 4: img = np.expand_dims(img, -1)
     if grayscale: pass
     if target_size: pass
     return img
@@ -955,9 +954,9 @@ class DirectoryIterator(Iterator):
         self.data_format = data_format
         if self.color_mode == 'rgb':
             if self.data_format == 'channels_last':
-                self.image_shape = self.target_size + (3,)
+                self.image_shape = self.target_size + (5,)
             else:
-                self.image_shape = (3,) + self.target_size
+                self.image_shape = (5,) + self.target_size
         else:
             if self.data_format == 'channels_last':
                 self.image_shape = self.target_size + (1,)
