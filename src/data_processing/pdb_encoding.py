@@ -12,9 +12,9 @@ import matplotlib.pyplot as plt
 from binvox_io import write_binvox, read_binvox
 from mpi4py import MPI
 
-data_folder = '../../data/raw/KRAS_HRAS/'
+data_folder = '../../data/raw/T0882/'
 res_i = [i for i in range(1,83)]
-nb_rot = 100
+nb_rot = 10
 chain = 'A'
 
 ################################################################################
@@ -32,7 +32,7 @@ if __name__ == '__main__':
     if rank == 0:
         entries = []
         for class_fn in sorted(os.listdir(data_folder)):
-            if os.path.isdir(data_folder+class_fn):
+            if os.path.isdir(data_folder+class_fn) and class_fn.lower().endswith('pdbs'):
                 save_fn = class_fn.split('_')[0]
                 if not os.path.exists(data_folder+save_fn): os.makedirs(data_folder+save_fn)
                 for pdb_fn in sorted(os.listdir(data_folder+class_fn)):
@@ -41,7 +41,6 @@ if __name__ == '__main__':
         entries = np.array(entries)
         np.random.seed(9999)
         np.random.shuffle(entries)
-        print(len(entries))
     else: entries = None
     entries = comm.bcast(entries, root=0)
     entries = np.array_split(entries, cores)[rank]
@@ -49,15 +48,15 @@ if __name__ == '__main__':
     # Intialize Data Generator
     pdb_datagen = PDB_DataGenerator(size=64, center=[0,0,0], resolution=0.85, nb_rots=nb_rot, map_to_2d=True,
                                     channels=[hydrophobic_res, polar_res, charged_res, alpha_carbons, beta_carbons])
-
+    print(len(entries))
     for i in range(len(entries)):
         # Entry Data
         pdb_path = entries[i][0]
         rot = int(entries[i][1])
         save_path = entries[i][2]
 
-        print(pdb_path, rot, save_path, rank)
-
         # Generate and Save Data
-        #pdb_array = pdb_datagen.generate_data(pdb_path, chain, res_i, rot)
-        #write_binvox(save_path, pdb_array)
+        t = time()
+        pdb_array = pdb_datagen.generate_data(pdb_path, chain, res_i, rot)
+        write_binvox(save_path, pdb_array)
+    print("Done")
