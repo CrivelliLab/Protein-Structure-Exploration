@@ -70,11 +70,11 @@ class PDB_DataGenerator(object):
         '''
         pass
 
-    def generate_data(self, path, chain, rot):
+    def generate_data(self, path, chain, res_i, rot):
         '''
         '''
         # Parse PBD Atomic Data
-        pdb_data = self.__parse_pdb(path, chain)
+        pdb_data = self.__parse_pdb(path, chain, res_i)
 
         # Apply Rotation To Data
         if rot > 0:
@@ -97,7 +97,7 @@ class PDB_DataGenerator(object):
 
         return array
 
-    def __parse_pdb(self, path, chain):
+    def __parse_pdb(self, path, chain, res_i):
         '''
         Method parses atomic coordinate data from PDB. Coordinates are center
         around the centroid of the protein and then translated to the center
@@ -110,9 +110,8 @@ class PDB_DataGenerator(object):
         with open(path, 'r') as f:
             lines = f.readlines()
             for row in lines:
-                cols = row.split()
-                if cols[0] == 'ATOM' and cols[4] == chain:
-                    parsed_data = [cols[3], cols[2], self.van_der_waal_radii[cols[11]], cols[6], cols[7], cols[8]]
+                if row[:4] == 'ATOM' and row[21] == chain and int(row[22:26]) in res_i:
+                    parsed_data = [row[17:20], row[12:16].strip(), self.van_der_waal_radii[row[77].strip()], row[30:38], row[38:46], row[47:54]]
                     data.append(parsed_data)
 
         # Center Coordinates Around Centroid
