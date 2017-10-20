@@ -220,14 +220,12 @@ class PDB_DataGenerator(object):
 
         '''
 
-        vox_2d = np.zeros((self.size_2d, self.size_2d, len(list(bin(np.max(voxel_indexes[:,3]))[2:]))))
+        vox_2d = np.zeros((self.size_2d, self.size_2d, 3))
         for i in range(len(voxel_indexes)):
             ind = ','.join(voxel_indexes[i,:3].astype('str'))
             ind = mapping[ind]
-            chans = list(bin(voxel_indexes[i,3])[2:])
-            for j in range(len(chans)):
-                z = int(chans[j])
-                if z == 1: vox_2d[ind[0],ind[1], len(chans)-1 - j] = values[i]
+            chans = voxel_indexes[i,3]
+            vox_2d[ind[0],ind[1]] = [chans%256, (chans/256)%65536, chans/65536]
         return vox_2d
 
     def __hilbert_3d(self, order):
@@ -383,6 +381,9 @@ def hydrophobic_res(data):
                         np.where(data[:,0] == 'LEU')[0],
                         np.where(data[:,0] == 'MET')[0],
                         np.where(data[:,0] == 'PHE')[0],
+                        np.where(data[:,0] == 'TRP')[0],
+                        np.where(data[:,0] == 'VAL')[0],
+                        np.where(data[:,0] == 'XLE')[0],
                         np.where(data[:,0] == 'PRO')[0]], axis=0)
     return i
 
