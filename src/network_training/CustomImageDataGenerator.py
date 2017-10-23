@@ -17,8 +17,8 @@ import warnings
 import multiprocessing.pool
 from functools import partial
 
-from .. import backend as K
-from ..utils.data_utils import Sequence
+from keras import backend as K
+from keras.utils.data_utils import Sequence
 
 try:
     from PIL import Image as pil_image
@@ -345,7 +345,7 @@ def load_img(path, grayscale=False, target_size=None,
     if pil_image is None:
         raise ImportError('Could not import PIL.Image. '
                           'The use of `array_to_img` requires PIL.')
-    array = imread(save_path)
+    array = imread(path)
     array = array[:,:,0] + (array[:,:,1] * 2**8) + (array[:,:,2] * 2**16)
     array = np.expand_dims(array.astype('>i8'), axis=-1)
     nb_chans = len(bin(np.max(array))[2:])
@@ -1025,9 +1025,9 @@ class DirectoryIterator(Iterator):
         self.data_format = data_format
         if self.color_mode == 'rgb':
             if self.data_format == 'channels_last':
-                self.image_shape = self.target_size + (3,)
+                self.image_shape = self.target_size + (5,)
             else:
-                self.image_shape = (3,) + self.target_size
+                self.image_shape = (5,) + self.target_size
         else:
             if self.data_format == 'channels_last':
                 self.image_shape = self.target_size + (1,)

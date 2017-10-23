@@ -16,7 +16,7 @@ betweeen the different images.
 
 # For Neural Network
 from keras.models import Model
-from keras.layers import Conv2D, MaxPooling2D, Dropout, Input, Flatten, Dense 
+from keras.layers import Conv2D, MaxPooling2D, Dropout, Input, Flatten, Dense
 from keras.layers import Conv3D, AveragePooling2D, Activation, MaxPooling3D
 from keras.layers.normalization import BatchNormalization
 from keras.optimizers import SGD, Adam, Adamax, Adadelta, RMSprop
@@ -25,6 +25,70 @@ from keras.metrics import categorical_accuracy
 from keras.constraints import maxnorm
 
 ################################################################################
+def SIMPLENET_MODIFIED4(nb_chans, nb_class):
+    '''
+    This is the most successful of the SimpleNet-inspired architectures that were
+    developed for the ModelNet10, Kras / Hras, and PSIBLAST datasets. Detailed information
+    regarding the development process for this network, as well as information
+    regarding its performance on the datasets mentioned, is available in the
+    network development and experiemnt log.
+    This network differs from the original SIMPLENET_MODIFIED definition in
+    that it makes use of the Adam optimizer (with tuned learning rate and decay parameters)
+    and that it uses a 5x5 kernel in the first layer of the network. Other
+    verisons of this network (e.g., #2, #4, and #5) made use of more elaborate
+    kernel sizing strategies to little benefit.
+    '''
+    # Input Layer
+    x = Input(shape=(64, 64, nb_chans))
+
+    # Layer 1
+    l = Conv2D(64, (3, 3), padding='same', activation='relu')(x)
+    l = BatchNormalization()(l)
+
+    # Layer 2
+    l = Conv2D(128, (3, 3), padding='same', activation='relu')(l)
+    l = MaxPooling2D(pool_size=(2, 2))(l)
+    l = BatchNormalization()(l)
+
+    # Layer 3
+    l = Conv2D(128, (3, 3), padding='same', activation='relu')(l)
+    l = MaxPooling2D(pool_size=(2, 2))(l)
+    l = BatchNormalization()(l)
+
+    # Layer 4
+    l = Conv2D(128, (3, 3), padding='same', activation='relu')(l)
+    l = MaxPooling2D(pool_size=(2, 2))(l)
+    l = BatchNormalization()(l)
+
+    # Layer 5
+    l = Conv2D(128, (3, 3), padding='same', activation='relu')(l)
+    l = BatchNormalization()(l)
+
+    # Layer 6
+    l = Conv2D(128, (3, 3), padding='same', activation='relu')(l)
+    l = BatchNormalization()(l)
+
+    # Layer 7
+    l = Conv2D(128, (3, 3), padding='same', activation='relu')(l)
+    l = MaxPooling2D(pool_size=(2, 2))(l)
+    l = BatchNormalization()(l)
+
+    l = Flatten()(l)
+
+    # Layer 13
+    l = Dense(2048, activation='relu')(l)
+    l = Dropout(.05)(l)
+
+    # Output Layer
+    y = Dense(nb_class, activation='softmax')(l)
+
+    model = Model(inputs=x, outputs=y)
+    loss = categorical_crossentropy
+    optimizer = Adam(lr=0.0001, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.1e-6)
+    metrics = [categorical_accuracy,]
+
+    return model, loss, optimizer, metrics
+
 
 def CIFAR_NET(nb_chans, nb_class):
     '''
@@ -76,7 +140,7 @@ def VOXNET_64(nb_chans, nb_class):
     A slight modification of the network proposed in the VoxNet paper (see:
     http://www.dimatura.net/publications/voxnet_maturana_scherer_iros15.pdf).
     The network has been extended to accomodate the 64x64x64 space that we are
-    operating in vs. the 32x32x32 space of the original VoxNet. 
+    operating in vs. the 32x32x32 space of the original VoxNet.
     '''
     x = Input(shape=(64, 64, 64, nb_chans))
     l = Conv3D(32, (5, 5, 5), strides=(2, 2, 2), activation='relu', padding='valid')(x)
@@ -106,7 +170,7 @@ def SIMPLENET_MODIFIED3(nb_chans, nb_class):
     that it makes use of the Adam optimizer (with tuned learning rate and decay parameters)
     and that it uses a 5x5 kernel in the first layer of the network. Other
     verisons of this network (e.g., #2, #4, and #5) made use of more elaborate
-    kernel sizing strategies to little benefit. 
+    kernel sizing strategies to little benefit.
     '''
     # Input Layer
     x = Input(shape=(512, 512, nb_chans))
@@ -157,24 +221,24 @@ def SIMPLENET_MODIFIED3(nb_chans, nb_class):
     l = Conv2D(128, (3, 3), padding='same', activation='relu')(l)
     l = BatchNormalization()(l)
 
-    # Layer 11 
+    # Layer 11
     l = Conv2D(128, (3, 3), padding='same', activation='relu')(l)
     l = BatchNormalization()(l)
 
-    # Layer 12 
+    # Layer 12
     l = Conv2D(128, (3, 3), padding='same', activation='relu')(l)
     l = MaxPooling2D(pool_size=(2, 2))(l)
     l = BatchNormalization()(l)
 
-    l = Flatten()(l)    
+    l = Flatten()(l)
 
     # Layer 13
     l = Dense(2048, activation='relu')(l)
     l = Dropout(.05)(l)
-    
+
     # Output Layer
     y = Dense(nb_class, activation='softmax')(l)
-    
+
     model = Model(inputs=x, outputs=y)
     loss = categorical_crossentropy
     optimizer = Adam(lr=0.0001, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.1e-6)

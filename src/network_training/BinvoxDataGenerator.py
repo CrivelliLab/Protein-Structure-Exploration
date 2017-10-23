@@ -330,7 +330,7 @@ def load_img(path, grayscale=False, target_size=None):
                           'The use of `array_to_img` requires PIL.')
     data = read_binvox(path)
     img = data.astype('int')
-    if len(img.shape) != 4: img = np.expand_dims(img, -1)
+    #if len(img.shape) != 4: img = np.expand_dims(img, -1)
     if grayscale: pass
     if target_size: pass
     return img

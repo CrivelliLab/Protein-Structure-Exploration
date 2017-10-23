@@ -12,5 +12,7 @@ data/interim
 data/temp
 test
 train
+logs
+weights
 *.binvox
 .ipynb_checkpoints
