@@ -70,11 +70,14 @@ class PDB_DataGenerator(object):
         '''
         pass
 
-    def generate_data(self, path, chain, res_i, rot):
+    def generate_data(self, path, chain, res_i, rot, debug=False):
         '''
         '''
         # Parse PBD Atomic Data
         pdb_data = self.__parse_pdb(path, chain, res_i)
+
+        if debug:
+            return np.max(np.absolute(data[:,3:].astype('float')))
 
         # Apply Rotation To Data
         if rot > 0:
@@ -110,8 +113,12 @@ class PDB_DataGenerator(object):
         with open(path, 'r') as f:
             lines = f.readlines()
             for row in lines:
-                if row[:4] == 'ATOM' and row[21] == chain and int(row[22:26]) in res_i:
-                    parsed_data = [row[17:20], row[12:16].strip(), self.van_der_waal_radii[row[77].strip()], row[30:38], row[38:46], row[47:54]]
+                if row[:4] == 'ATOM' and row[21] == chain:
+                    if res_i != None:
+                        if int(row[22:26]) in res_i:
+                        parsed_data = [row[17:20], row[12:16].strip(), self.van_der_waal_radii[row[77].strip()], row[30:38], row[38:46], row[47:54]]
+                    else:
+                        parsed_data = [row[17:20], row[12:16].strip(), self.van_der_waal_radii[row[77].strip()], row[30:38], row[38:46], row[47:54]]
                     data.append(parsed_data)
 
         # Center Coordinates Around Centroid
