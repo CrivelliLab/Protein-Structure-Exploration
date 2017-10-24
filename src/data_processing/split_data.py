@@ -14,12 +14,12 @@ from shutil import copyfile
 from sklearn.model_selection import train_test_split
 
 #- Global Variables
-data_folder = '../../data/raw/'
-split_folder = '../../data/split/'
+data_folder = '../../data/raw/ENZYME0/'
+split_folder = '../../data/split/ENZYME0_split102317/'
 file_type  = '.png'
 
-num_augmen = 512
-seed = 45
+num_augmen = 1
+seed = 102317
 split = [0.7, 0.1, 0.2]
 
 ################################################################################

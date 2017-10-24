@@ -348,7 +348,7 @@ def load_img(path, grayscale=False, target_size=None,
     array = imread(path)
     array = array[:,:,0] + (array[:,:,1] * 2**8) + (array[:,:,2] * 2**16)
     array = np.expand_dims(array.astype('>i8'), axis=-1)
-    nb_chans = len(bin(np.max(array))[2:])
+    nb_chans = 5
     array = np.unpackbits(array.view('uint8'),axis=-1)[:,:,-nb_chans:]
     array = np.flip(array, axis=-1)
     array = array * 255
@@ -357,8 +357,8 @@ def load_img(path, grayscale=False, target_size=None,
         resized_array = []
         for i in range(nb_chans):
             temp = imresize(array[:,:,i], target_size, interp='bicubic')
-            min_ = np.min(temp)
-            temp = (temp - min_) / (np.max(temp) - min_)
+            #min_ = np.min(temp)
+            #temp = temp / np.max(temp)
             resized_array.append(temp)
         return np.transpose(np.array(resized_array), (1,2,0))
 

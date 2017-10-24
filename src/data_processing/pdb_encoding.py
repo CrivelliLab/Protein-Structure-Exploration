@@ -14,8 +14,8 @@ import matplotlib.pyplot as plt
 from binvox_io import write_binvox, read_binvox
 from mpi4py import MPI
 
-data_folder = '../../data/raw/T0882_0/'
-res_i = [i for i in range(1,83)]
+data_folder = '../../data/raw/ENZYME_pdbs/'
+res_i = None
 nb_rot = 1
 chain = 'A'
 
@@ -48,10 +48,10 @@ if __name__ == '__main__':
     entries = np.array_split(entries, cores)[rank]
 
     # Intialize Data Generator
-    pdb_datagen = PDB_DataGenerator(size=64, center=[0,0,0], resolution=0.85, nb_rots=nb_rot, map_to_2d=True,
+    pdb_datagen = PDB_DataGenerator(size=64, center=[0,0,0], resolution=1.0, nb_rots=nb_rot, map_to_2d=True,
                                     channels=[hydrophobic_res, polar_res, charged_res, alpha_carbons, beta_carbons])
     print(len(entries))
-    sizes = []
+
     for i in range(len(entries)):
         # Entry Data
         pdb_path = entries[i][0]
@@ -60,8 +60,7 @@ if __name__ == '__main__':
 
         # Generate and Save Data
         #t = time()
-        pdb_array = pdb_datagen.generate_data(pdb_path, chain, res_i, rot, debug=True)
-        sizes.append(pdb_array)
+        pdb_array = pdb_datagen.generate_data(pdb_path, chain, res_i, rot)
 
         #scipy.misc.toimage(pdb_array, cmin=0, cmax=255).save(save_path)
         #print("Processing Time:", time()-t)
@@ -91,6 +90,3 @@ if __name__ == '__main__':
         '''
 
     print("Done")
-
-    sizes = np.array(sizes)
-    print(np.max(sizes), np.mean(sizes))

@@ -62,29 +62,26 @@ class PDB_DataGenerator(object):
         if self.nb_rots > 0:
             self.random_rotations = self.__gen_random_rotations(nb_rots)
 
-
-        # File Paths
-
     def generate(self):
         '''
         '''
         pass
 
-    def generate_data(self, path, chain, res_i, rot, debug=False):
+    def generate_data(self, path, chain, res_i, rot):
         '''
         '''
         # Parse PBD Atomic Data
         pdb_data = self.__parse_pdb(path, chain, res_i)
 
-        if debug:
-            return np.max(np.absolute(data[:,3:].astype('float')))
-
         # Apply Rotation To Data
         if rot > 0:
             pdb_data = self.__apply_rotation(pdb_data, self.random_rotations[rot-1])
 
+        l1 = len(pdb_data)
         # Remove Outlier Atoms
         pdb_data = self.__remove_outlier_atoms(pdb_data)
+        l2 = len(pdb_data)
+        print(l1 -l2)
 
         # Calculate Distances From Voxels
         pdb_data, distances, indexes = self.__calc_distances_from_voxels(pdb_data)
@@ -113,10 +110,10 @@ class PDB_DataGenerator(object):
         with open(path, 'r') as f:
             lines = f.readlines()
             for row in lines:
-                if row[:4] == 'ATOM' and row[21] == chain:
+                if row[:4] == 'ATOM' and row[21] in chain:
                     if res_i != None:
                         if int(row[22:26]) in res_i:
-                        parsed_data = [row[17:20], row[12:16].strip(), self.van_der_waal_radii[row[77].strip()], row[30:38], row[38:46], row[47:54]]
+                            parsed_data = [row[17:20], row[12:16].strip(), self.van_der_waal_radii[row[77].strip()], row[30:38], row[38:46], row[47:54]]
                     else:
                         parsed_data = [row[17:20], row[12:16].strip(), self.van_der_waal_radii[row[77].strip()], row[30:38], row[38:46], row[47:54]]
                     data.append(parsed_data)
