@@ -150,6 +150,8 @@ class PDB_DataGenerator(object):
         # Delete Outliers
         if len(i) > 0: data = np.delete(data, i, axis=0)
 
+        del i
+
         return data
 
     def __calc_distances_from_voxels(self, data):
@@ -169,15 +171,20 @@ class PDB_DataGenerator(object):
         distances = np.linalg.norm(coords_repeat -  nearest_voxels_coords, axis=1)
         data = np.repeat(data, len(self.tolerance_perms), axis=0)
 
+        del coords_repeat; del nearest_voxels_coords; del tolerance_perms_repeat;
+        del nearest_voxels_repeat; del nearest_voxels
+
         # Get Outlier Indexes
         i = np.concatenate([np.where(np.min(nearest_voxels_with_tolerance, axis=1) < 0)[0],
             np.where(np.max(nearest_voxels_with_tolerance, axis=1) > self.size-1)[0]], axis=0)
 
         # Delete outlier indexes
-        if len(i) > 0: 
+        if len(i) > 0:
             data = np.delete(data, i, axis=0)
             distances = np.delete(distances, i, axis=0)
             nearest_voxels_with_tolerance = np.delete(nearest_voxels_with_tolerance, i, axis=0)
+
+        del i
 
         return data, distances, nearest_voxels_with_tolerance
 
@@ -189,10 +196,11 @@ class PDB_DataGenerator(object):
         '''
         # Remove Voxels Outside Atom Radius
         i = np.where((distances-data[:,2].astype('float')) > 0)
-        if len(i[0]) > 0: 
+        if len(i[0]) > 0:
             data = np.delete(data, i, axis=0)
             distances = np.delete(distances, i, axis=0)
             nearest_voxels_indexes = np.delete(nearest_voxels_indexes, i, axis=0)
+        del i
 
         # Split Channels
         chans = np.zeros((len(nearest_voxels_indexes),1)).astype('int')
@@ -207,6 +215,8 @@ class PDB_DataGenerator(object):
         #values = np.exp((-4*(np.square(distances)))/np.square(data[:,2].astype('float')))
         voxel_indexes = np.concatenate([nearest_voxels_indexes, chans], axis=1)
 
+        del data; del distances, del nearest_voxels_indexes
+        
         return voxel_indexes, values
 
     def __generate_voxel_3d(self, voxel_indexes, values):
