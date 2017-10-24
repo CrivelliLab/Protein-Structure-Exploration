@@ -16,7 +16,7 @@ from mpi4py import MPI
 
 data_folder = '../../data/raw/ENZYME_pdbs/'
 res_i = None
-nb_rot = 1
+nb_rot = 10
 chain = 'A'
 
 ################################################################################
@@ -60,9 +60,10 @@ if __name__ == '__main__':
 
         # Generate and Save Data
         #t = time()
-        pdb_array = pdb_datagen.generate_data(pdb_path, chain, res_i, rot)
-
-        #scipy.misc.toimage(pdb_array, cmin=0, cmax=255).save(save_path)
+        try: 
+            pdb_array = pdb_datagen.generate_data(pdb_path, chain, res_i, rot)
+            if len(pdb_array) > 0: scipy.misc.toimage(pdb_array, cmin=0, cmax=255).save(save_path)
+        except: print('Hit')
         #print("Processing Time:", time()-t)
 
         '''

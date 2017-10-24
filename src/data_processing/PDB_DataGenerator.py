@@ -19,7 +19,7 @@ class PDB_DataGenerator(object):
 
     van_der_waal_radii = {  'H' : 1.2, 'C' : 1.7, 'N' : 1.55, 'O' : 1.52, 'S' : 1.8,
     'D' : 1.2, 'F' : 1.47, 'CL' : 1.75, 'BR' : 1.85, 'P' : 1.8,
-    'I' : 1.98, '' : 0} # Source:https://physlab.lums.edu.pk/images/f/f6/Franck_ref2.pdf
+    'I' : 1.98, 'E' : 1.0, 'X':1.0 ,'' : 0.0} # Source:https://physlab.lums.edu.pk/images/f/f6/Franck_ref2.pdf
     max_radius = 2.0
 
     def __init__(self, size=64, center=[0,0,0], resolution=1.0, nb_rots=0,
@@ -73,6 +73,8 @@ class PDB_DataGenerator(object):
         # Parse PBD Atomic Data
         pdb_data = self.__parse_pdb(path, chain, res_i)
 
+        if len(pdb_data) == 0: return []
+
         # Apply Rotation To Data
         if rot > 0:
             pdb_data = self.__apply_rotation(pdb_data, self.random_rotations[rot-1])
@@ -81,7 +83,7 @@ class PDB_DataGenerator(object):
         # Remove Outlier Atoms
         pdb_data = self.__remove_outlier_atoms(pdb_data)
         l2 = len(pdb_data)
-        print(l1 -l2)
+        if (l1-l2)/float(l1) > 0.05: return []
 
         # Calculate Distances From Voxels
         pdb_data, distances, indexes = self.__calc_distances_from_voxels(pdb_data)
@@ -120,6 +122,7 @@ class PDB_DataGenerator(object):
 
         # Center Coordinates Around Centroid
         data = np.array(data)
+        if len(data) == 0: return []
         coords = data[:,3:].astype('float')
         centroid = np.mean(coords, axis=0)
         centered_coord = coords - centroid - self.center
@@ -145,7 +148,7 @@ class PDB_DataGenerator(object):
                             np.where(coords[:,2] > self.bounds[5] + self.tolerance)[0]], axis=0)
 
         # Delete Outliers
-        data = np.delete(data, i, axis=0)
+        if len(i) > 0: data = np.delete(data, i, axis=0)
 
         return data
 
@@ -171,9 +174,10 @@ class PDB_DataGenerator(object):
             np.where(np.max(nearest_voxels_with_tolerance, axis=1) > self.size-1)[0]], axis=0)
 
         # Delete outlier indexes
-        data = np.delete(data, i, axis=0)
-        distances = np.delete(distances, i, axis=0)
-        nearest_voxels_with_tolerance = np.delete(nearest_voxels_with_tolerance, i, axis=0)
+        if len(i) > 0: 
+            data = np.delete(data, i, axis=0)
+            distances = np.delete(distances, i, axis=0)
+            nearest_voxels_with_tolerance = np.delete(nearest_voxels_with_tolerance, i, axis=0)
 
         return data, distances, nearest_voxels_with_tolerance
 
@@ -185,9 +189,10 @@ class PDB_DataGenerator(object):
         '''
         # Remove Voxels Outside Atom Radius
         i = np.where((distances-data[:,2].astype('float')) > 0)
-        data = np.delete(data, i, axis=0)
-        distances = np.delete(distances, i, axis=0)
-        nearest_voxels_indexes = np.delete(nearest_voxels_indexes, i, axis=0)
+        if len(i[0]) > 0: 
+            data = np.delete(data, i, axis=0)
+            distances = np.delete(distances, i, axis=0)
+            nearest_voxels_indexes = np.delete(nearest_voxels_indexes, i, axis=0)
 
         # Split Channels
         chans = np.zeros((len(nearest_voxels_indexes),1)).astype('int')
