@@ -20,7 +20,7 @@ batch_size = 8
 seed = 125
 gpus = 1
 
-model_def = SIIMPLENET_MODIFIED4
+model_def = SIMPLENET_MODIFIED4
 
 ################################################################################
 
@@ -28,7 +28,7 @@ if __name__ == '__main__':
 
     # File Paths
     os.chdir(os.path.dirname(os.path.realpath(__file__)))
-    data_folder = "../../../data/split/ENZYME0_split102317"
+    data_folder = "../../../data/split/ENZYME_split102417"
     train_count = 0; val_count = 0
     for root, dirs, files in os.walk(data_folder+'/train'):
         for file_ in files:
@@ -49,7 +49,7 @@ if __name__ == '__main__':
                 seed=seed)
 
     # Load Model
-    model, loss, optimizer, metrics = model_def(5, 6)
+    model, loss, optimizer, metrics = model_def(3, 6)
     if gpus > 1: model = make_parallel_gpu(model, gpu)
     model.compile(loss=loss, optimizer=optimizer, metrics=metrics)
 

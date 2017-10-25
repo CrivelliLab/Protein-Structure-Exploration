@@ -5,6 +5,11 @@ import vtk
 import matplotlib.pyplot as plt
 from matplotlib.colors import ListedColormap
 from matplotlib.cm import brg
+import os
+import numpy as np
+from scipy.misc import imread
+
+path = "../../data/split/ENZYME_split102417/train/1/2hkr_A-r0.png"
 
 def display_2d_array(array_2d):
     '''
@@ -73,3 +78,40 @@ def display_3d_array(array_3d):
         v.scene.add_actor(cube_actor)
 
     mlab.show()
+
+def map_2d_to_3d(array_2d, curve_3d, curve_2d):
+    '''
+    Method maps 2D PDB array into 3D array.
+    '''
+    s = int(np.cbrt(len(curve_3d)))
+    array_3d = np.zeros([s,s,s, array_2d.shape[-1]])
+    for i in range(len(curve_3d)):
+        c2d = curve_2d[i]
+        c3d = curve_3d[i]
+        for j in range(array_2d.shape[-1]):
+            array_3d[c3d[0], c3d[1], c3d[2], j] = array_2d[c2d[0], c2d[1], j]
+
+    return array_3d
+
+if __name__ == '__main__':
+
+    # File Paths
+    os.chdir(os.path.dirname(os.path.realpath(__file__)))
+    curve_2d = 'ModelNet/data/hilbert_2d_9.npy'
+    curve_3d = 'ModelNet/data/hilbert_3d_6.npy'
+
+    # Load Curves
+    curve_3d = np.load(curve_3d)
+    curve_2d = np.load(curve_2d)
+
+    # Load Array
+    array = imread(path)
+    array = array[:,:,0] + (array[:,:,1] * 2**8) + (array[:,:,2] * 2**16)
+    array = np.expand_dims(array.astype('>i8'), axis=-1)
+    nb_chans = 5
+    array = np.unpackbits(array.view('uint8'),axis=-1)[:,:,-nb_chans:]
+    array = np.flip(array, axis=-1)
+
+    #Map to 3D
+    array_3d = map_2d_to_3d(array, curve_3d, curve_2d)
+    display_3d_array(array_3d)

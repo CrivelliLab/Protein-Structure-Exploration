@@ -172,7 +172,7 @@ class PDB_DataGenerator(object):
         data = np.repeat(data, len(self.tolerance_perms), axis=0)
 
         del coords_repeat; del nearest_voxels_coords; del tolerance_perms_repeat;
-        del nearest_voxels_repeat; del nearest_voxels
+        del nearest_voxels_repeat; del nearest_voxels; del coords
 
         # Get Outlier Indexes
         i = np.concatenate([np.where(np.min(nearest_voxels_with_tolerance, axis=1) < 0)[0],
@@ -215,8 +215,8 @@ class PDB_DataGenerator(object):
         #values = np.exp((-4*(np.square(distances)))/np.square(data[:,2].astype('float')))
         voxel_indexes = np.concatenate([nearest_voxels_indexes, chans], axis=1)
 
-        del data; del distances, del nearest_voxels_indexes
-        
+        del data; del distances; del nearest_voxels_indexes
+
         return voxel_indexes, values
 
     def __generate_voxel_3d(self, voxel_indexes, values):

@@ -84,7 +84,7 @@ def SIMPLENET_MODIFIED4(nb_chans, nb_class):
 
     model = Model(inputs=x, outputs=y)
     loss = categorical_crossentropy
-    optimizer = Adam(lr=0.0001, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.1e-6)
+    optimizer = Adam(lr=0.00005, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.1e-6)
     metrics = [categorical_accuracy,]
 
     return model, loss, optimizer, metrics
@@ -98,17 +98,17 @@ def CIFAR_NET(nb_chans, nb_class):
 
     '''
     x = Input(shape=(64,  64, nb_chans))
-    l = Conv2D(32, (5, 5), padding='same', activation='relu', kernel_constraint=maxnorm(3))(x)
+    l = Conv2D(64, (5, 5), padding='same', activation='relu', kernel_constraint=maxnorm(3))(x)
     l = Dropout(0.2)(l)
-    l = Conv2D(32, (3, 3), activation='relu', padding='same', kernel_constraint=maxnorm(3))(l)
+    l = Conv2D(64, (3, 3), activation='relu', padding='same', kernel_constraint=maxnorm(3))(l)
     l = MaxPooling2D(pool_size=(2, 2))(l)
-    l = Conv2D(32, (3, 3), padding='same', activation='relu', kernel_constraint=maxnorm(3))(l)
+    l = Conv2D(64, (3, 3), padding='same', activation='relu', kernel_constraint=maxnorm(3))(l)
     l = Dropout(0.2)(l)
-    l = Conv2D(32, (3, 3), activation='relu', padding='same', kernel_constraint=maxnorm(3))(l)
+    l = Conv2D(64, (3, 3), activation='relu', padding='same', kernel_constraint=maxnorm(3))(l)
     l = MaxPooling2D(pool_size=(2, 2))(l)
-    l = Conv2D(32, (3, 3), padding='same', activation='relu', kernel_constraint=maxnorm(3))(l)
+    l = Conv2D(64, (3, 3), padding='same', activation='relu', kernel_constraint=maxnorm(3))(l)
     l = Dropout(0.2)(l)
-    l = Conv2D(32, (3, 3), activation='relu', padding='same', kernel_constraint=maxnorm(3))(l)
+    l = Conv2D(64, (3, 3), activation='relu', padding='same', kernel_constraint=maxnorm(3))(l)
     l = MaxPooling2D(pool_size=(2, 2))(l)
     #l = Conv2D(32, (3, 3), padding='same', activation='relu', kernel_constraint=maxnorm(3))(l)
     #l = Dropout(0.2)(l)
@@ -153,7 +153,7 @@ def VOXNET_64(nb_chans, nb_class):
 
     model = Model(inputs=x, outputs=y)
     loss = categorical_crossentropy
-    optimizer = Adam(lr=0.0001,decay=0.1e-6)
+    optimizer = Adam(lr=0.0005,decay=0.1e-6)
     metrics = [categorical_accuracy,]
 
     return model, loss, optimizer, metrics
