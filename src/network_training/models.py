@@ -84,7 +84,7 @@ def SIMPLENET_MODIFIED4(nb_chans, nb_class):
 
     model = Model(inputs=x, outputs=y)
     loss = categorical_crossentropy
-    optimizer = Adam(lr=0.00005, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.1e-6)
+    optimizer = Adam(lr=0.0001, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.1e-6)
     metrics = [categorical_accuracy,]
 
     return model, loss, optimizer, metrics
