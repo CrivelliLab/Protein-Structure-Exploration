@@ -89,6 +89,72 @@ def SIMPLENET_MODIFIED4(nb_chans, nb_class):
 
     return model, loss, optimizer, metrics
 
+def BESTNET_512(nb_chans, nb_class):
+    '''
+    '''
+    from keras.layers import LeakyReLU
+
+    # Input Layer
+    x = Input(shape=(512, 512, nb_chans))
+
+    # Layer 2
+    l = Conv2D(32, (5, 5), padding='same')(x)
+    l = LeakyReLU(alpha=0.1)(l)
+    l = MaxPooling2D(pool_size=(2, 2))(l)
+    l = BatchNormalization()(l)
+    l = Dropout(.2)(l)
+
+    # Layer 3
+    l = Conv2D(32, (4, 4), padding='same')(l)
+    l = LeakyReLU(alpha=0.1)(l)
+    l = MaxPooling2D(pool_size=(2, 2))(l)
+    l = BatchNormalization()(l)
+    l = Dropout(.2)(l)
+
+    # Layer 4
+    l = Conv2D(32, (3, 3), padding='same')(l)
+    l = LeakyReLU(alpha=0.1)(l)
+    l = MaxPooling2D(pool_size=(2, 2))(l)
+    l = BatchNormalization()(l)
+    l = Dropout(.2)(l)
+
+    # Layer 4
+    l = Conv2D(32, (3, 3), padding='same')(l)
+    l = LeakyReLU(alpha=0.1)(l)
+    l = MaxPooling2D(pool_size=(2, 2))(l)
+    l = BatchNormalization()(l)
+    l = Dropout(.2)(l)
+
+    # Layer 4
+    l = Conv2D(32, (3, 3), padding='same')(l)
+    l = LeakyReLU(alpha=0.1)(l)
+    l = MaxPooling2D(pool_size=(2, 2))(l)
+    l = BatchNormalization()(l)
+    l = Dropout(.2)(l)
+
+    # Layer 7
+    l = Conv2D(32, (3, 3), padding='same')(l)
+    l = LeakyReLU(alpha=0.1)(l)
+    l = MaxPooling2D(pool_size=(2, 2))(l)
+    l = BatchNormalization()(l)
+    l = Dropout(.2)(l)
+
+    l = Flatten()(l)
+
+    # Layer 13
+    l = Dense(1024)(l)
+    l = LeakyReLU(alpha=0.1)(l)
+    l = Dropout(.4)(l)
+
+    # Output Layer
+    y = Dense(nb_class, activation='softmax')(l)
+
+    model = Model(inputs=x, outputs=y)
+    loss = categorical_crossentropy
+    optimizer = Adam(lr=0.0001, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.1e-6)
+    metrics = [categorical_accuracy,]
+
+    return model, loss, optimizer, metrics
 
 def CIFAR_NET(nb_chans, nb_class):
     '''

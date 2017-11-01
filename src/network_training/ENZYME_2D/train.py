@@ -15,12 +15,12 @@ from CustomImageDataGenerator import ImageDataGenerator
 from keras_extra import make_parallel_gpu
 from models import *
 
-epochs = 20
-batch_size = 8
+epochs = 200
+batch_size = 1
 seed = 125
 gpus = 1
 
-model_def = SIMPLENET_MODIFIED4
+model_def = BESTNET_512
 
 ################################################################################
 
@@ -42,10 +42,10 @@ if __name__ == '__main__':
     # Intiate Keras Flow From Directory
     datagen = ImageDataGenerator()
     train_flow = datagen.flow_from_directory(data_folder +'/train', color_mode="rgb",
-                target_size=(64, 64), batch_size=batch_size, class_mode='categorical',
+                target_size=(512, 512), batch_size=batch_size, class_mode='categorical',
                 seed=seed)
     validation_flow = datagen.flow_from_directory(data_folder +'/validation', color_mode="rgb",
-                target_size=(64, 64), batch_size=batch_size, class_mode='categorical',
+                target_size=(512, 512), batch_size=batch_size, class_mode='categorical',
                 seed=seed)
 
     # Load Model

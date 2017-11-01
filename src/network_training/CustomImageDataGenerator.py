@@ -351,8 +351,9 @@ def load_img(path, grayscale=False, target_size=None,
     nb_chans = 5
     array = np.unpackbits(array.view('uint8'),axis=-1)[:,:,-nb_chans:]
     array = np.flip(array, axis=-1)
-    array = array * 255
+    #array = array * 255
 
+    '''
     if target_size is not None:
         resized_array = []
         for i in range(nb_chans):
@@ -362,7 +363,7 @@ def load_img(path, grayscale=False, target_size=None,
             #if max_ > 0 : temp = temp / np.max(temp)
             resized_array.append(temp)
         return np.transpose(np.array(resized_array), (1,2,0))
-
+    '''
     return array
 
 

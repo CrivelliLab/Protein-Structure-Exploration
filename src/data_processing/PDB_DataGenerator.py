@@ -22,7 +22,7 @@ class PDB_DataGenerator(object):
     'I' : 1.98, 'E' : 1.0, 'X':1.0 ,'' : 0.0} # Source:https://physlab.lums.edu.pk/images/f/f6/Franck_ref2.pdf
     max_radius = 2.0
 
-    def __init__(self, size=64, center=[0,0,0], resolution=1.0, nb_rots=0,
+    def __init__(self, size=64, center=[0,0,0], resolution=1.0, thresh=1.0, nb_rots=0,
                  channels=None, map_to_2d=False, seed=9999):
         '''
         '''
@@ -37,6 +37,7 @@ class PDB_DataGenerator(object):
         self.size = size
         self.center = center
         self.resolution = resolution
+        self.thresh = thresh
         self.bounds = [ -(size * resolution)/2, -(size * resolution)/2,
                         -(size * resolution)/2, (size * resolution)/2,
                         (size * resolution)/2,  (size * resolution)/2]
@@ -78,12 +79,12 @@ class PDB_DataGenerator(object):
         # Apply Rotation To Data
         if rot > 0:
             pdb_data = self.__apply_rotation(pdb_data, self.random_rotations[rot-1])
-
         l1 = len(pdb_data)
+
         # Remove Outlier Atoms
         pdb_data = self.__remove_outlier_atoms(pdb_data)
         l2 = len(pdb_data)
-        if (l1-l2)/float(l1) > 0.05: return []
+        if (l1-l2)/float(l1) > (1.0 - self.thresh): return []
 
         # Calculate Distances From Voxels
         pdb_data, distances, indexes = self.__calc_distances_from_voxels(pdb_data)
@@ -112,7 +113,7 @@ class PDB_DataGenerator(object):
         with open(path, 'r') as f:
             lines = f.readlines()
             for row in lines:
-                if row[:4] == 'ATOM' and row[21] in chain:
+                if row[:4] == 'ATOM' and row[21] == chain:
                     if res_i != None:
                         if int(row[22:26]) in res_i:
                             parsed_data = [row[17:20], row[12:16].strip(), self.van_der_waal_radii[row[77].strip()], row[30:38], row[38:46], row[47:54]]
@@ -446,4 +447,60 @@ def beta_carbons(data):
     '''
     '''
     i = np.where(data[:,1] == 'CB')
+    return i
+
+def all_atoms(data):
+    '''
+    '''
+    i = np.arange(0,len(data)).astype('int')
+    return i
+
+def aliphatic_res(data):
+    '''
+    '''
+    i = np.concatenate([np.where(data[:,0] == 'ALA')[0],
+                        np.where(data[:,0] == 'ILE')[0],
+                        np.where(data[:,0] == 'LEU')[0],
+                        np.where(data[:,0] == 'MET')[0],
+                        np.where(data[:,0] == 'VAL')[0]], axis=0)
+    return i
+
+def aromatic_res(data):
+    '''
+    '''
+    i = np.concatenate([np.where(data[:,0] == 'PHE')[0],
+                        np.where(data[:,0] == 'TRP')[0],
+                        np.where(data[:,0] == 'TYR')[0]], axis=0)
+    return i
+
+def neutral_res(data):
+    '''
+    '''
+    i = np.concatenate([np.where(data[:,0] == 'ASN')[0],
+                        np.where(data[:,0] == 'CYS')[0],
+                        np.where(data[:,0] == 'GLN')[0],
+                        np.where(data[:,0] == 'SER')[0],
+                        np.where(data[:,0] == 'THR')[0]], axis=0)
+    return i
+
+def acidic_res(data):
+    '''
+    '''
+    i = np.concatenate([np.where(data[:,0] == 'ASP')[0],
+                        np.where(data[:,0] == 'GLU')[0]], axis=0)
+    return i
+
+def basic_res(data):
+    '''
+    '''
+    i = np.concatenate([np.where(data[:,0] == 'ARG')[0],
+                        np.where(data[:,0] == 'HIS')[0],
+                        np.where(data[:,0] == 'LYS')[0]], axis=0)
+    return i
+
+def unique_res(data):
+    '''
+    '''
+    i = np.concatenate([np.where(data[:,0] == 'GLY')[0],
+                        np.where(data[:,0] == 'PRO')[0]], axis=0)
     return i
