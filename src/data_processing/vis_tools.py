@@ -9,7 +9,7 @@ import os
 import numpy as np
 from scipy.misc import imread
 
-path = "../../data/split/ENZYME_split102417/train/1/2hkr_A-r0.png"
+path = "../../data/raw/KRAS_HRAS/HRAS/1p2s_A-r0.png"
 
 def display_2d_array(array_2d):
     '''
@@ -108,10 +108,10 @@ if __name__ == '__main__':
     array = imread(path)
     array = array[:,:,0] + (array[:,:,1] * 2**8) + (array[:,:,2] * 2**16)
     array = np.expand_dims(array.astype('>i8'), axis=-1)
-    nb_chans = 5
+    nb_chans = 8
     array = np.unpackbits(array.view('uint8'),axis=-1)[:,:,-nb_chans:]
     array = np.flip(array, axis=-1)
 
     #Map to 3D
     array_3d = map_2d_to_3d(array, curve_3d, curve_2d)
-    display_3d_array(array_3d)
+    display_3d_array(np.transpose(array_3d,(3,0,1,2)))
