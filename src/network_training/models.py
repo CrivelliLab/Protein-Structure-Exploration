@@ -39,10 +39,10 @@ def SIMPLENET_MODIFIED4(nb_chans, nb_class):
     kernel sizing strategies to little benefit.
     '''
     # Input Layer
-    x = Input(shape=(64, 64, nb_chans))
+    x = Input(shape=(16, 16, nb_chans))
 
     # Layer 1
-    l = Conv2D(64, (4, 4), padding='same', activation='relu')(x)
+    l = Conv2D(64, (3, 3), padding='same', activation='relu')(x)
     l = BatchNormalization()(l)
 
     # Layer 2
@@ -52,7 +52,7 @@ def SIMPLENET_MODIFIED4(nb_chans, nb_class):
 
     # Layer 3
     l = Conv2D(128, (3, 3), padding='same', activation='relu')(l)
-    l = MaxPooling2D(pool_size=(2, 2))(l)
+    #l = MaxPooling2D(pool_size=(2, 2))(l)
     l = BatchNormalization()(l)
 
     # Layer 4
@@ -163,7 +163,7 @@ def CIFAR_NET(nb_chans, nb_class):
     This network is inspired by the CIFAR10 network.
 
     '''
-    x = Input(shape=(64,  64, nb_chans))
+    x = Input(shape=(512,  512, nb_chans))
     l = Conv2D(64, (5, 5), padding='same', activation='relu', kernel_constraint=maxnorm(3))(x)
     l = Dropout(0.2)(l)
     l = Conv2D(64, (3, 3), activation='relu', padding='same', kernel_constraint=maxnorm(3))(l)
@@ -176,18 +176,18 @@ def CIFAR_NET(nb_chans, nb_class):
     l = Dropout(0.2)(l)
     l = Conv2D(64, (3, 3), activation='relu', padding='same', kernel_constraint=maxnorm(3))(l)
     l = MaxPooling2D(pool_size=(2, 2))(l)
-    #l = Conv2D(32, (3, 3), padding='same', activation='relu', kernel_constraint=maxnorm(3))(l)
-    #l = Dropout(0.2)(l)
-    #l = Conv2D(32, (3, 3), activation='relu', padding='same', kernel_constraint=maxnorm(3))(l)
-    #l = MaxPooling2D(pool_size=(2, 2))(l)
-    #l = Conv2D(32, (3, 3), padding='same', activation='relu', kernel_constraint=maxnorm(3))(l)
-    #l = Dropout(0.2)(l)
-    #l = Conv2D(32, (3, 3), activation='relu', padding='same', kernel_constraint=maxnorm(3))(l)
-    #l = MaxPooling2D(pool_size=(2, 2))(l)
-    #l = Conv2D(32, (3, 3), padding='same', activation='relu', kernel_constraint=maxnorm(3))(l)
-    #l = Dropout(0.2)(l)
-    #l = Conv2D(32, (3, 3), activation='relu', padding='same', kernel_constraint=maxnorm(3))(l)
-    #l = MaxPooling2D(pool_size=(2, 2))(l)
+    l = Conv2D(32, (3, 3), padding='same', activation='relu', kernel_constraint=maxnorm(3))(l)
+    l = Dropout(0.2)(l)
+    l = Conv2D(32, (3, 3), activation='relu', padding='same', kernel_constraint=maxnorm(3))(l)
+    l = MaxPooling2D(pool_size=(2, 2))(l)
+    l = Conv2D(32, (3, 3), padding='same', activation='relu', kernel_constraint=maxnorm(3))(l)
+    l = Dropout(0.2)(l)
+    l = Conv2D(32, (3, 3), activation='relu', padding='same', kernel_constraint=maxnorm(3))(l)
+    l = MaxPooling2D(pool_size=(2, 2))(l)
+    l = Conv2D(32, (3, 3), padding='same', activation='relu', kernel_constraint=maxnorm(3))(l)
+    l = Dropout(0.2)(l)
+    l = Conv2D(32, (3, 3), activation='relu', padding='same', kernel_constraint=maxnorm(3))(l)
+    l = MaxPooling2D(pool_size=(2, 2))(l)
     l = Flatten()(l)
     l = Dense(2048, activation='relu', kernel_constraint=maxnorm(3))(l)
     l = Dropout(0.5)(l)

@@ -14,11 +14,11 @@ from shutil import copyfile
 from sklearn.model_selection import train_test_split
 
 #- Global Variables
-data_folder = '../../data/raw/ENZYME0/'
-split_folder = '../../data/split/ENZYME0_split102317/'
+data_folder = '../../data/raw/KRAS_HRAS/'
+split_folder = '../../data/split/KRAS_HRAS_split110117/'
 file_type  = '.png'
 
-num_augmen = 1
+num_augmen = 500
 seed = 102317
 split = [0.7, 0.1, 0.2]
 
@@ -61,7 +61,8 @@ if __name__ == '__main__':
             if num_augmen > 1:
                 for i in range(num_augmen):
                     fn = x_data[j] + '-r' + str(i) + file_type
-                    copyfile(data_folder+folder + '/' + fn, split_folder + 'train/' + folder + '/' + fn)
+                    try: copyfile(data_folder+folder + '/' + fn, split_folder + 'train/' + folder + '/' + fn)
+                    except: pass
             else:
                 copyfile(data_folder+folder + '/' + x_data[j], split_folder + 'train/' + folder + '/' + x_data[j])
 
@@ -71,7 +72,8 @@ if __name__ == '__main__':
             if num_augmen > 1:
                 for i in range(num_augmen):
                     fn = x_val[j] + '-r' + str(i) + file_type
-                    copyfile(data_folder+folder + '/' + fn, split_folder + 'validation/' + folder + '/' + fn)
+                    try:copyfile(data_folder+folder + '/' + fn, split_folder + 'validation/' + folder + '/' + fn)
+                    except: pass
             else:
                 copyfile(data_folder+folder + '/' + x_val[j], split_folder + 'validation/' + folder + '/' + x_val[j])
 
@@ -81,6 +83,7 @@ if __name__ == '__main__':
             if num_augmen > 1:
                 for i in range(num_augmen):
                     fn = x_test[j] + '-r' + str(i) + file_type
-                    copyfile(data_folder+folder + '/' + fn, split_folder + 'test/' + folder + '/' + fn)
+                    try:copyfile(data_folder+folder + '/' + fn, split_folder + 'test/' + folder + '/' + fn)
+                    except: pass
             else:
                 copyfile(data_folder+folder + '/' + x_test[j], split_folder + 'test/' + folder + '/' + x_test[j])

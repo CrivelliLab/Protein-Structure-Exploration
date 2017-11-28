@@ -21,7 +21,7 @@ from keras.losses import categorical_crossentropy
 from keras.layers import Dense, Dropout, Flatten, Conv2D, MaxPooling2D
 
 epochs = 10
-batch_size = 128
+batch_size = 100
 
 ################################################################################
 
@@ -45,7 +45,6 @@ def define_model():
     model.add(Dense(128, activation='relu'))
     model.add(Dropout(0.5))
     model.add(Dense(10, activation='softmax'))
-
     return model
 
 def load_mnist():

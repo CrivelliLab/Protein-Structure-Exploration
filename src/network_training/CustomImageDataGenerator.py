@@ -348,12 +348,11 @@ def load_img(path, grayscale=False, target_size=None,
     array = imread(path)
     array = array[:,:,0] + (array[:,:,1] * 2**8) + (array[:,:,2] * 2**16)
     array = np.expand_dims(array.astype('>i8'), axis=-1)
-    nb_chans = 5
+    nb_chans = 8
     array = np.unpackbits(array.view('uint8'),axis=-1)[:,:,-nb_chans:]
     array = np.flip(array, axis=-1)
-    #array = array * 255
+    array = array * 255
 
-    '''
     if target_size is not None:
         resized_array = []
         for i in range(nb_chans):
@@ -363,7 +362,7 @@ def load_img(path, grayscale=False, target_size=None,
             #if max_ > 0 : temp = temp / np.max(temp)
             resized_array.append(temp)
         return np.transpose(np.array(resized_array), (1,2,0))
-    '''
+
     return array
 
 
@@ -1027,9 +1026,9 @@ class DirectoryIterator(Iterator):
         self.data_format = data_format
         if self.color_mode == 'rgb':
             if self.data_format == 'channels_last':
-                self.image_shape = self.target_size + (5,)
+                self.image_shape = self.target_size + (8,)
             else:
-                self.image_shape = (5,) + self.target_size
+                self.image_shape = (8,) + self.target_size
         else:
             if self.data_format == 'channels_last':
                 self.image_shape = self.target_size + (1,)

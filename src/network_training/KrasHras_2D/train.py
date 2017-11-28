@@ -13,15 +13,15 @@ import numpy as np
 from models import *
 from keras_extra import make_parallel_gpu
 from keras.callbacks import CSVLogger, ModelCheckpoint
-from keras.preprocessing.image import ImageDataGenerator
+from CustomImageDataGenerator import ImageDataGenerator
 
-epochs = 100
-batch_size = 10
-model_def = CIFAR_NET
+epochs = 20
+batch_size = 8
+model_def = SIMPLENET_MODIFIED4
 gpus = 1
 seed = 125
 
-data_folder = "../../../data/split/KRAS_HRAS_seed45"
+data_folder = "../../../data/split/KRAS_HRAS_split110117"
 
 ################################################################################
 
@@ -42,27 +42,27 @@ if __name__ == '__main__':
     if not os.path.exists('weights'): os.makedirs('weights')
 
     # Intiate Keras Flow From Directory
-    datagen = ImageDataGenerator(preprocessing_function=standard)
+    datagen = ImageDataGenerator()
     train_flow = datagen.flow_from_directory(data_folder +'/train', color_mode="rgb",
-                target_size=(512, 512), batch_size=batch_size, class_mode='categorical',
+                target_size=(16, 16), batch_size=batch_size, class_mode='categorical',
                 seed=seed)
     validation_flow = datagen.flow_from_directory(data_folder +'/validation', color_mode="rgb",
-                target_size=(512, 512), batch_size=batch_size, class_mode='categorical',
+                target_size=(16, 16), batch_size=batch_size, class_mode='categorical',
                 seed=seed)
 
     # Load Model
-    model, loss, optimizer, metrics = model_def(3, 2)
+    model, loss, optimizer, metrics = model_def(8, 2)
     if gpus > 1 : model = make_parallel_gpu(model, gpu)
     model.compile(loss=loss, optimizer=optimizer, metrics=metrics)
 
     # Callbacks
     date = time.strftime("%d%m%Y")
-    earlystopper = EarlyStopping(patience=5)
+    #earlystopper = EarlyStopping(patience=5)
     csv_logger = CSVLogger('logs/'+model_def.__name__+date+".csv", separator=',')
     checkpointer = ModelCheckpoint(filepath='weights/'+model_def.__name__+date+'.hdf5',
                                    verbose=0, save_best_only=True)
 
     # Train Model
     model.fit_generator(train_flow, epochs=epochs, steps_per_epoch=train_count//batch_size,
-                        validation_data=validation_flow, callbacks=[csv_logger,checkpointer,earlystopper],
+                        validation_data=validation_flow, callbacks=[csv_logger,checkpointer],
                         validation_steps=val_count//batch_size)
