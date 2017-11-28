@@ -8,15 +8,16 @@ from prody import pathPDBFolder, fetchPDB
 from mpi4py import MPI
 import numpy as np
 
-data_folder = '../../data/raw/ENZYME/'
+data_folder = '../../data/raw/KRAS_HRAS/'
 
-################################################################################
+###############################################################################
 
 if __name__ == '__main__':
 
     # Set PATHs
     os.chdir(os.path.dirname(os.path.realpath(__file__)))
     pathPDBFolder('../../data/temp/')
+
     # MPI Init
     comm = MPI.COMM_WORLD
     rank = comm.Get_rank()
@@ -37,12 +38,9 @@ if __name__ == '__main__':
                     # Get PDB IDs and Chain IDs
                     l = l[:-1].split(',')
                     pdb_id = l[0].lower()
-                    entries.append([data_folder+class_, pdb_id])
+                    chain = l[1]
+                    entries.append([data_folder+class_, pdb_id, chain])
 
-                    #if len(l) > 1:
-                        #chains = ''.join(l[1:])
-                        #pdb_fn = '_'.join([pdb_id, chains]) + '.pdb'
-                        #os.rename(data_folder+class_+'/'+pdb_id+'.pdb', data_folder+class_+'/'+pdb_fn)
         np.random.seed(9999)
         np.random.shuffle(entries)
     else: entries = None
@@ -52,3 +50,4 @@ if __name__ == '__main__':
     # Fetch PDBs
     for e in entries:
         fetchPDB(e[1], compressed=False, folder=e[0])
+        os.rename(e[0]+'/'+e[1]+'.pdb', e[0]+'/'+e[1]+'_'+e[2]+'.pdb')

@@ -4,17 +4,18 @@ Updated:
 
 '''
 from PDB_DataGenerator import PDB_DataGenerator
-from PDB_DataGenerator import hydrophobic_res, polar_res, charged_res, alpha_carbons, beta_carbons
+from PDB_DataGenerator import *
 import os
 import numpy as np
 from scipy.misc import imsave
 import scipy
 from time import time
 from mpi4py import MPI
+from tqdm import tqdm
 
-data_folder = '../../data/raw/ENZYME_pdbs/'
+data_folder = '../../data/raw/KRAS_HRAS/'
 res_i = None
-nb_rot = 0
+nb_rot = 500
 chain = None
 
 ################################################################################
@@ -49,11 +50,11 @@ if __name__ == '__main__':
     entries = np.array_split(entries, cores)[rank]
 
     # Intialize Data Generator
-    pdb_datagen = PDB_DataGenerator(size=64, center=[0,0,0], resolution=1.0, nb_rots=nb_rot, map_to_2d=False,
-                                    channels=[hydrophobic_res, polar_res, charged_res, alpha_carbons, beta_carbons])
+    pdb_datagen = PDB_DataGenerator(size=64, center=[0,0,0], resolution=1.0, thresh=0.95, nb_rots=nb_rot, map_to_2d=True,
+                                    channels=[aliphatic_res, aromatic_res, neutral_res, acidic_res, basic_res, unique_res, alpha_carbons, beta_carbons])
     print(len(entries))
 
-    for i in range(len(entries)):
+    for i in tqdm(range(len(entries))):
         # Entry Data
         pdb_path = entries[i][0]
         rot = int(entries[i][1])
