@@ -1,6 +1,6 @@
 '''
 PDB_DataGenerator.py
-Updated: 10/16/17
+Updated: 11/29/17
 
 '''
 import os

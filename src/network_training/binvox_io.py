@@ -1,6 +1,6 @@
 '''
-binvox.py
-Updated: 8/28/17
+binvox_io.py
+Updated: 11/28/17
 
 README:
 
@@ -14,15 +14,23 @@ def read_binvox(file_path):
     Method load binvox file as numpy array.
 
     '''
+    # Open file from path
     with open(file_path, 'rb') as fp:
-        line = fp.readline().strip()
-        if not line.startswith(b'#binvox'): raise IOError('Not a binvox file')
+
+        # Check if file is binvox file
+        if not fp.readline().strip().startswith(b'#binvox'):
+            raise IOError('Not a binvox file')
+
+        # Get Binvox shape information
         dims = list(map(int, fp.readline().strip().split(b' ')[1:]))
         translate = list(map(float, fp.readline().strip().split(b' ')[1:]))
         scale = list(map(float, fp.readline().strip().split(b' ')[1:]))[0]
+
+        # Read byte information
         fp.readline()
         raw_data = np.frombuffer(fp.read(), dtype=np.uint8)
 
+    # Reshape into 3D array
     values, counts = raw_data[::2], raw_data[1::2]
     data = np.repeat(values, counts).astype(np.bool)
     data = data.reshape(dims)
@@ -34,6 +42,7 @@ def write_binvox(file_path, np_array):
     Method write numpy array as binvox file.
 
     '''
+    # Open file from path
     with open(file_path, 'wb') as fp:
         dims = np_array.shape
         scale = 1.0
