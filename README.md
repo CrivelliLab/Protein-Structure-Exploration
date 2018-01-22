@@ -34,8 +34,3 @@ code contained in this repository, is subject to rapid change.
 For more information about the **project and methodology**:
 
 - [Jupyter Notebook](notebooks/Deep-Learning-Enabled-Protein-Structure-Exploration.ipynb) - interactive project methodology
-- [Project Citations](docs/project_citations.md) - work cited
-
-For more information on **setup and installation**:
-
-- [Setup up project and deep-learning docker](docs/setup.md)

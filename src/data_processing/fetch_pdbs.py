@@ -1,35 +1,51 @@
 '''
 fetch_pdbs.py
-Updated: 11/28/17
+Updated: 1/19/17
 
-Script fetches pdbs from Protein Data Bank as defined in class.csv files in data_folder
-path. class.csv files includes pdb identifier and chain identifier pairs. PDBs are
-save into folders corresponding to the .csv files.
+Script fetches pdbs from Protein Data Bank as defined in class.csv files in
+data_folder path. class.csv files includes pdb identifier and chain identifier
+pairs. PDBs are save into folders corresponding to class and PDB identifier.
+
+Script parallelizes fetches over multiple cores using MPI.
+
+To run: $python3 fetch_pdbs.py or $mpirun -n N python3 fetch_pdbs.py
 
 '''
-
-import os
-from prody import pathPDBFolder, fetchPDB
-from mpi4py import MPI
+import os, wget
 import numpy as np
+from mpi4py import MPI
 
-# Data Folder Path
-data_folder = '../../data/raw/KRAS_HRAS/'
+# Data folder path
+# Set this path to location of dataset folder
+data_folder = '../../data/KrasHras/'
 
 ###############################################################################
 
+seed = 1234
+
+def fetch_PDB(path, pdb_id):
+    '''
+    Method fetches pdb file from Protein Data Bank repo and stores file in
+    designated path.
+
+    '''
+    # Download PDB file from database.
+    url = 'https://files.rcsb.org/download/' # URL used to fetch PDB files
+    file_path = path + pdb_id.lower() + '.pdb'
+    if not os.path.exists(file_path):
+        file_path = wget.download(url + pdb_id + '.pdb', out=path, bar=None)
+
 if __name__ == '__main__':
 
-    # Set PATHs
+    # Set paths relative to this file
     os.chdir(os.path.dirname(os.path.realpath(__file__)))
-    pathPDBFolder('../../data/temp/')
 
-    # MPI Init
+    # MPI init
     comm = MPI.COMM_WORLD
     rank = comm.Get_rank()
     cores = comm.Get_size()
 
-    # MPI Task Distribution
+    # MPI task distribution
     if rank == 0:
         tasks = []
 
@@ -38,7 +54,7 @@ if __name__ == '__main__':
             if not class_fn.endswith('.csv'): continue
 
             # Make folder for PDB class
-            class_ = class_fn.split('.')[0] + '_pdbs'
+            class_ = class_fn.split('.')[0]
             if not os.path.exists(data_folder+class_): os.mkdir(data_folder+class_)
 
             # Iterate over PDB id and chain id pairs
@@ -53,7 +69,7 @@ if __name__ == '__main__':
                     tasks.append([data_folder+class_, pdb_id, chain_id])
 
         # Shuffle for Random Distribution
-        np.random.seed(9999)
+        np.random.seed(seed)
         np.random.shuffle(tasks)
 
     else: tasks = None
@@ -71,5 +87,8 @@ if __name__ == '__main__':
         chain_id = t[2]
 
         # Fetch PDB file and rename with task IDs
-        fetchPDB(pdb_id, compressed=False, folder=folder_)
-        os.rename(folder_+'/'+pdb_id+'.pdb', folder_+'/'+pdb_id+'_'+chain_id+'.pdb')
+        fetch_PDB(folder_, pdb_id)
+        if not os.path.exists(folder_+'/'+ pdb_id +'_'+chain_id): os.mkdir(folder_+'/'+ pdb_id +'_'+chain_id)
+        os.rename(folder_+'/'+pdb_id+'.pdb', folder_+'/'+pdb_id+'_'+chain_id+'/'+pdb_id+'_'+chain_id+'.pdb')
+
+        print('Fetched: ' + pdb_id)
