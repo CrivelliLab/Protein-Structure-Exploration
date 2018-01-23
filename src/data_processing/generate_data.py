@@ -64,7 +64,7 @@ if __name__ == '__main__':
 
         # Shuffle for random distribution
         np.random.seed(seed)
-        #np.random.shuffle(tasks)
+        np.random.shuffle(tasks)
 
     else: tasks = None
 

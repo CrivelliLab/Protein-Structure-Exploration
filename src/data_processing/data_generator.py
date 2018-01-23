@@ -10,6 +10,7 @@ import os
 import scipy
 import numpy as np
 from itertools import product
+from sklearn.decomposition import PCA
 
 ################################################################################
 
@@ -148,6 +149,20 @@ class data_generator(object):
         coords = data[:,3:].astype('float')
         centroid = np.mean(coords, axis=0)
         centered_coord = coords - centroid - self.center
+
+        # Orient along prime axis
+        pca = PCA(n_components=3)
+        pca.fit(centered_coord)
+        c = pca.components_[np.argmax(pca.explained_variance_)]
+        angle = np.arctan(c[2]/np.sqrt((c[0]**2)+(c[1]**2)))
+        axis = np.dot(np.array([[0,1],[-1,0]]), np.array([c[0],c[1]]))
+        rot1 = self.__get_rotation_matrix([axis[0],axis[1],0],angle)
+        if c[0] < 0 and c[1] < 0 or c[0] < 0 and c[1] > 0 :
+            rot2 = self.__get_rotation_matrix([0,0,1], np.arctan(c[1]/c[0]) + np.pi)
+        else: rot2 = self.__get_rotation_matrix([0,0,1], np.arctan(c[1]/c[0]))
+        rot = np.dot(rot1, rot2)
+        centered_coord = np.dot(centered_coord, rot)
+
         data = np.concatenate([data[:,:3], centered_coord], axis=1)
 
         del centroid, centered_coord, coords

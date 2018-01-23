@@ -47,14 +47,15 @@ def D2NET(nb_chans, nb_class):
     '''
     '''
     x = Input(shape=(512,  512, nb_chans))
-    l = Conv2D(32, (13, 13), strides = (3,3), padding='valid', activation='relu')(x)
+    l = Conv2D(32, (15, 15), strides = (3,3), padding='valid', activation='relu')(x)
     l = MaxPooling2D((3,3))(l)
-    l = Conv2D(32, (13, 13), strides = (3,3), padding='valid', activation='relu')(l)
+    l = Conv2D(32, (15, 15), strides = (3,3), padding='valid', activation='relu')(l)
     l = MaxPooling2D((3,3))(l)
 
     # Fully Connected Layer
     l = Flatten()(l)
     l = Dense(128, activation='relu')(l)
+    l = Dropout(0.5)(l)
 
     y = Dense(nb_class, activation='softmax')(l)
 

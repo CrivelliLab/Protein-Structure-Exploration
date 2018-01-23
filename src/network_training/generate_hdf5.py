@@ -15,7 +15,6 @@ from sklearn.model_selection import train_test_split
 
 # Data folder path
 data_folder = '../../data/KrasHras/'
-nb_rots = 10
 
 # Training split
 split = [0.7, 0.1, 0.2]
