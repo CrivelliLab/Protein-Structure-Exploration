@@ -22,7 +22,8 @@ from keras.constraints import maxnorm
 
 def D1NET_v1(nb_chans, nb_class):
     '''
-    Parameters: 242,114
+    Parameters w/ 8 Chans:: 242,114
+    Parameters w/ 1 Chans: 228,810
 
     '''
     # Input Layer
@@ -50,7 +51,8 @@ def D1NET_v1(nb_chans, nb_class):
 
 def D1NET_v2(nb_chans, nb_class):
     '''
-    Parameters: 310,978
+    Parameters w/ 8 Chans:: 310,978
+    Parameters w/ 1 Chans: 284,906
 
     '''
     # Input Layer
@@ -77,7 +79,8 @@ def D1NET_v2(nb_chans, nb_class):
 
 def D1NET_v3(nb_chans, nb_class):
     '''
-    Parameters: 440,002
+    Parameters w/ 8 Chans:: 440,002
+    Parameters w/ 1 Chans: 390,634
 
     '''
     # Input Layer
@@ -104,7 +107,8 @@ def D1NET_v3(nb_chans, nb_class):
 
 def D2NET_v1(nb_chans, nb_class):
     '''
-    Parameters: 184,770
+    Parameters w/ 8 Chans:: 184,770
+    Parameters w/ 1 Chans: 171,466
 
     '''
     x = Input(shape=(512,  512, nb_chans))
@@ -129,7 +133,8 @@ def D2NET_v1(nb_chans, nb_class):
 
 def D2NET_v2(nb_chans, nb_class):
     '''
-    Parameters: 257,730
+    Parameters w/ 8 Chans:: 257,730
+    Parameters w/ 1 Chans: 231,658
 
     '''
     x = Input(shape=(512,  512, nb_chans))
@@ -154,7 +159,8 @@ def D2NET_v2(nb_chans, nb_class):
 
 def D2NET_v3(nb_chans, nb_class):
     '''
-    Parameters: 353,986
+    Parameters w/ 8 Chans:: 353,986
+    Parameters w/ 1 Chans: 304,618
 
     '''
     x = Input(shape=(512,  512, nb_chans))
@@ -179,7 +185,8 @@ def D2NET_v3(nb_chans, nb_class):
 
 def D3NET_v1(nb_chans, nb_class):
     '''
-    Parameters: 192,962
+    Parameters w/ 8 Chans:: 192,962
+    Parameters w/ 1 Chans: 179,658
 
     '''
     x = Input(shape=(64, 64, 64, nb_chans))
@@ -201,7 +208,8 @@ def D3NET_v1(nb_chans, nb_class):
 
 def D3NET_v2(nb_chans, nb_class):
     '''
-    Parameters: 271,042
+    Parameters w/ 8 Chans:: 271,042
+    Parameters w/ 1 Chans: 244,074
 
     '''
     x = Input(shape=(64, 64, 64, nb_chans))
@@ -223,7 +231,8 @@ def D3NET_v2(nb_chans, nb_class):
 
 def D3NET_v3(nb_chans, nb_class):
     '''
-    Parameters: 309,698
+    Parameters w/ 8 Chans:: 309,698
+    Parameters w/ 1 Chans: 262,346
 
     '''
     x = Input(shape=(64, 64, 64, nb_chans))
