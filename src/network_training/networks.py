@@ -20,19 +20,23 @@ from keras.constraints import maxnorm
 
 ################################################################################
 
-def D1NET(nb_chans, nb_class):
+def D1NET_v1(nb_chans, nb_class):
     '''
+    Parameters: 242,114
+
     '''
     # Input Layer
-    x = Input(shape=(None, nb_chans))
+    x = Input(shape=(262144, nb_chans))
 
     # Layers
-    l = Conv1D(filters=32, kernel_size=169, strides=81, padding='valid', activation='relu')(x)
-    l = Conv1D(filters=32, kernel_size=169, strides=81, padding='valid', activation='relu')(l)
-    l = GlobalMaxPooling1D()(l)
+    l = Conv1D(filters=32, kernel_size=64, strides=9, padding='valid', activation='relu')(x)
+    l = MaxPooling1D(9)(l)
+    l = Conv1D(filters=32, kernel_size=64, strides=9, padding='valid', activation='relu')(l)
+    l = MaxPooling1D(9)(l)
+    l = Flatten()(l)
 
     l = Dense(128, activation='relu')(l)
-
+    l = Dropout(0.5)(l)
     # Output Layer
     y = Dense(nb_class, activation='softmax')(l)
 
@@ -43,8 +47,115 @@ def D1NET(nb_chans, nb_class):
 
     return model, loss, optimizer, metrics
 
-def D2NET(nb_chans, nb_class):
+
+def D1NET_v2(nb_chans, nb_class):
     '''
+    Parameters: 310,978
+
+    '''
+    # Input Layer
+    x = Input(shape=(262144, nb_chans))
+
+    # Layers
+    l = Conv1D(filters=32, kernel_size=121, strides=9, padding='valid', activation='relu')(x)
+    l = MaxPooling1D(9)(l)
+    l = Conv1D(filters=32, kernel_size=121, strides=9, padding='valid', activation='relu')(l)
+    l = MaxPooling1D(9)(l)
+    l = Flatten()(l)
+
+    l = Dense(128, activation='relu')(l)
+    l = Dropout(0.5)(l)
+    # Output Layer
+    y = Dense(nb_class, activation='softmax')(l)
+
+    model = Model(inputs=x, outputs=y)
+    loss = categorical_crossentropy
+    optimizer = Adam(lr=0.0001, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.1e-6)
+    metrics = [categorical_accuracy,]
+
+    return model, loss, optimizer, metrics
+
+def D1NET_v3(nb_chans, nb_class):
+    '''
+    Parameters: 440,002
+
+    '''
+    # Input Layer
+    x = Input(shape=(262144, nb_chans))
+
+    # Layers
+    l = Conv1D(filters=32, kernel_size=225, strides=9, padding='valid', activation='relu')(x)
+    l = MaxPooling1D(9)(l)
+    l = Conv1D(filters=32, kernel_size=225, strides=9, padding='valid', activation='relu')(l)
+    l = MaxPooling1D(9)(l)
+    l = Flatten()(l)
+
+    l = Dense(128, activation='relu')(l)
+    l = Dropout(0.5)(l)
+    # Output Layer
+    y = Dense(nb_class, activation='softmax')(l)
+
+    model = Model(inputs=x, outputs=y)
+    loss = categorical_crossentropy
+    optimizer = Adam(lr=0.0001, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.1e-6)
+    metrics = [categorical_accuracy,]
+
+    return model, loss, optimizer, metrics
+
+def D2NET_v1(nb_chans, nb_class):
+    '''
+    Parameters: 184,770
+
+    '''
+    x = Input(shape=(512,  512, nb_chans))
+    l = Conv2D(32, (8, 8), strides = (3,3), padding='valid', activation='relu')(x)
+    l = MaxPooling2D((3,3))(l)
+    l = Conv2D(32, (8, 8), strides = (3,3), padding='valid', activation='relu')(l)
+    l = MaxPooling2D((3,3))(l)
+
+    # Fully Connected Layer
+    l = Flatten()(l)
+    l = Dense(128, activation='relu')(l)
+    l = Dropout(0.5)(l)
+
+    y = Dense(nb_class, activation='softmax')(l)
+
+    model = Model(inputs=x, outputs=y)
+    loss = categorical_crossentropy
+    optimizer = Adam(lr=0.0001,decay=0.1e-6)
+    metrics = [categorical_accuracy,]
+
+    return model, loss, optimizer, metrics
+
+def D2NET_v2(nb_chans, nb_class):
+    '''
+    Parameters: 257,730
+
+    '''
+    x = Input(shape=(512,  512, nb_chans))
+    l = Conv2D(32, (11, 11), strides = (3,3), padding='valid', activation='relu')(x)
+    l = MaxPooling2D((3,3))(l)
+    l = Conv2D(32, (11, 11), strides = (3,3), padding='valid', activation='relu')(l)
+    l = MaxPooling2D((3,3))(l)
+
+    # Fully Connected Layer
+    l = Flatten()(l)
+    l = Dense(128, activation='relu')(l)
+    l = Dropout(0.5)(l)
+
+    y = Dense(nb_class, activation='softmax')(l)
+
+    model = Model(inputs=x, outputs=y)
+    loss = categorical_crossentropy
+    optimizer = Adam(lr=0.0001,decay=0.1e-6)
+    metrics = [categorical_accuracy,]
+
+    return model, loss, optimizer, metrics
+
+def D2NET_v3(nb_chans, nb_class):
+    '''
+    Parameters: 353,986
+
     '''
     x = Input(shape=(512,  512, nb_chans))
     l = Conv2D(32, (15, 15), strides = (3,3), padding='valid', activation='relu')(x)
@@ -66,12 +177,32 @@ def D2NET(nb_chans, nb_class):
 
     return model, loss, optimizer, metrics
 
-def D3NET(nb_chans, nb_class):
+def D3NET_v1(nb_chans, nb_class):
     '''
-    A slight modification of the network proposed in the VoxNet paper (see:
-    http://www.dimatura.net/publications/voxnet_maturana_scherer_iros15.pdf).
-    The network has been extended to accomodate the 64x64x64 space that we are
-    operating in vs. the 32x32x32 space of the original VoxNet.
+    Parameters: 192,962
+
+    '''
+    x = Input(shape=(64, 64, 64, nb_chans))
+    l = Conv3D(32, (4, 4, 4), strides=(2, 2, 2), activation='relu', padding='valid')(x)
+    l = MaxPooling3D(pool_size=(2, 2, 2))(l)
+    l = Conv3D(32, (4, 4, 4), strides=(2, 2, 2), activation='relu', padding='valid')(l)
+    l = MaxPooling3D(pool_size=(2, 2, 2))(l)
+    l = Flatten()(l)
+    l = Dense(128, activation='relu')(l)
+    l = Dropout(0.5)(l)
+    y = Dense(nb_class, activation='softmax')(l)
+
+    model = Model(inputs=x, outputs=y)
+    loss = categorical_crossentropy
+    optimizer = Adam(lr=0.0001,decay=0.1e-6)
+    metrics = [categorical_accuracy,]
+
+    return model, loss, optimizer, metrics
+
+def D3NET_v2(nb_chans, nb_class):
+    '''
+    Parameters: 271,042
+
     '''
     x = Input(shape=(64, 64, 64, nb_chans))
     l = Conv3D(32, (5, 5, 5), strides=(2, 2, 2), activation='relu', padding='valid')(x)
@@ -80,6 +211,29 @@ def D3NET(nb_chans, nb_class):
     l = MaxPooling3D(pool_size=(2, 2, 2))(l)
     l = Flatten()(l)
     l = Dense(128, activation='relu')(l)
+    l = Dropout(0.5)(l)
+    y = Dense(nb_class, activation='softmax')(l)
+
+    model = Model(inputs=x, outputs=y)
+    loss = categorical_crossentropy
+    optimizer = Adam(lr=0.0001,decay=0.1e-6)
+    metrics = [categorical_accuracy,]
+
+    return model, loss, optimizer, metrics
+
+def D3NET_v3(nb_chans, nb_class):
+    '''
+    Parameters: 309,698
+
+    '''
+    x = Input(shape=(64, 64, 64, nb_chans))
+    l = Conv3D(32, (6, 6, 6), strides=(2, 2, 2), activation='relu', padding='valid')(x)
+    l = MaxPooling3D(pool_size=(2, 2, 2))(l)
+    l = Conv3D(32, (6, 6, 6), strides=(2, 2, 2), activation='relu', padding='valid')(l)
+    l = MaxPooling3D(pool_size=(2, 2, 2))(l)
+    l = Flatten()(l)
+    l = Dense(128, activation='relu')(l)
+    l = Dropout(0.5)(l)
     y = Dense(nb_class, activation='softmax')(l)
 
     model = Model(inputs=x, outputs=y)

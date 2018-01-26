@@ -15,6 +15,10 @@ from sklearn.model_selection import train_test_split
 
 # Data folder path
 data_folder = '../../data/KrasHras/'
+save_1d = True
+save_2d = True
+save_3d = True
+nb_rot = 15
 
 # Training split
 split = [0.7, 0.1, 0.2]
@@ -38,9 +42,9 @@ if __name__ == '__main__':
 
             # Search for files within class folders and add to list of data
             for data_fn in sorted(os.listdir(data_folder+class_fn)):
-                if os.path.exists(data_folder+class_fn+'/'+data_fn+'/'+data_fn+'-3d.npz'):
-                    if os.path.exists(data_folder+class_fn+'/'+data_fn+'/'+data_fn+'-2d.npz'):
-                        if os.path.exists(data_folder+class_fn+'/'+data_fn+'/'+data_fn+'-1d.npz'):
+                if os.path.exists(data_folder+class_fn+'/'+data_fn+'/'+data_fn+'-3d.npz') or not save_3d:
+                    if os.path.exists(data_folder+class_fn+'/'+data_fn+'/'+data_fn+'-2d.npz') or not save_2d:
+                        if os.path.exists(data_folder+class_fn+'/'+data_fn+'/'+data_fn+'-1d.npz') or not save_1d:
                             x_data.append(data_folder+class_fn+'/'+data_fn+'/'+data_fn)
                             y_data.append(class_fn)
 
@@ -62,15 +66,33 @@ if __name__ == '__main__':
         c_grp = grp.create_group(c)
         for i in range(len(x_train)):
             if y_train[i] == c:
-                array_3d = np.load(x_train[i]+'-3d.npz')['arr_0'].astype('float')
-                array_2d = np.load(x_train[i]+'-2d.npz')['arr_0'].astype('float')
-                array_1d = np.load(x_train[i]+'-1d.npz')['arr_0'].astype('float')
-                dset = c_grp.create_dataset(x_train[i].split('/')[-1]+'-3d', array_3d.shape, dtype='f')
-                dset[:,:,:,:] = array_3d[:,:,:,:]
-                dset = c_grp.create_dataset(x_train[i].split('/')[-1]+'-2d', array_2d.shape, dtype='f')
-                dset[:,:,:] = array_2d[:,:,:]
-                dset = c_grp.create_dataset(x_train[i].split('/')[-1]+'-1d', array_1d.shape, dtype='f')
-                dset[:,:] = array_1d[:,:]
+                if save_3d:
+                    array_3d = np.load(x_train[i]+'-3d.npz')['arr_0']#.astype('float')
+                    dset = c_grp.create_dataset(x_train[i].split('/')[-1]+'-3d', array_3d.shape, dtype='b')
+                    dset[:,:,:,:] = array_3d[:,:,:,:]
+                if save_2d:
+                    array_2d = np.load(x_train[i]+'-2d.npz')['arr_0']#.astype('float')
+                    dset = c_grp.create_dataset(x_train[i].split('/')[-1]+'-2d', array_2d.shape, dtype='b')
+                    dset[:,:,:] = array_2d[:,:,:]
+                if save_1d:
+                    array_1d = np.load(x_train[i]+'-1d.npz')['arr_0']#.astype('float')
+                    dset = c_grp.create_dataset(x_train[i].split('/')[-1]+'-1d', array_1d.shape, dtype='b')
+                    dset[:,:] = array_1d[:,:]
+                for j in range(nb_rot):
+                    try:
+                        if save_3d:
+                            array_3d = np.load(x_train[i]+'_'+str(j)+'-3d.npz')['arr_0']#.astype('float')
+                            dset = c_grp.create_dataset(x_train[i].split('/')[-1]+'_'+str(j)+'-3d', array_3d.shape, dtype='b')
+                            dset[:,:,:,:] = array_3d[:,:,:,:]
+                        if save_2d:
+                            array_2d = np.load(x_train[i]+'_'+str(j)+'-2d.npz')['arr_0']#.astype('float')
+                            dset = c_grp.create_dataset(x_train[i].split('/')[-1]+'_'+str(j)+'-2d', array_2d.shape, dtype='b')
+                            dset[:,:,:] = array_2d[:,:,:]
+                        if save_1d:
+                            array_1d = np.load(x_train[i]+'_'+str(j)+'-1d.npz')['arr_0']#.astype('float')
+                            dset = c_grp.create_dataset(x_train[i].split('/')[-1]+'_'+str(j)+'-1d', array_1d.shape, dtype='b')
+                            dset[:,:] = array_1d[:,:]
+                    except: pass
 
     # Write test data
     grp = f.create_group("test")
@@ -78,15 +100,33 @@ if __name__ == '__main__':
         c_grp = grp.create_group(c)
         for i in range(len(x_test)):
             if y_test[i] == c:
-                array_3d = np.load(x_test[i]+'-3d.npz')['arr_0'].astype('float')
-                array_2d = np.load(x_test[i]+'-2d.npz')['arr_0'].astype('float')
-                array_1d = np.load(x_test[i]+'-1d.npz')['arr_0'].astype('float')
-                dset = c_grp.create_dataset(x_test[i].split('/')[-1]+'-3d', array_3d.shape, dtype='f')
-                dset[:,:,:,:] = array_3d[:,:,:,:]
-                dset = c_grp.create_dataset(x_test[i].split('/')[-1]+'-2d', array_2d.shape, dtype='f')
-                dset[:,:,:] = array_2d[:,:,:]
-                dset = c_grp.create_dataset(x_test[i].split('/')[-1]+'-1d', array_1d.shape, dtype='f')
-                dset[:,:] = array_1d[:,:]
+                if save_3d:
+                    array_3d = np.load(x_test[i]+'-3d.npz')['arr_0']#.astype('float')
+                    dset = c_grp.create_dataset(x_test[i].split('/')[-1]+'-3d', array_3d.shape, dtype='b')
+                    dset[:,:,:,:] = array_3d[:,:,:,:]
+                if save_2d:
+                    array_2d = np.load(x_test[i]+'-2d.npz')['arr_0']#.astype('float')
+                    dset = c_grp.create_dataset(x_test[i].split('/')[-1]+'-2d', array_2d.shape, dtype='b')
+                    dset[:,:,:] = array_2d[:,:,:]
+                if save_1d:
+                    array_1d = np.load(x_test[i]+'-1d.npz')['arr_0']#.astype('float')
+                    dset = c_grp.create_dataset(x_test[i].split('/')[-1]+'-1d', array_1d.shape, dtype='b')
+                    dset[:,:] = array_1d[:,:]
+                for j in range(nb_rot):
+                    try:
+                        if save_3d:
+                            array_3d = np.load(x_test[i]+'_'+str(j)+'-3d.npz')['arr_0']#.astype('float')
+                            dset = c_grp.create_dataset(x_test[i].split('/')[-1]+'_'+str(j)+'-3d', array_3d.shape, dtype='b')
+                            dset[:,:,:,:] = array_3d[:,:,:,:]
+                        if save_2d:
+                            array_2d = np.load(x_test[i]+'_'+str(j)+'-2d.npz')['arr_0']#.astype('float')
+                            dset = c_grp.create_dataset(x_test[i].split('/')[-1]+'_'+str(j)+'-2d', array_2d.shape, dtype='b')
+                            dset[:,:,:] = array_2d[:,:,:]
+                        if save_1d:
+                            array_1d = np.load(x_test[i]+'_'+str(j)+'-1d.npz')['arr_0']#.astype('float')
+                            dset = c_grp.create_dataset(x_test[i].split('/')[-1]+'_'+str(j)+'-1d', array_1d.shape, dtype='b')
+                            dset[:,:] = array_1d[:,:]
+                    except: pass
 
 
     # Write validation data
@@ -95,12 +135,30 @@ if __name__ == '__main__':
         c_grp = grp.create_group(c)
         for i in range(len(x_val)):
             if y_val[i] == c:
-                array_3d = np.load(x_val[i]+'-3d.npz')['arr_0'].astype('float')
-                array_2d = np.load(x_val[i]+'-2d.npz')['arr_0'].astype('float')
-                array_1d = np.load(x_val[i]+'-1d.npz')['arr_0'].astype('float')
-                dset = c_grp.create_dataset(x_val[i].split('/')[-1]+'-3d', array_3d.shape, dtype='f')
-                dset[:,:,:,:] = array_3d[:,:,:,:]
-                dset = c_grp.create_dataset(x_val[i].split('/')[-1]+'-2d', array_2d.shape, dtype='f')
-                dset[:,:,:] = array_2d[:,:,:]
-                dset = c_grp.create_dataset(x_val[i].split('/')[-1]+'-1d', array_1d.shape, dtype='f')
-                dset[:,:] = array_1d[:,:]
+                if save_3d:
+                    array_3d = np.load(x_val[i]+'-3d.npz')['arr_0']#.astype('float')
+                    dset = c_grp.create_dataset(x_val[i].split('/')[-1]+'-3d', array_3d.shape, dtype='b')
+                    dset[:,:,:,:] = array_3d[:,:,:,:]
+                if save_2d:
+                    array_2d = np.load(x_val[i]+'-2d.npz')['arr_0']#.astype('float')
+                    dset = c_grp.create_dataset(x_val[i].split('/')[-1]+'-2d', array_2d.shape, dtype='b')
+                    dset[:,:,:] = array_2d[:,:,:]
+                if save_1d:
+                    array_1d = np.load(x_val[i]+'-1d.npz')['arr_0']#.astype('float')
+                    dset = c_grp.create_dataset(x_val[i].split('/')[-1]+'-1d', array_1d.shape, dtype='b')
+                    dset[:,:] = array_1d[:,:]
+                for j in range(nb_rot):
+                    try:
+                        if save_3d:
+                            array_3d = np.load(x_val[i]+'_'+str(j)+'-3d.npz')['arr_0']#.astype('float')
+                            dset = c_grp.create_dataset(x_val[i].split('/')[-1]+'_'+str(j)+'-3d', array_3d.shape, dtype='b')
+                            dset[:,:,:,:] = array_3d[:,:,:,:]
+                        if save_2d:
+                            array_2d = np.load(x_val[i]+'_'+str(j)+'-2d.npz')['arr_0']#.astype('float')
+                            dset = c_grp.create_dataset(x_val[i].split('/')[-1]+'_'+str(j)+'-2d', array_2d.shape, dtype='b')
+                            dset[:,:,:] = array_2d[:,:,:]
+                        if save_1d:
+                            array_1d = np.load(x_val[i]+'_'+str(j)+'-1d.npz')['arr_0']#.astype('float')
+                            dset = c_grp.create_dataset(x_val[i].split('/')[-1]+'_'+str(j)+'-1d', array_1d.shape, dtype='b')
+                            dset[:,:] = array_1d[:,:]
+                    except: pass

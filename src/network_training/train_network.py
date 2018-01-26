@@ -76,7 +76,7 @@ if __name__ == '__main__':
 
     # Training Loop
     history = []
-    best_val_acc = 0.0
+    best_val_loss = 0.0
     for epoch in range(epochs):
         print("Epoch", epoch, ':')
 
@@ -116,8 +116,8 @@ if __name__ == '__main__':
         print('Val Loss ->',val_loss)
         print('Val Accuracy ->',val_acc,'\n')
 
-        if val_acc > best_val_acc:
-            best_val_acc = val_acc
+        if val_loss > best_val_loss:
+            best_val_loss = val_loss
 
             # Save weights of model
             model.save_weights(data_folder+model_def.__name__+'.hdf5')

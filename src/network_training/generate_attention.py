@@ -20,10 +20,10 @@ nb_layers = 8
 weights_path = '../../data/KrasHras/BESTNET.hdf5'
 
 # Data Parameters
-data_path = '../../data/KrasHras/Hras/1clu_A'
+data_path = '../../data/KrasHras/Hras/1aa9_A'
 classes = 2
 class_int = 0
-threshold = 0.7
+threshold = 0.75
 
 ################################################################################
 
