@@ -17,7 +17,6 @@ def display_3d_array(array_3d):
 
     Param:
         array_3d - np.array
-        attenmap - np.array
 
     '''
     # Color Mapping

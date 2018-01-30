@@ -15,13 +15,13 @@ from sklearn.model_selection import train_test_split
 
 # Data folder path
 data_folder = '../../data/KrasHras/'
+
+# Parameters
+split = [0.7, 0.1, 0.2]
 save_1d = True
 save_2d = True
 save_3d = True
 nb_rot = 15
-
-# Training split
-split = [0.7, 0.1, 0.2]
 
 ################################################################################
 seed = 1234

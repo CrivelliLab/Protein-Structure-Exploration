@@ -14,7 +14,6 @@ def display_2d_array(array_2d):
 
     Param:
         array_2d - np.array
-        attenmap - np.array
 
     '''
     # Display 2D Plot

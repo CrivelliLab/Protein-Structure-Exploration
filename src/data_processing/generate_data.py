@@ -29,11 +29,11 @@ thresh = 0.95           # percentage of protein which must be inside window
 nb_rot = 15              # Number of random rotation augmentations
 channels = [aliphatic_res, aromatic_res, neutral_res, acidic_res, basic_res,
 unique_res, alpha_carbons, beta_carbons]
-all_chains = False
-residue_indexes = None # Select only atoms of these indexes
 
 ################################################################################
 
+all_chains = False
+residue_indexes = None # Select only atoms of these indexes
 seed = 1234
 
 if __name__ == '__main__':

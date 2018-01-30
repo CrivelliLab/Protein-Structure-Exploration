@@ -1,6 +1,6 @@
 '''
 data_generator.py
-Updated: 1/19/18
+Updated: 1/28/18
 
 Script defines data_generator object which parses PDB files and generates 3D, 2D
 and 1D representations of the proteins defined in the PDB file.

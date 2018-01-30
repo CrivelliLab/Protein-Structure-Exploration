@@ -16,7 +16,6 @@ import numpy as np
 from mpi4py import MPI
 
 # Data folder path
-# Set this path to location of dataset folder
 data_folder = '../../data/KrasHras/'
 
 ###############################################################################
