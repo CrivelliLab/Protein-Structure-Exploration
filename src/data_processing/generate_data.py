@@ -26,13 +26,12 @@ data_folder = '../../data/KrasHras/'
 size = 64               # Voxel matrix size ex. 64 -> 64**3 space
 resolution = 1.0        # Resolution of unit voxel
 thresh = 0.95           # percentage of protein which must be inside window
-nb_rot = 15              # Number of random rotation augmentations
-channels = [aliphatic_res, aromatic_res, neutral_res, acidic_res, basic_res,
-unique_res, alpha_carbons, beta_carbons]
+nb_rot = 1              # Number of random rotation augmentations
+channels = [all_atoms]
 
 ################################################################################
 
-all_chains = False
+all_chains = True
 residue_indexes = None # Select only atoms of these indexes
 seed = 1234
 
