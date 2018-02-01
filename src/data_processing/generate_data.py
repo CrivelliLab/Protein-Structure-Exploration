@@ -31,7 +31,7 @@ channels = [all_atoms]
 
 ################################################################################
 
-all_chains = True
+all_chains = False
 residue_indexes = None # Select only atoms of these indexes
 seed = 1234
 
@@ -101,7 +101,7 @@ if __name__ == '__main__':
             array_1d = pdb_data[2]
 
             if rot > 0:
-                # If rotation augmentations create folder and set new save path
+                # If rotation augmentations set new save path
                 path = tasks[i][0]
                 task.append(str(rot))
                 #if not os.path.exists(path): os.mkdir(path)

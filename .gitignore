@@ -16,3 +16,7 @@ logs
 weights
 *.binvox
 .ipynb_checkpoints
+*.npz
+data/KrasHras/Kras
+data/KrasHras/Hras
+T0887
