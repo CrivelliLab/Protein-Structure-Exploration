@@ -1,12 +1,14 @@
-
-import matplotlib.pyplot as plt
-from matplotlib.colors import ListedColormap
-from matplotlib.cm import brg
+'''
+'''
 import os
 import numpy as np
-from scipy.misc import imread
+from matplotlib.cm import *
+import matplotlib.pyplot as plt
+from matplotlib.colors import ListedColormap
 
-path = "data/1aa9_A"
+path = "../../data/KrasHras/Hras/1aa9_A"
+
+################################################################################
 
 def display_2d_array(array_2d):
     '''
@@ -14,6 +16,7 @@ def display_2d_array(array_2d):
 
     Param:
         array_2d - np.array
+        attenmap - np.array
 
     '''
     # Display 2D Plot
@@ -25,14 +28,13 @@ def display_2d_array(array_2d):
         plt.imshow(array_2d[:,:,i], cmap=cmap, interpolation='nearest')
     plt.show()
 
-
 if __name__ == '__main__':
 
     # File Paths
     os.chdir(os.path.dirname(os.path.realpath(__file__)))
 
     # Load Array
-    array_2d = np.load(path + path.split('/')[-1] + '-2d.npz')['arr_0'].astype('int')
+    array_2d = np.load(path + '/' + path.split('/')[-1] + '-2d.npz')['arr_0'].astype('int')
 
     # Display
-    display_3d_array(np.transpose(array_2d,(2,0,1)))
+    display_2d_array(array_2d)

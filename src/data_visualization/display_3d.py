@@ -1,35 +1,44 @@
+'''
+display_3d.py
+Updated: 2/1/2018
+
+'''
 from mayavi import mlab
-from tvtk.api import tvtk
-from tvtk.common import configure_input_data
 import vtk
-import matplotlib.pyplot as plt
-from matplotlib.colors import ListedColormap
-from matplotlib.cm import brg
 import os
 import numpy as np
+from tvtk.api import tvtk
+from matplotlib.cm import *
 from scipy.misc import imread
+import matplotlib.pyplot as plt
+from matplotlib.colors import ListedColormap
+from tvtk.common import configure_input_data
 
-path = "data/1aa9_A"
+path = "../../data/KrasHras/Hras/1aa9_A"
 
-def display_3d_array(array_3d):
+################################################################################
+
+def display_3d_array(array_3d, color_map, figure):
     '''
     Method displays 3d array.
 
     Param:
         array_3d - np.array
+        attenmap - np.array
 
     '''
-    # Color Mapping
-    n = len(array_3d)
-    cm = [brg(float(i)/(n-1))[:3] for i in range(n)]
+    cm = color_map
 
     # Dislay 3D Array Rendering
-    v = mlab.figure(bgcolor=(1.0,1.0,1.0))
+    v = figure
     for j in range(len(array_3d)):
         c = tuple(cm[j])
 
         # Coordinate Information
         xx, yy, zz = np.where(array_3d[j] > 0.0)
+        xx *= 100
+        yy *= 100
+        zz *= 100
 
         # Generate Voxels For Protein
         append_filter = vtk.vtkAppendPolyData()
@@ -37,9 +46,9 @@ def display_3d_array(array_3d):
             input1 = vtk.vtkPolyData()
             voxel_source = vtk.vtkCubeSource()
             voxel_source.SetCenter(xx[i],yy[i],zz[i])
-            voxel_source.SetXLength(1)
-            voxel_source.SetYLength(1)
-            voxel_source.SetZLength(1)
+            voxel_source.SetXLength(100)
+            voxel_source.SetYLength(100)
+            voxel_source.SetZLength(100)
             voxel_source.Update()
             input1.ShallowCopy(voxel_source.GetOutput())
             append_filter.AddInputData(input1)
@@ -58,16 +67,28 @@ def display_3d_array(array_3d):
         cube_actor = tvtk.Actor(mapper=cube_mapper, property=p)
         v.scene.add_actor(cube_actor)
 
-    mlab.show()
-
 if __name__ == '__main__':
 
     # File Paths
     os.chdir(os.path.dirname(os.path.realpath(__file__)))
 
     # Load Array
-    array_3d = np.load(path + path.split('/')[-1] + '-3d.npz')['arr_0'].astype('int')
-    print(array_3d.shape)
+    array_3d = np.load(path + '/' + path.split('/')[-1] + '-3d.npz')['arr_0'].astype('int')
 
-    # Display
-    display_3d_array(np.transpose(array_3d,(3,0,1,2)))
+    # Draw Boundary Box
+    curve = [[0,0,0], [0,64,0], [64,64,0], [64,0,0], [0,0,0], [0,0,64], [0,64,64],
+            [64, 64, 64], [64,0,64], [0,0,64],[0,0,0],[0,64,0],[0,64,64],[0,64,0],
+            [64,64,0], [64,64,64], [64,64,0], [64,0,0], [64,0,64]]
+    curve= np.array(curve)
+    curve *= 100 # Scaling in 3D Plot
+    v = mlab.figure(bgcolor=(1.0,1.0,1.0))
+    mlab.plot3d(curve[:,0], curve[:,1], curve[:,2], color=(0.5,0.5,1.0), tube_radius=15.0,
+    opacity=0.5, figure=v)
+
+    # Color Mapping
+    n = array_3d.shape[-1]
+    cm = [brg(float(i)/(n-1))[:3] for i in range(n)]
+
+    # Display 3D array
+    display_3d_array(np.transpose(array_3d,(3,0,1,2)),cm,v)
+    mlab.show()

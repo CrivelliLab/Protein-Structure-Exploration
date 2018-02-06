@@ -1,20 +1,18 @@
 '''
-train_network.py
-Updated: 12/27/17
-
-This script is used to train keras nueral networks using a defined HDF5 file.
-Best training validation accuracy will be saved.
+generate_attention.py
+Updated: 2/2/17
 
 '''
+import sys; sys.path.insert(0, '../')
 import os
 import numpy as np
 import h5py as hp
-from networks import *
-from keras.utils import to_categorical as one_hot
+from network_training.networks import *
+import matplotlib.pyplot as plt
 from vis.visualization import visualize_saliency
 
 # Network Training Parameters
-model_def = D2NET
+model_def = D2NET_v1
 nb_chans = 8
 nb_layers = 8
 weights_path = '../../data/KrasHras/BESTNET.hdf5'
@@ -23,7 +21,8 @@ weights_path = '../../data/KrasHras/BESTNET.hdf5'
 data_path = '../../data/KrasHras/Hras/1aa9_A'
 classes = 2
 class_int = 0
-threshold = 0.75
+
+display = True
 
 ################################################################################
 
@@ -51,8 +50,11 @@ if __name__ == '__main__':
     atten_map = visualize_saliency(model, nb_layers, [np.argmax(p[0])], array_2d[0])
     atten_map = atten_map/255.0
     atten_map = np.dot(atten_map[...,:3], [0.299, 0.587, 0.114])
-    atten_map[atten_map < threshold] = 0
+    np.savez(data_path + '/' + data_path.split('/')[-1] + '-2d_sal.npz', atten_map)
 
-    import matplotlib.pyplot as plt
-    plt.imshow(atten_map)
-    plt.show()
+    # Display Attention Map
+    if display:
+        temp_map = np.array([atten_map,atten_map,atten_map])
+        temp_map = np.transpose(temp_map, (1,2,0))
+        plt.imshow(temp_map)
+        plt.show()
