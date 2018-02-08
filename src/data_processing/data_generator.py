@@ -97,11 +97,11 @@ class data_generator(object):
         del distances, indexes_
 
         # Generate Representations
-        array_3d = self.__generate_voxel_3d(indexes, values)
+        array_3d = [] #self.__generate_voxel_3d(indexes, values)
         array_2d = self.__generate_voxel_2d(indexes, values, self.mapping)
         del indexes, values
 
-        array_1d = self.__generate_voxel_1d(array_3d)
+        array_1d = [] #self.__generate_voxel_1d(array_3d)
 
         return [array_3d, array_2d, array_1d]
 

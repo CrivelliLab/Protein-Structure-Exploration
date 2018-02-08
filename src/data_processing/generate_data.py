@@ -97,9 +97,9 @@ if __name__ == '__main__':
             print(pdb_id, chain, rot)
 
             # Get data for each dimensionality
-            array_3d = pdb_data[0]
+            #array_3d = pdb_data[0]
             array_2d = pdb_data[1]
-            array_1d = pdb_data[2]
+            #array_1d = pdb_data[2]
 
             if rot > 0:
                 # If rotation augmentations set new save path
@@ -114,9 +114,9 @@ if __name__ == '__main__':
 
             else:
                 # Save compressed numpy file for each representations
-                np.savez(tasks[i][0] + '/' + '_'.join(task) + '-1d.npz', array_1d.astype('bool'))
+                #np.savez(tasks[i][0] + '/' + '_'.join(task) + '-1d.npz', array_1d.astype('bool'))
                 np.savez(tasks[i][0] + '/' + '_'.join(task) + '-2d.npz', array_2d.astype('bool'))
-                np.savez(tasks[i][0] + '/' + '_'.join(task) + '-3d.npz', array_3d.astype('bool'))
+                #np.savez(tasks[i][0] + '/' + '_'.join(task) + '-3d.npz', array_3d.astype('bool'))
 
             del array_3d, array_2d, array_1d
 
