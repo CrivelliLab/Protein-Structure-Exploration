@@ -36,6 +36,11 @@ if __name__ == '__main__':
                 scores.append(score)
     print(len(ids))
 
+    #import matplotlib.pyplot as plt
+    #plt.hist(scores, bins='auto')
+    #plt.title("Histogram of GTD-SC for T0882")
+    #plt.show()
+
     # Bin ids according to score as defined in bins parameter
     binned_ids = []
     for i in range(len(bins)):
