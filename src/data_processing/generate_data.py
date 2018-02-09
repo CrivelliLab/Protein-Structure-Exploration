@@ -18,21 +18,22 @@ from mpi4py import MPI
 from channels import *
 from itertools import product
 from data_generator import data_generator
+#from tqdm import tqdm
 
 # Data folder path
-data_folder = '../../data/KrasHras/'
+data_folder = '../../data/T0882/'
 
 # Data generator parameters
 size = 64               # Voxel matrix size ex. 64 -> 64**3 space
 resolution = 1.0        # Resolution of unit voxel
-thresh = 0.95           # percentage of protein which must be inside window
-nb_rot = 15             # Number of random rotation augmentations
+thresh = 0.85           # percentage of protein which must be inside window
+nb_rot = 1              # Number of random rotation augmentations
 channels = [aliphatic_res, aromatic_res, neutral_res, acidic_res, basic_res,
             unique_res, alpha_carbons, beta_carbons]
 
 ################################################################################
 
-all_chains = False
+all_chains = True
 residue_indexes = None # Select only atoms of these indexes
 seed = 1234
 
@@ -94,12 +95,12 @@ if __name__ == '__main__':
 
         # if data was generated without error
         if len(pdb_data) > 0:
-            print(pdb_id, chain, rot)
+            #print(pdb_id, chain, rot)
 
             # Get data for each dimensionality
             array_3d = pdb_data[0]
             array_2d = pdb_data[1]
-            #array_1d = pdb_data[2]
+            array_1d = pdb_data[2]
 
             if rot > 0:
                 # If rotation augmentations set new save path

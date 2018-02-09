@@ -6,12 +6,13 @@ Updated: 1/29/17
 import os
 from shutil import copyfile
 import numpy as np
+from tqdm import tqdm
 
 # Data folder path
 data_folder = '../../data/T0882/'
 
 # Parameters
-bins = [0.375, 1.0] # Bin cut-offs in ascending order
+bins = [0.35, 1.0] # Bin cut-offs in ascending order
 
 ###############################################################################
 
@@ -60,13 +61,11 @@ if __name__ == '__main__':
         ids = ids_neg
         scores = scores_neg
 
-    '''
     # Copy PDBs into folders
     for i in range(len(bins)):
         bin_ = bins[i]
         if not os.path.exists(data_folder+'<'+str(bin_)): os.mkdir(data_folder+'<'+str(bin_))
-        for j in range(len(binned_ids[i])):
+        for j in tqdm(range(len(binned_ids[i]))):
             id_ = binned_ids[i][j]
             if not os.path.exists(data_folder+'<'+str(bin_)+'/'+id_): os.mkdir(data_folder+'<'+str(bin_)+'/'+id_)
             copyfile(data_folder+'/pdbs/'+id_+'.pdb', data_folder+'<'+str(bin_)+'/'+id_+'/'+id_+'.pdb')
-    '''
