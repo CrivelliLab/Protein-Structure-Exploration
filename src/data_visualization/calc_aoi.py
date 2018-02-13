@@ -1,8 +1,9 @@
 '''
 calculate_aoi.py
-Updated: 2/1/17
+Updated: 2/12/18
 
-This script is used to calculate areas of interest using
+This script is used to calculate areas of interest using saliency maps generated
+from trained network parameters.
 
 '''
 from mayavi import mlab

@@ -2,6 +2,8 @@
 display_3d.py
 Updated: 2/1/2018
 
+Script is used to display 3D representation of data using VTK.
+
 '''
 from mayavi import mlab
 import vtk

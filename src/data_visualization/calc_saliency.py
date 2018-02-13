@@ -2,6 +2,8 @@
 generate_attention.py
 Updated: 2/2/17
 
+Script generates saliency map for 2D representation using trained network weights.
+
 '''
 import sys; sys.path.insert(0, '../')
 import os
@@ -22,14 +24,13 @@ data_path = '../../data/KrasHras/Hras/1aa9_A'
 classes = 2
 class_int = 0
 
-display = True
-
 ################################################################################
 
+display = True
 seed = 1234
 
-if __name__ == '__main__':
 
+if __name__ == '__main__':
     # Set paths relative to this file
     os.chdir(os.path.dirname(os.path.realpath(__file__)))
 

@@ -1,4 +1,9 @@
 '''
+display_2d.py
+Updated: 2/12/18
+
+Script is used to visualize 2D representations of data.
+
 '''
 import os
 import numpy as np
@@ -6,6 +11,7 @@ from matplotlib.cm import *
 import matplotlib.pyplot as plt
 from matplotlib.colors import ListedColormap
 
+# Data Path
 path = "../../data/KrasHras/Hras/1aa9_A"
 
 ################################################################################
@@ -36,5 +42,5 @@ if __name__ == '__main__':
     # Load Array
     array_2d = np.load(path + '/' + path.split('/')[-1] + '-2d.npz')['arr_0'].astype('int')
 
-    # Display
+    # Display 2D Array
     display_2d_array(array_2d)

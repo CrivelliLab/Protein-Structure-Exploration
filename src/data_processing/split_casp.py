@@ -1,6 +1,8 @@
 '''
-parse_casp.py
+split_casp.py
 Updated: 1/29/17
+
+Script is used to split CASP targets according to GTD-MM scores.
 
 '''
 import os
@@ -23,7 +25,7 @@ if __name__ == '__main__':
     # Set paths relative to this file
     os.chdir(os.path.dirname(os.path.realpath(__file__)))
 
-    # Gather ids and GDTTS scores from results .txt
+    # Gather ids and GDT-MM scores from scores.txt
     ids = []
     scores = []
     with open(data_folder+data_folder.split('/')[-2]+'.csv', 'r') as f:
@@ -37,9 +39,10 @@ if __name__ == '__main__':
                 scores.append(score)
     print(len(ids))
 
+    # Plot GDT-MM of ids
     #import matplotlib.pyplot as plt
     #plt.hist(scores, bins='auto')
-    #plt.title("Histogram of GTD-SC for T0882")
+    #plt.title("Histogram of GDT- for T0882")
     #plt.show()
 
     # Bin ids according to score as defined in bins parameter
