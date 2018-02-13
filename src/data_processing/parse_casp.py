@@ -12,7 +12,7 @@ from tqdm import tqdm
 data_folder = '../../data/T0882/'
 
 # Parameters
-bins = [0.35, 1.0] # Bin cut-offs in ascending order
+bins = [0.75, 1.0] # Bin cut-offs in ascending order
 
 ###############################################################################
 
@@ -32,7 +32,7 @@ if __name__ == '__main__':
             x = lines[i].split(',')
             if i > 1 and len(x) == 4:
                 id_ = x[0]
-                score = float(x[1])
+                score = float(x[2])
                 ids.append(id_)
                 scores.append(score)
     print(len(ids))

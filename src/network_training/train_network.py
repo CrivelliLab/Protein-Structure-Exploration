@@ -17,11 +17,11 @@ from keras.utils import to_categorical as one_hot
 epochs = 20
 model_def = BESTNET
 nb_chans = 1
+model_folder = ''
 
 # Data Parameters
-data_folder = 'ModelNet10'
+data_folder = 'ModelNet10/'
 dim_type = '-1d' # -1d, -2d, or -3d
-
 
 ################################################################################
 
@@ -140,7 +140,7 @@ if __name__ == '__main__':
     test = np.concatenate([x_test,y_test],axis=-1)
 
     # Load weights of best model
-    model.load_weights(data_folder+model_def.__name__+'.hdf5')
+    model.load_weights(model_folder+model_def.__name__+'.hdf5')
 
     # Evaluate test data
     print('Evaluating Test:')
@@ -164,6 +164,6 @@ if __name__ == '__main__':
     # Save training history to csv file
     history = np.array(history)
     test_footer = 'Test [loss, acc]: ' + str(test_loss) + ', ' + str(test_acc)
-    np.savetxt(data_folder+model_def.__name__+'.csv', history, fmt= '%1.3f',
+    np.savetxt(model_folder+model_def.__name__+'.csv', history, fmt= '%1.3f',
                 delimiter=', ', header='LABELS: epoch, loss, acc, val_loss, val_acc',
                 footer=test_footer)

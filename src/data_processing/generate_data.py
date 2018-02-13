@@ -18,7 +18,6 @@ from mpi4py import MPI
 from channels import *
 from itertools import product
 from data_generator import data_generator
-#from tqdm import tqdm
 
 # Data folder path
 data_folder = '../../data/T0882/'
