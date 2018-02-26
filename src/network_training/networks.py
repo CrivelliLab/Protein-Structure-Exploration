@@ -183,6 +183,38 @@ def D2NET_v3(nb_chans, nb_class):
 
     return model, loss, optimizer, metrics
 
+def RESNET_v1(nb_chans, nb_class):
+    '''
+    Parameters w/ 8 Chans::
+
+    '''
+    from keras.layers import Add, Activation
+    x = Input(shape=(512,  512, nb_chans))
+    l0 = Conv2D(32, (8, 8), strides = (3,3), padding='same', activation='relu')(x)
+    l1 = Conv2D(32, (8, 8), strides = (3,3), padding='same')(l0)
+    l2 = Add()(x, l1)
+    l3 = Activation('relu')(l2)
+    l4 = MaxPooling2D((3,3))(l3)
+    l5 = Conv2D(32, (8 ,8), strides = (3,3), padding='same', activation='relu')(l4)
+    l6 = Conv2D(32, (8, 8), strides = (3,3), padding='same')(l5)
+    l7 = Add()(l4,l6)
+    l8 = Activation('relu')(l7)
+    l9 = MaxPooling2D((3,3))(l8)
+
+    # Fully Connected Layer
+    l = Flatten()(l9)
+    l = Dense(128, activation='relu')(l)
+    l = Dropout(0.5)(l)
+
+    y = Dense(nb_class, activation='softmax')(l)
+
+    model = Model(inputs=x, outputs=y)
+    loss = categorical_crossentropy
+    optimizer = Adam(lr=0.0001,decay=0.1e-6)
+    metrics = [categorical_accuracy,]
+
+    return model, loss, optimizer, metrics
+
 def D3NET_v1(nb_chans, nb_class):
     '''
     Parameters w/ 8 Chans:: 192,962
