@@ -16,7 +16,7 @@ import numpy as np
 from mpi4py import MPI
 
 # Data folder path
-data_folder = '../../data/KrasHras/'
+data_folder = '../../data/PsiBlast/'
 
 ###############################################################################
 
