@@ -1,10 +1,11 @@
 '''
 generate_data.py
-Updated: 3/5/18
+Updated: 3/9/18
 
 This script is used to generate torsion angle and pairwise distance matricies
 used for convolutional neural network training. The script will store
-representations in HDF5 file for defined data folder.
+representations in HDF5 file for defined data folder. This script is used specifically
+to generate data used for CASP experiments.
 
 
 '''
@@ -17,7 +18,7 @@ from itertools import combinations
 from time import time
 
 # Data generation parameters
-data_folder = '../../../data/KrasHras/'
+data_folder = '../../../../data/T0882/'
 diheral_bin_count = 19
 pairwise_distance_bins = [5+(5*i) for i in range(9)]
 seed = 458762
@@ -226,14 +227,12 @@ if __name__ == '__main__':
     if rank == 0:
         tasks = []
 
-        # Search for class directories
-        for class_dir in sorted(os.listdir(data_folder)):
-            if os.path.isdir(data_folder+class_dir):
+        if not os.path.exists(data_folder+'data'): os.mkdir(data_folder+'data')
 
-                # Search for data directories
-                for data_dir in sorted(os.listdir(data_folder+class_dir)):
-                    if os.path.isdir(data_folder+class_dir+'/'+data_dir):
-                        tasks.append(data_folder+class_dir+'/'+data_dir)
+        # Search for data directories
+        for data_path in sorted(os.listdir(data_folder+'pdbs')):
+            if data_path.endswith('.pdb'):
+                tasks.append(data_folder+'pdbs/'+data_path)
 
         # Shuffle for random distribution
         np.random.seed(seed)
@@ -245,9 +244,10 @@ if __name__ == '__main__':
     tasks = comm.bcast(tasks, root=0)
     tasks = np.array_split(tasks, cores)[rank]
 
-    for t in tasks:
-        path = t + '/' + t.split('/')[-1] + '.pdb'
-        chain = path.split('/')[-2].split('_')[-1]
+    for t in tasks[:10]:
+        path = t
+        chain = 'A'#path.split('/')[-2].split('_')[-1]
+        save_path = '/'.join(t.split('/')[:-2]) + '/data/'+ t.split('/')[-1][:-3]+'npz'
 
         # Parse PDB
         protein_data = parse_pdb(path, chain)
@@ -256,10 +256,11 @@ if __name__ == '__main__':
         try:
             # Bin diheral angles
             binned_dihedral_angles = bin_dihedral_angles(protein_data, diheral_bin_count)
+
             # Bin pairwise distances
             binned_pairwise_distances = bin_pairwise_distances(protein_data, pairwise_distance_bins)
 
             # Save data
-            np.savez(t + '/' + t.split('/')[-1] + '.npz', binned_dihedral_angles, binned_pairwise_distances)
-        except:
-            print("Error generating...")
+            np.savez(save_path, binned_dihedral_angles, binned_pairwise_distances)
+
+        except: print("Error generating...")

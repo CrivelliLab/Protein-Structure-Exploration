@@ -8,7 +8,7 @@ import h5py as hp
 import numpy as np
 
 # Data folder path
-data_folder = '../../../data/PsiBlast/'
+data_folder = '../../../data/KrasHras/'
 
 ################################################################################
 seed = 1234
