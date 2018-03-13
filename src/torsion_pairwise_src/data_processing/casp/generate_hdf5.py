@@ -25,8 +25,6 @@ if __name__ == '__main__':
         if data_path.endswith('.npz'):
             x_data.append(data_folder+'data/'+data_path)
 
-    print(len(x_data))
-
     # Setup HDF5 file and dataset
     print("Storing to HDF5 file...")
     f = hp.File(data_folder+"torsion_pairwise_casp_data.hdf5", "w")

@@ -18,7 +18,7 @@ from itertools import combinations
 from time import time
 
 # Data generation parameters
-data_folder = '../../../../data/T0882/'
+data_folder = '../../../../../data/T0882/'
 diheral_bin_count = 19
 pairwise_distance_bins = [5+(5*i) for i in range(9)]
 seed = 458762
@@ -244,7 +244,7 @@ if __name__ == '__main__':
     tasks = comm.bcast(tasks, root=0)
     tasks = np.array_split(tasks, cores)[rank]
 
-    for t in tasks[:10]:
+    for t in tasks:
         path = t
         chain = 'A'#path.split('/')[-2].split('_')[-1]
         save_path = '/'.join(t.split('/')[:-2]) + '/data/'+ t.split('/')[-1][:-3]+'npz'
