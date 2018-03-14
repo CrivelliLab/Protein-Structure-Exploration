@@ -13,12 +13,13 @@ from sklearn.model_selection import train_test_split
 
 # Network Training Parameters
 epochs = 3
+batch_size = 10
 model_def = PairwiseNet_v1
-model_folder = '../../../../models/T0868_ranked/'
-ranks = [0.5, 0.6, 0.7, 0.8, 0.9]
+model_folder = '../../../../models/T0882_ranked_1/'
 
 # Data Parameters
-data_folder = '../../../../data/T0868/'
+data_folder = '../../../../data/T0882/'
+ranks = [0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95]
 data_type = '-pairwise' # '-pairwise', '-torsion'
 split = [0.7, 0.1, 0.2]
 seed = 678452
@@ -50,7 +51,7 @@ if __name__ == '__main__':
     f = hp.File(data_folder+"torsion_pairwise_casp_data.hdf5", "r")
     data_set = f['dataset']
 
-    # Training Rankings
+    # Train Rankings
     for i in range(len(ranks)):
 
         rank = ranks[i]
@@ -86,13 +87,20 @@ if __name__ == '__main__':
             # Fit training data
             print('Fitting:')
             train_status = []
+            batch_x = []
+            batch_y = []
             for j in tqdm(range(len(x_train))):
                 x = np.array(data_set[x_train[j]+data_type])
-                x = np.expand_dims(x, axis=0)
+                batch_x.append(x)
                 y = one_hot(y_train[j], num_classes=2)
-                y = np.expand_dims(y, axis=0)
-                output = model.train_on_batch(x, y)
-                train_status.append(output)
+                batch_y.append(y)
+                if len(batch_x) == batch_size or j+1 == len(x_train):
+                    batch_x = np.array(batch_x)
+                    batch_y = np.array(batch_y)
+                    output = model.train_on_batch(batch_x, batch_y)
+                    batch_x = []
+                    batch_y = []
+                    train_status.append(output)
 
             # Calculate training loss and accuracy
             train_status = np.array(train_status)
@@ -104,13 +112,20 @@ if __name__ == '__main__':
             # Test on validation data
             print('Evaluating:')
             val_status = []
+            batch_x = []
+            batch_y = []
             for j in tqdm(range(len(x_val))):
                 x = np.array(data_set[x_val[j]+data_type])
-                x = np.expand_dims(x, axis=0)
+                batch_x.append(x)
                 y = one_hot(y_val[j], num_classes=2)
-                y = np.expand_dims(y, axis=0)
-                output = model.train_on_batch(x, y)
-                val_status.append(output)
+                batch_y.append(y)
+                if len(batch_x) == batch_size or j+1 == len(x_train):
+                    batch_x = np.array(batch_x)
+                    batch_y = np.array(batch_y)
+                    output = model.test_on_batch(batch_x, batch_y)
+                    batch_x = []
+                    batch_y = []
+                    val_status.append(output)
 
             # Calculate validation loss and accuracy
             val_status = np.array(val_status)
