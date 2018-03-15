@@ -30,7 +30,7 @@ if __name__ == '__main__':
         with open(folder+folder.split('/')[-2]+'.csv', 'r') as f:
             lines = f.readlines()
             for i in range(len(lines)):
-                if i > 1: data.append(folder.split('/')[-2]+lines[i])
+                if i > 1: data.append(folder.split('/')[-2]+'_'+lines[i])
     with open(combined_folder+combined_folder.split('/')[-2]+'.csv', 'w') as f:
         f.write("ID,GDT_HA,GDT_MM,GDT_SC\n")
         f.writelines(data)
@@ -43,5 +43,5 @@ if __name__ == '__main__':
         data_set = f['dataset']
         for key in list(data_set.keys()):
             x = np.array(data_set[key])
-            dset = c_grp.create_dataset(folder.split('/')[-2]+key, x.shape, dtype='f')
+            dset = c_grp.create_dataset(folder.split('/')[-2]+'_'+key, x.shape, dtype='f')
             dset[:,:,:] = x[:,:,:]

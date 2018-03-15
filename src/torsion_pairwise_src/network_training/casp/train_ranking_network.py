@@ -1,6 +1,13 @@
 '''
 train_ranking_network.py
-Updated: 12/27/17
+Updated: 3/15/18
+
+This script is used to train a ranking-CNN which is a series of binary classifiers
+which determine whether a given input feature grid of protein structures are greater
+than or less than a specified GDT score threshold. This ranking-CNN approach has
+shown greater capacity at binning input data into correct GDT ranges than a
+multi-class network.
+
 
 '''
 import os
@@ -12,14 +19,14 @@ from keras.utils import to_categorical as one_hot
 from sklearn.model_selection import train_test_split
 
 # Network Training Parameters
-epochs = 3
-batch_size = 10
+epochs = 3 # epochs of traning for each binary classifier
+batch_size = 100
 model_def = PairwiseNet_v1
-model_folder = '../../../../models/T0882_ranked_1/'
+model_folder = '../../../../models/TargetSet0_ranked/'
 
 # Data Parameters
-data_folder = '../../../../data/T0882/'
-ranks = [0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95]
+data_folder = '../../../../data/TargetSet0/'
+ranks = [0.5, 0.6, 0.7, 0.8, 0.9]
 data_type = '-pairwise' # '-pairwise', '-torsion'
 split = [0.7, 0.1, 0.2]
 seed = 678452
@@ -142,18 +149,26 @@ if __name__ == '__main__':
 
             history.append([rank, epoch, train_loss, train_acc, val_loss, val_acc])
 
+    # Get ranks of test set and store in dict
+    ranks_list = []
+    for i in range(len(x_test)):
+        x = x_test[i]
+        y = y_test_scores[i]
+        rank = 0
+        rankss = ranks + [1.0]
+        for j in range(len(rankss)):
+            if rankss[j] - y > 0:
+                rank = j; break
+        ranks_list.append([rank, 0])
+    rankings_dict = dict(zip(x_test, ranks_list))
+
     # Load Model
     model, loss, optimizer, metrics = model_def(2)
     model.compile(loss=loss, optimizer=optimizer, metrics=metrics)
-    model.summary()
 
     # Evaluate test data
-    ranked_data = []
-    positive_set = x_test
     for i in range(len(ranks)):
         rank = ranks[i]
-        positive_set_prime = []
-        negative_set_prime = []
 
         # Load weights of best model
         model_path = model_folder+model_def.__name__+'_'+str(rank)+data_type
@@ -161,35 +176,29 @@ if __name__ == '__main__':
 
         # Get inference results
         print("Running Inference On Rank:", rank)
-        for j in tqdm(range(len(positive_set))):
-            x = np.array(data_set[positive_set[j]+data_type])
-            x = np.expand_dims(x, axis=0)
-            s = model.predict_on_batch(x)[0]
-            s = int(np.argmax(s))
-            if s == 1: positive_set_prime.append(positive_set[j])
-            else: negative_set_prime.append(positive_set[j])
+        batch_x = []
+        batch_j = []
+        for j in tqdm(range(len(x_test))):
+            if rankings_dict[x_test[j]][1] == i:
+                x = np.array(data_set[x_test[j]+data_type])
+                batch_x.append(x)
+                batch_j.append(j)
+            if len(batch_x) == batch_size or j+1 == len(x_test):
+                batch_x  = np.array(batch_x)
+                if len(batch_x) != 0:
+                    ss = model.predict_on_batch(batch_x)
+                    for k in range(len(ss)):
+                        s = int(np.argmax(ss[k]))
+                        if s == 1: rankings_dict[x_test[batch_j[k]]][1] += 1
+                batch_x = []
+                batch_j = []
 
-        positive_set = positive_set_prime
-        ranked_data.append(negative_set_prime)
-    ranked_data.append(positive_set)
-    ranked_data = np.array(ranked_data)
-
-    # Measure accuracy of ranking
+    # Measure accuracy of rankings
     hits = 0
-    for i in tqdm(range(len(x_test))):
-        x = x_test[i]
-        y = y_test_scores[i]
-
-        # Get Rank
-        rank = 0
-        rankss = ranks + [1.0]
-        for j in range(len(rankss)):
-            if rankss[j] - y > 0:
-                rank = j
-                break
-
-        # Check if in correct rank
-        if np.isin(x, ranked_data[rank]): hits +=1
+    for key in rankings_dict.keys():
+        ranking = rankings_dict[key]
+        if ranking[0] == ranking[1]:
+            hits += 1
     test_acc = float(hits) / len(x_test)
     print("Test Accuracy:", test_acc)
 
